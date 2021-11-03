@@ -1,10 +1,17 @@
 import flask
-from flask_login import LoginManager, current_user, login_required, login_user, logout_user
+from flask_login import (
+    LoginManager,
+    current_user,
+    login_required,
+    login_user,
+    logout_user,
+)
 import os
 import json
 import requests
 from oauthlib.oauth2 import WebApplicationClient
 import pyopenssl
+from flask_login import UserMixin
 from googleauth import get_google_provider_cfg
 from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv, find_dotenv
@@ -14,12 +21,44 @@ load_dotenv(find_dotenv())
 # OAuth 2 client setup
 client = WebApplicationClient(os.environ.get("GOOGLE_CLIENT_ID", None))
 
-app = flask.Flask(__name__, static_folder='./build/static')
-# This tells our Flask app to look at the results of `npm build` instead of the 
+app = flask.Flask(__name__, static_folder="./build/static")
+# This tells our Flask app to look at the results of `npm build` instead of the
 # actual files in /templates when we're looking for the index page file. This allows
 # us to load React code into a webpage. Look up create-react-app for more reading on
 # why this is necessary.
 bp = flask.Blueprint("bp", __name__, template_folder="./build")
+
+db = SQLAlchemy(app)
+
+
+class User(UserMixin, db.Model):
+    id = db.Column(
+        db.Integer, primary_key=True
+    )  # primary keys are required by SQLAlchemy
+    username = db.Column(db.String(100), unique=True)
+    email = db.Column(db.String(100), unique=True)
+    profile_pic = db.Column(db.String(100))
+    favorites = db.relationship("Friends", backref="user", lazy=True)
+    posts = db.relationship("UserPost", backref="user", lazy=True)
+
+
+class Friends(UserMixin, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    FreindID = db.Column(db.String(120))
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+
+
+class UserPost(UserMixin, db.Model):
+    postID = db.Column(db.Integer, primary_key=True)
+    AuthorID = db.Column(db.String(100), unique=True, nullable=False)
+    postText = db.Column(db.String(300), nullable=False)
+    postTitle = db.Column(db.String(50), nullable=False)
+    postLikes = db.Column(db.Integer)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+    ...
+
+
+db.create_all()
 
 app.secret_key = os.environ.get("SECRET_KEY")
 login_manager = LoginManager()
@@ -31,7 +70,7 @@ def load_user(user_id):
     return User.get(user_id)
 
 
-@bp.route('/index')
+@bp.route("/index")
 @login_required
 def index():
     # TODO: insert the data fetched by your app main page here as a JSON
@@ -42,17 +81,11 @@ def index():
         data=data,
     )
 
+
 app.register_blueprint(bp)
 
-@app.route('/signup')
-def signup():
-	...
 
-@app.route('/signup', methods=["POST"])
-def signup_post():
-	...
-
-@app.route('/login')
+@app.route("/login")
 def login():
     # Find out what URL to hit for Google login
     google_provider_cfg = get_google_provider_cfg()
@@ -67,6 +100,7 @@ def login():
     )
     return flask.redirect(request_uri)
 
+
 @app.route("/login/callback")
 def callback():
     # Get authorization code Google sent back to you
@@ -78,7 +112,7 @@ def callback():
         token_endpoint,
         authorization_response=requests.url,
         redirect_url=requests.base_url,
-        code=code
+        code=code,
     )
     token_response = requests.post(
         token_url,
@@ -106,36 +140,37 @@ def callback():
         return "User email not available or not verified by Google.", 400
     # Create a user in your db with the information provided
     # by Google
-    user = User(
-        id_=unique_id, name=users_name, email=users_email, profile_pic=picture
-    )
+    user = User(id=unique_id, name=users_name, email=users_email, profile_pic=picture)
 
     # Doesn't exist? Add it to the database.
-    if not User.get(unique_id):
-        User.create(unique_id, users_name, users_email, picture)
+    if not User.query.filter_by(id=unique_id).first():
+        db.session.add(user)
 
     # Begin user session by logging the user in
     login_user(user)
 
     # Send user back to homepage
-    return redirect(url_for("index"))
+    return flask.redirect(flask.url_for("bp.index"))
 
-@app.route('/login', methods=["POST"])
+
+@app.route("/login", methods=["POST"])
 def login_post():
-	...
+    ...
+
 
 @app.route("/logout")
 @login_required
 def logout():
     logout_user()
-    return flask.redirect(flask.url_for("index"))
+    return flask.redirect(flask.url_for("bp.index"))
 
-@app.route('/save', methods=["POST"])
+
+@app.route("/save", methods=["POST"])
 def save():
     ...
 
 
-@app.route('/')
+@app.route("/")
 def main():
     if current_user.is_authenticated:
         return (
@@ -150,9 +185,4 @@ def main():
         return '<a class="button" href="/login">Google Login</a>'
 
 
-
-
-app.run(
-    host=os.getenv('IP', '0.0.0.0'),
-    port=int(os.getenv('PORT', 8081)),
-)
+app.run(host=os.getenv("IP", "0.0.0.0"), port=int(os.getenv("PORT", 8081)), debug=True)
