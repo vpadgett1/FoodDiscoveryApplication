@@ -13,3 +13,7 @@
 1. Create a Heroku app: `heroku create --buildpack heroku/python`
 2. Add nodejs buildpack: `heroku buildpacks:add --index 1 heroku/nodejs`
 3. Push to Heroku: `git push heroku main`
+
+## Routing
+1. Install react-router-dom using the command `npm install react-router-dom`. This is used to aid with the navigation of our app
+2. This app is using React Router v6
