@@ -5,7 +5,7 @@ import reportWebVitals from './reportWebVitals';
 import {
   BrowserRouter as Router,
   Route,
-  Switch
+  Routes
 } from 'react-router-dom';
 import LandingPage from './Pages/LandingPage';
 import CreateAccountPage from './Pages/CreateAccountPage';
@@ -18,15 +18,15 @@ import SearchPage from './Pages/SearchPage'
 ReactDOM.render(
   <React.StrictMode>
     <Router>
-      <Switch>
-        <Route exact path="/"><LandingPage /></Route>
-        <Route path="/createAccount"><CreateAccountPage /></Route>
-        <Route path="/discover"><DiscoverPage /></Route>
-        <Route path="/search"><SearchPage /></Route>
-        <Route path="/map"><MapPage /></Route>
-        <Route path="/profile"><ProfilePage /></Route>
-        <Route path="/merchant"><MerchantPage /></Route>
-      </Switch>
+      <Routes>
+        <Route exact path="/" element={<LandingPage />}></Route>
+        <Route path="/createAccount" element={<CreateAccountPage />}></Route>
+        <Route path="/discover" element={<DiscoverPage />}></Route>
+        <Route path="/search" element={<SearchPage />}></Route>
+        <Route path="/map" element={<MapPage />}></Route>
+        <Route path="/profile" element={<ProfilePage />}></Route>
+        <Route path="/merchant" element={<MerchantPage />}></Route>
+      </Routes>
     </Router>
   </React.StrictMode>,
   document.getElementById('root')
