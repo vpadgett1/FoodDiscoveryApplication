@@ -10,10 +10,16 @@ class SearchPage extends React.Component {
         };
     }
 
+    //TODO: fetch data from backend
+    componentDidMount() {
+
+    }
+
     render() {
         return (
             <>
                 <Navigation />
+                <div>This is the search page</div>
             </>
         );
     }

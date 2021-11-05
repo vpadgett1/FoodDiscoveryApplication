@@ -11,11 +11,17 @@ class CreateAccountPage extends React.Component {
         };
     }
 
+    //TODO: fetch data from backend
+    componentDidMount() {
+
+    }
+
     render() {
         return (
             <>
-                <Link to="/discover">Regular User</Link>
+                <Link to="/onboarding">Regular User</Link>
                 <Link to="/merchant">Merchant User</Link>
+                <div>This is the create account page</div>
             </>
         )
     }

@@ -10,6 +10,11 @@ class LandingPage extends React.Component {
         };
     }
 
+    //TODO: fetch data from backend
+    componentDidMount() {
+
+    }
+
     render() {
         return (
             <>

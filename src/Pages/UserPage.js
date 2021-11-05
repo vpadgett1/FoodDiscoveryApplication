@@ -1,8 +1,8 @@
 import '../App.css';
 import React from 'react';
+import Navigation from '../Components/Navigation';
 
-
-class MerchantPage extends React.Component {
+class UserPage extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -17,11 +17,11 @@ class MerchantPage extends React.Component {
     render() {
         return (
             <>
-                <div>Merchant Page</div>
-                <div>This is the merchant page</div>
+                <Navigation />
+                <div>this is a user profile</div>
             </>
-        );
+        )
     }
 }
 
-export default MerchantPage;
+export default UserPage;

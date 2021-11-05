@@ -5,7 +5,7 @@ import React, { useState, useRef } from 'react';
 
 class App extends React.Component {
   render() {
-    return (<div>Geesgesgs</div>);
+    return (<div></div>);
   }
 }
 

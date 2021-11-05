@@ -11,10 +11,16 @@ class DiscoverPage extends React.Component {
         };
     }
 
+    //TODO: fetch data from backend
+    componentDidMount() {
+
+    }
+
     render() {
         return (
             <>
                 <Navigation />
+                <div>This is the discover page</div>
             </>
         );
     }

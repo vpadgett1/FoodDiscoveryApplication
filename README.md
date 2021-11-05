@@ -17,3 +17,4 @@
 ## Routing
 1. Install react-router-dom using the command `npm install react-router-dom`. This is used to aid with the navigation of our app
 2. This app is using React Router v6
+3. 
