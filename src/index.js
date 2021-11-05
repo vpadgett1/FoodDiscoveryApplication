@@ -1,12 +1,33 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-import App from './App';
 import reportWebVitals from './reportWebVitals';
+import {
+  BrowserRouter as Router,
+  Route,
+  Routes
+} from 'react-router-dom';
+import LandingPage from './Pages/LandingPage';
+import CreateAccountPage from './Pages/CreateAccountPage';
+import DiscoverPage from './Pages/DiscoverPage';
+import MapPage from './Pages/DiscoverPage';
+import MerchantPage from './Pages/MerchantPage';
+import ProfilePage from './Pages/ProfilePage';
+import SearchPage from './Pages/SearchPage'
 
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+    <Router>
+      <Routes>
+        <Route exact path="/" element={<LandingPage />}></Route>
+        <Route path="/createAccount" element={<CreateAccountPage />}></Route>
+        <Route path="/discover" element={<DiscoverPage />}></Route>
+        <Route path="/search" element={<SearchPage />}></Route>
+        <Route path="/map" element={<MapPage />}></Route>
+        <Route path="/profile" element={<ProfilePage />}></Route>
+        <Route path="/merchant" element={<MerchantPage />}></Route>
+      </Routes>
+    </Router>
   </React.StrictMode>,
   document.getElementById('root')
 );

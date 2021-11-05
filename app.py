@@ -98,7 +98,6 @@ def discover():
         data=data,
     )
 
-
 @bp.route("/profile")
 @login_required
 def profile():
@@ -112,7 +111,6 @@ def profile():
 
 
 app.register_blueprint(bp)
-
 
 @app.route("/login")
 def login():
@@ -170,7 +168,7 @@ def callback():
     # Create a user in your db with the information provided
     # by Google
     user = User(id=unique_id, name=users_name, email=users_email, profile_pic=picture)
-
+    
     # Doesn't exist? Add it to the database.
     if not User.query.filter_by(id=unique_id).first():
         db.session.add(user)
@@ -181,12 +179,10 @@ def callback():
     # Send user back to homepage
     return flask.redirect(flask.url_for("bp.index"))
 
-
 @app.route("/login", methods=["POST"])
 def login_post():
     ...
-
-
+    
 @app.route("/logout")
 @login_required
 def logout():
