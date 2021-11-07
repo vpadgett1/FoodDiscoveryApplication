@@ -1,13 +1,22 @@
 import React from "react";
 import './App.css';
 import { GoogleMap, withScriptjs, withGoogleMap, Marker, InfoWindow } from "react-google-maps";
-import { useState, useRef } from 'react';
+import { useState} from 'react';
 
 const args = JSON.parse(document.getElementById("data").text);
 
 function Map(){
 
     const[selectedRestaurant, setSelectedRestaurant] = useState(null);
+    const[selectedRestaurantName, setSelectedRestaurantName] = useState(null);
+    // const[selectedRestaurantImgUrl, setSelectedRestaurantImgUrl] = useState(null);
+    // const[selectedRestaurantUrl, setSelectedRestaurantUrl] = useState(null);
+    // const[selectedRestaurantIsClosed, setSelectedRestaurantIsClosed] = useState(null);
+    const[selectedRestaurantRating, setSelectedRestaurantRating] = useState(null);
+    const{Index, setIndex} = useState(null);
+
+
+
   
     return(
       <GoogleMap 
@@ -20,7 +29,9 @@ function Map(){
               lng:coordinates["longitude"]
               }}
               onClick = {()=>{
+                  setIndex(index)
                   setSelectedRestaurant(coordinates)
+                  console.log(Index)
               }}
               />
             ))}
@@ -33,9 +44,11 @@ function Map(){
                     }}
                     onCloseClick={()=>{
                         setSelectedRestaurant(null);
+                        setSelectedRestaurantName(null);
 
                     }}
-                    ><div>Restaurant details</div></InfoWindow>
+                    >
+                      <div>Restaurant name</div></InfoWindow>
               )}
       </GoogleMap>
     );
