@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Simple Map</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+    <link rel="stylesheet" type="text/css" href= "{{ url_for('static', filename='style.css')}}">
+    <script src="./index.js"></script>
+  </head>
+  <body>
+      <h1>My Google Maps</h1>
+    <div id="map"></div>
+
+    <script>
+        function initMap(){
+            var options = {
+                zoom:8,
+                center:{lat:33.7490, lng:-84.3880}
+            }
+              //addmarker function
+           function addMarker(props){
+            const marker = new google.maps.Marker({
+            position: props.coords,
+            map: map,
+            icon:'https://developers.google.com/maps/docmentation/javascript/examples/full/images/restaurant.png'
+           });
+            // new map
+            var map = new google.maps.Map(document.getElementById('map'),options);
+            
+            //adding a marker
+           
+
+           }
+        }
+       </script>
+
+    <!-- Async script executes immediately and must be after any DOM elements used in callback. -->
+    <script
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC0ZDm58haN8rEju6KUh-RL70JCZek_W40&callback=initMap&v=weekly"
+      async
+    ></script>
+  </body>
+</html>
