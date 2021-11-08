@@ -10,6 +10,7 @@ import os
 import json
 import requests
 from oauthlib.oauth2 import WebApplicationClient
+from project2.yelpInfo import query_api, query_resturants
 import pyopenssl
 from flask_login import UserMixin
 from googleauth import get_google_provider_cfg
@@ -86,17 +87,37 @@ login_manager.init_app(app)
 def load_user(user_id):
     return User.get(user_id)
 
+def timeConvert(miliTime):
+        miliTime = int(miliTime)
+        hours = miliTime / 100
+        print(hours)
+        minutes = 00
+        setting = "AM"
+        if hours > 12:
+            setting = "PM"
+            hours -= 12
+        return(("%d:%02d" + setting) % (hours, minutes))
 
 @bp.route("/discover")
 @login_required
 def discover():
-    # TODO: insert the data fetched by your app main page here as a JSON
-    DATA = {"your": "data here"}
-    data = json.dumps(DATA)
-    return flask.render_template(
-        "index.html",
-        data=data,
-    )
+    rest_name = flask.request.json.get("resturant_name")
+    yelp_results = query_resturants(rest_name, current_user.zipCode)
+    resturant_data = []
+    for x in range(len(yelp_results["names"])): 
+        rest_info = {
+            'name' : yelp_results["names"][x], 
+            'location' : yelp_results["locations"][x],
+            'opening' : timeConvert(yelp_results["hours"][x][0]), 
+            'closing': timeConvert(yelp_results["hours"][x][1]),
+            'phone_number' : yelp_results["phone_nums"][x],
+            'rating' : yelp_results['ratings'][x],
+            'categories' : yelp_results['categories'][x][0]["title"],
+            'image' : yelp_results['pictures'][x]
+        }
+        resturant_data.append(rest_info)
+    #data = json.dumps(DATA)
+    return flask.jsonify(resturant_data)
 
 @bp.route("/profile")
 @login_required
@@ -208,6 +229,5 @@ def main():
         )
     else:
         return '<a class="button" href="/login">Google Login</a>'
-
 
 app.run(host=os.getenv("IP", "0.0.0.0"), port=int(os.getenv("PORT", 8081)), debug=True)
