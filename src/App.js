@@ -5,9 +5,20 @@ import { useState} from 'react';
 
 const args = JSON.parse(document.getElementById("data").text);
 
+const restaurantNames = []
+const restaurantImages = []
+const restaurantRatings = []
+
+args.names.map(restnames => ( restaurantNames.push(restnames)))
+args.img_urls.map(imgurls => ( restaurantImages.push(imgurls)))
+args.ratings.map(rating => (restaurantRatings.push(rating)))
+
 function Map(){
 
     const[selectedRestaurant, setSelectedRestaurant] = useState(null);
+    const[selectedRestaurantName, setSelectedRestaurantName] = useState(null);
+    const[selectedRestaurantImage, setSelectedRestaurantImage] = useState(null);
+    const[selectedRestaurantRating, setSelectedRestaurantRating] = useState(null);
 
     return(
       <GoogleMap 
@@ -22,6 +33,10 @@ function Map(){
               onClick = {()=>{
         
                   setSelectedRestaurant(coordinates)
+                  setSelectedRestaurantName(restaurantNames[index])
+                  setSelectedRestaurantImage(restaurantImages[index])
+                  setSelectedRestaurantRating(restaurantRatings[index])
+                  console.log(restaurantNames[index])
               }}
               />
             ))}
@@ -34,10 +49,17 @@ function Map(){
                     }}
                     onCloseClick={()=>{
                         setSelectedRestaurant(null);
+                        setSelectedRestaurantName(null);
+                        setSelectedRestaurantImage(null)
+                        setSelectedRestaurantRating(null)
 
                     }}
                     >
-                      <div>Restaurant name</div></InfoWindow>
+                      <div>
+                        <h2>{selectedRestaurantName}</h2>
+                        <img src={selectedRestaurantImage}/>
+                        <p>{selectedRestaurantRating}</p>
+                      </div></InfoWindow>
               )}
       </GoogleMap>
     );
@@ -51,7 +73,7 @@ function App() {
     
     return (
       <>
-      <h1>My Googl2e Maps</h1>
+      <h1>My Google Maps</h1>
 
       <div style={{width:'100vw', height:'100vh'}}>
       <WrappedMap 
