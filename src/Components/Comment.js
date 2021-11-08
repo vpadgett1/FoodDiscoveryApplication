@@ -1,20 +1,35 @@
 import '../App.css';
-import React from 'react';
+import React,
+{
+  // useState,
+  useEffect,
+} from 'react';
+// import PropTypes from 'prop-types';
 
-class Comment extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-        };
-    }
+// this line will become const Comment = (props) => { once there are props
+const Comment = () => {
+  // set state
+  // const [state, setState] = useState(value);
 
-    render() {
-        return (
-            <>
-                <div>this is a comment</div>
-            </>
-        )
-    }
-}
+  // deconstruct props
+  // const [props] = props;
+
+  // TODO: fetch data from backend
+  useEffect(() => {
+
+  }, []);
+
+  // TODO: Render component
+  return (
+    <>
+      <div>this is a comment</div>
+    </>
+  );
+};
+
+// TODO: PropTypes
+Comment.propTypes = {
+
+};
 
 export default Comment;

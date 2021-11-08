@@ -1,28 +1,36 @@
 import '../App.css';
-import React from 'react';
+import React, {
+  // useState,
+  useEffect,
+} from 'react';
 import Navigation from '../Components/Navigation';
+// import PropTypes from 'prop-types';
 
-class ProfilePage extends React.Component {
+// this line will become const ProfilePage = (props) => { once there are props
+const ProfilePage = () => {
+  // set state
+  // const [state, setState] = useState(value);
 
-    constructor(props) {
-        super(props);
-        this.state = {
-        };
-    }
+  // deconstruct props
+  // const [props] = props;
 
-    //TODO: fetch data from backend
-    componentDidMount() {
+  // TODO: fetch data from backend
+  useEffect(() => {
 
-    }
+  }, []);
 
-    render() {
-        return (
-            <>
-                <Navigation />
-                <div>This is the profile page</div>
-            </>
-        );
-    }
-}
+  // TODO: Render component
+  return (
+    <>
+      <Navigation />
+      <div>This is the profile page</div>
+    </>
+  );
+};
+
+// TODO: PropTypes
+ProfilePage.propTypes = {
+
+};
 
 export default ProfilePage;
