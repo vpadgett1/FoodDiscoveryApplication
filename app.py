@@ -73,6 +73,7 @@ def zipcode_post():
          "is_closeds":is_closed,
          "urls":url,
          "coords":coord,
+     
          "ids":id,
     }
     

@@ -8,16 +8,7 @@ const args = JSON.parse(document.getElementById("data").text);
 function Map(){
 
     const[selectedRestaurant, setSelectedRestaurant] = useState(null);
-    const[selectedRestaurantName, setSelectedRestaurantName] = useState(null);
-    // const[selectedRestaurantImgUrl, setSelectedRestaurantImgUrl] = useState(null);
-    // const[selectedRestaurantUrl, setSelectedRestaurantUrl] = useState(null);
-    // const[selectedRestaurantIsClosed, setSelectedRestaurantIsClosed] = useState(null);
-    const[selectedRestaurantRating, setSelectedRestaurantRating] = useState(null);
-    const{Index, setIndex} = useState(null);
 
-
-
-  
     return(
       <GoogleMap 
           defaultZoom={10} 
@@ -29,9 +20,8 @@ function Map(){
               lng:coordinates["longitude"]
               }}
               onClick = {()=>{
-                  setIndex(index)
+        
                   setSelectedRestaurant(coordinates)
-                  console.log(Index)
               }}
               />
             ))}
@@ -44,7 +34,6 @@ function Map(){
                     }}
                     onCloseClick={()=>{
                         setSelectedRestaurant(null);
-                        setSelectedRestaurantName(null);
 
                     }}
                     >
@@ -62,13 +51,7 @@ function App() {
     
     return (
       <>
-      <h1>My Google Maps</h1>
-      {/* <div>
-      {args.names.map(name => (<p>{name}</p>))}
-      </div> */}
-      {/* <div>
-          {args.coords.map(coordinates =>(<p>lats:{coordinates["latitude"]}lng:{coordinates["longitude"]}</p>))}
-      </div> */}
+      <h1>My Googl2e Maps</h1>
 
       <div style={{width:'100vw', height:'100vh'}}>
       <WrappedMap 
