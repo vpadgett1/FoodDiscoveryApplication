@@ -20,3 +20,6 @@
 
 ## Linting
 1. `npm install eslint-config-airbnb`
+
+## Props
+1. `npm i -S prop-types`

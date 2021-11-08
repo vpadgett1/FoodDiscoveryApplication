@@ -12,7 +12,8 @@ const Comment = () => {
   // const [state, setState] = useState(value);
 
   // deconstruct props
-  // const [props] = props;
+  // uncomment the below line out once the props are in use
+  // const [id, postText, RestaurantName, postID] = props;
 
   // TODO: fetch data from backend
   useEffect(() => {
@@ -28,8 +29,12 @@ const Comment = () => {
 };
 
 // TODO: PropTypes
+// uncomment the props once they are in use
 Comment.propTypes = {
-
+  /* id: PropTypes.number.isRequired,
+  postText: PropTypes.string.isRequired,
+  RestaurantName: PropTypes.string.isRequired,
+  postID: PropTypes.number.isRequired, */
 };
 
 export default Comment;
