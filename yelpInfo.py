@@ -114,13 +114,14 @@ def query_api(term, location):
     print(u'Result for business "{0}" found:'.format(business_id))
     pprint.pprint(response, indent=2)
 
-
+# a fucntion to query specific data from the resturants that we queery from instead of just the information from one specific resturant based on the query. 
 def query_resturants(term, location):
     """Queries the API by the input values from the user.
     Args:
         term (str): The search term to query.
         location (str): The location of the business to query.
     """
+    #search for resturants with the API_KEY, the term (such as Starbucks, etc.), and the users zipcode that they stored in their profile
     response = search(API_KEY, term, location)
     #print(response)
     businesses = response.get("businesses")
@@ -128,9 +129,9 @@ def query_resturants(term, location):
     names = []
     locations = []
     hours = []
-    phone_num = []
+    phone_numbers = []
     rating = []
-    categories = []
+    resturant_type_categories = []
     pictures = []
     if not businesses:
         print(u"No businesses for {0} in {1} found.".format(term, location))
@@ -150,9 +151,9 @@ def query_resturants(term, location):
         openinghour = openhours[0]["open"][0]["start"]
         closinghour = openhours[0]["open"][0]["end"]
         hours.append([openinghour, closinghour])
-        phone_num.append(response["display_phone"])
+        phone_numbers.append(response["display_phone"])
         rating.append(response["rating"])
-        categories.append(response["categories"])
+        resturant_type_categories.append(response["categories"])
         pictures.append(response["image_url"])
 
         # print(u'Result for business "{0}" found:'.format(business_id))
@@ -161,9 +162,9 @@ def query_resturants(term, location):
         'names' : names,
         'locations': locations,
         'hours': hours,
-        'phone_nums': phone_num,
+        'phone_numbers': phone_numbers,
         'ratings' : rating,
-        'categories' : categories,
+        'resturant_type_categories' : resturant_type_categories,
         'pictures' : pictures
     }
     #data = json.dumps(DATA)

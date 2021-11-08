@@ -110,9 +110,9 @@ def discover():
             'location' : yelp_results["locations"][x],
             'opening' : timeConvert(yelp_results["hours"][x][0]), 
             'closing': timeConvert(yelp_results["hours"][x][1]),
-            'phone_number' : yelp_results["phone_nums"][x],
+            'phone_number' : yelp_results["phone_numbers"][x],
             'rating' : yelp_results['ratings'][x],
-            'categories' : yelp_results['categories'][x][0]["title"],
+            'categories' : yelp_results['resturant_type_categories'][x][0]["title"],
             'image' : yelp_results['pictures'][x]
         }
         resturant_data.append(rest_info)
