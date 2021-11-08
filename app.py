@@ -48,30 +48,31 @@ class User(UserMixin, db.Model):
 
 class FavoriteRestraunts(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    RestrauntName = db.Column(db.String(120))
+    RestaurantName = db.Column(db.String(120))
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
 
 
 class Friends(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    FreindID = db.Column(db.String(120))
+    FriendID = db.Column(db.String(120))
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
 
 
 class UserPost(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    AuthorID = db.Column(db.String(100), unique=True, nullable=False)
+    AuthorID = db.Column(db.String(100), nullable=False)
     postText = db.Column(db.String(300), nullable=False)
     postTitle = db.Column(db.String(50), nullable=False)
     postLikes = db.Column(db.Integer)
+    RestaurantName = db.Column(db.String(120))
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     post_comments = db.relationship("UserPost", backref="user", lazy=True)
 
 
 class PostComments(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    AuthorID = db.Column(db.String(100), nullable=False)
     postText = db.Column(db.String(300), nullable=False)
-    RestrauntName = db.Column(db.String(120))
     post_id = db.Column(db.Integer, db.ForeignKey("UserPost.id"))
 
 
@@ -103,11 +104,51 @@ def discover():
 @login_required
 def profile():
     # TODO: insert the data fetched by your app main page here as a JSON
-    DATA = {"your": "data here"}
-    data = json.dumps(DATA)
-    return flask.render_template(
-        "index.html",
-        data=data,
+    UserDATA = {
+        "name": current_user.username,
+        "email": current_user.email,
+        "profilePic": current_user.profile_pic,
+        "zipcode": current_user.zipCode,
+        "yelpRestaurantID": current_user.yelpRestaurantID,
+    }
+    UserFriends = current_user.Friends
+    UserFriendsList = []
+    for x in range(len(UserFriends)):
+        UserFriendsList.append(UserFriends[x].FriendID)
+
+    UserFavoriteRestaurants = current_user.FavoriteRestaurants
+    UserFavRestaurantsList = []
+    for x in range(len(UserFavoriteRestaurants)):
+        UserFavRestaurantsList.append(UserFavoriteRestaurants[x].Restaurant)
+
+    UserPosts = current_user.UserPost
+    UserPostsList = []
+    for x in range(len(UserPosts)):
+        postComments = PostComments.query.filter_by(post_id=UserPosts[x].id)
+        postCommentsList = []
+        for y in range(len(postComments)):
+            commentData = {
+                "AuthorID": postComments[y].AuthorID,
+                "postText": postComments[y].postText,
+            }
+            postCommentsList.append(commentData)
+        PostDATA = {
+            "AuthorID": UserPosts[x].AuthorID,
+            "postText": UserPosts[x].postText,
+            "postTitle": UserPosts[x].postTitle,
+            "postLikes": UserPosts[x].postLikes,
+            "RestaurantName": UserPosts[x].RestaurantName,
+            "comments": postCommentsList,
+        }
+        UserPostsList.append(PostDATA)
+
+    return flask.jsonify(
+        {
+            "UserDATA": UserDATA,
+            "UserFriendsList": UserFriendsList,
+            "UserFavRestaurantsList": UserFavRestaurantsList,
+            "UserPostsList": UserPostsList,
+        }
     )
 
 
@@ -147,7 +188,7 @@ def callback():
         token_url,
         headers=headers,
         data=body,
-        auth=(os.getenv(GOOGLE_CLIENT_ID), os.getenv(GOOGLE_CLIENT_SECRET)),
+        auth=(os.getenv("GOOGLE_CLIENT_ID"), os.getenv("GOOGLE_CLIENT_SECRET")),
     )
     # Parse the tokens!
     client.parse_request_body_response(json.dumps(token_response.json()))

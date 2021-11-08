@@ -9,6 +9,8 @@ import pprint
 import requests
 import sys
 import urllib
+import os
+from dotenv import load_dotenv, find_dotenv
 
 # This client code can run on Python 2.x or 3.x.  Your imports can be
 # simpler if you only need one of those.
@@ -17,7 +19,7 @@ from urllib.error import HTTPError
 from urllib.parse import quote
 from urllib.parse import urlencode
 
-API_KEY = None
+API_KEY = os.environ.get("YelpAPIKey")
 
 
 # API constants, you shouldn't have to change these.
