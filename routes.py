@@ -67,12 +67,51 @@ def discover():
 @bp.route("/profile")
 @login_required
 def profile():
-    # TODO: insert the data fetched by your app main page here as a JSON
-    DATA = {"your": "data here"}
-    data = json.dumps(DATA)
-    return flask.render_template(
-        "index.html",
-        data=data,
+    UserDATA = {
+        "name": current_user.username,
+        "email": current_user.email,
+        "profilePic": current_user.profile_pic,
+        "zipcode": current_user.zipCode,
+        "yelpRestaurantID": current_user.yelpRestaurantID,
+    }
+    UserFriends = current_user.Friends
+    UserFriendsList = []
+    for x in range(len(UserFriends)):
+        UserFriendsList.append(UserFriends[x].FriendID)
+
+    UserFavoriteRestaurants = current_user.FavoriteRestaurants
+    UserFavRestaurantsList = []
+    for x in range(len(UserFavoriteRestaurants)):
+        UserFavRestaurantsList.append(UserFavoriteRestaurants[x].Restaurant)
+
+    UserPosts = current_user.UserPost
+    UserPostsList = []
+    for x in range(len(UserPosts)):
+        postComments = PostComments.query.filter_by(post_id=UserPosts[x].id)
+        postCommentsList = []
+        for y in range(len(postComments)):
+            commentData = {
+                "AuthorID": postComments[y].AuthorID,
+                "postText": postComments[y].postText,
+            }
+            postCommentsList.append(commentData)
+        PostDATA = {
+            "AuthorID": UserPosts[x].AuthorID,
+            "postText": UserPosts[x].postText,
+            "postTitle": UserPosts[x].postTitle,
+            "postLikes": UserPosts[x].postLikes,
+            "RestaurantName": UserPosts[x].RestaurantName,
+            "comments": postCommentsList,
+        }
+        UserPostsList.append(PostDATA)
+
+    return flask.jsonify(
+        {
+            "UserDATA": UserDATA,
+            "UserFriendsList": UserFriendsList,
+            "UserFavRestaurantsList": UserFavRestaurantsList,
+            "UserPostsList": UserPostsList,
+        }
     )
 
 

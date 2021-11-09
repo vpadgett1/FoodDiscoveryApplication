@@ -17,31 +17,31 @@ class User(UserMixin, db.Model):
 
 class FavoriteRestraunts(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    RestrauntName = db.Column(db.String(120))
+    RestaurantName = db.Column(db.String(120))
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
 
 
 class Friends(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    FreindID = db.Column(db.String(120))
+    FriendID = db.Column(db.String(120))
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
 
 
 class UserPost(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    AuthorID = db.Column(db.String(100), unique=True, nullable=False)
+    AuthorID = db.Column(db.String(100), nullable=False)
     postText = db.Column(db.String(300), nullable=False)
     postTitle = db.Column(db.String(50), nullable=False)
     postLikes = db.Column(db.Integer)
+    RestaurantName = db.Column(db.String(120))
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     post_comments = db.relationship("UserPost", backref="user", lazy=True)
 
 
 class PostComments(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    AuthorID = db.Column(db.String(100), nullable=False)
     postText = db.Column(db.String(300), nullable=False)
-    RestrauntName = db.Column(db.String(120))
     post_id = db.Column(db.Integer, db.ForeignKey("UserPost.id"))
-
 
 db.create_all()
