@@ -1,11 +1,10 @@
-import logo from './logo.svg';
+/* eslint-disable react/prefer-stateless-function */
 import './App.css';
-import React, { useState, useRef } from 'react';
-
+import React from 'react';
 
 class App extends React.Component {
   render() {
-    return (<div></div>);
+    return (<div />);
   }
 }
 

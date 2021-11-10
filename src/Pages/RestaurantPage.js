@@ -5,6 +5,7 @@ import React, {
   useEffect, useState,
   // useState,
 } from 'react';
+import { useLocation } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import Navigation from '../Components/Navigation';
 import TempRestaurantBackground from '../assets/TempRestaurantBackgroundImg.png';
@@ -26,9 +27,9 @@ const RestaurantPage = () => {
   const [postsAboutRestaurant, setPostsAboutRestaurant] = useState([]);
   const [postsByRestaurant, setPostsByRestaurant] = useState([]); */
   const [followingRestaurant, setFollowingRestaurant] = useState(false);
+  // const [restaurantID] = useState('nothing');
 
   // deconstruct props
-  // const [props] = props;
 
   // async function loadPage() {
   // get yelp data
@@ -94,6 +95,19 @@ const RestaurantPage = () => {
     // SPRINT 2 : style of button should change as well
   };
 
+  function test() {
+    const location = useLocation();
+    const { restaurantID } = location.state;
+
+    if (location && restaurantID) {
+      console.log(restaurantID);
+    } else {
+      console.log('error');
+    }
+  }
+
+  test();
+
   // TODO: Render component
   return (
     <>
@@ -137,7 +151,10 @@ const RestaurantPage = () => {
 
 // TODO: PropTypes
 RestaurantPage.propTypes = {
-  id: PropTypes.string.isRequired,
+  restaurantID: PropTypes.string.isRequired,
+  location: PropTypes.shape(
+    { state: PropTypes.shape({ restaurantID: PropTypes.string }) },
+  ).isRequired,
 };
 
 const Hours = (props) => {
