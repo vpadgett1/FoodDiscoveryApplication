@@ -3,11 +3,11 @@ import React, {
   // useState,
   useEffect,
 } from 'react';
-import LandingPageNavigation from '../Components/LandingPageNavigation';
+import Navigation from '../Components/Navigation';
 // import PropTypes from 'prop-types';
 
-// this line will become const LandingPage = (props) => { once there are props
-const LandingPage = () => {
+// this line will become const UserPage = (props) => { once there are props
+const UserPage = () => {
   // set state
   // const [state, setState] = useState(value);
 
@@ -19,18 +19,18 @@ const LandingPage = () => {
 
   }, []);
 
-  // TODO: Render component\
+  // TODO: Render component
   return (
     <>
-      <LandingPageNavigation />
-      <div>Landing Page</div>
+      <Navigation />
+      <div>this is a user profile</div>
     </>
   );
 };
 
 // TODO: PropTypes
-LandingPage.propTypes = {
+UserPage.propTypes = {
 
 };
 
-export default LandingPage;
+export default UserPage;

@@ -1,23 +1,37 @@
 import '../App.css';
-import React from 'react';
+import React, {
+  // useState,
+  useEffect,
+} from 'react';
+// import PropTypes from 'prop-types';
 import Navigation from '../Components/Navigation';
 
+// this line will become const DiscoverPage = (props) => { once there are props
+const DiscoverPage = () => {
+  // set state
+  // const [state, setState] = useState(value);
 
-class DiscoverPage extends React.Component {
+  // deconstruct props
+  // const [props] = props;
 
-    constructor(props) {
-        super(props);
-        this.state = {
-        };
-    }
+  // TODO: fetch data from backend
+  useEffect(() => {
 
-    render() {
-        return (
-            <>
-                <Navigation />
-            </>
-        );
-    }
-}
+  }, []);
+
+  // TODO: Render component
+
+  return (
+    <>
+      <Navigation />
+      <div>This is the discover page</div>
+    </>
+  );
+};
+
+// TODO: PropTypes
+DiscoverPage.propTypes = {
+
+};
 
 export default DiscoverPage;

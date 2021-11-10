@@ -1,22 +1,35 @@
 import '../App.css';
-import React from 'react';
+import React, {
+  // useState,
+  useEffect,
+} from 'react';
 import Navigation from '../Components/Navigation';
+// import PropTypes from 'prop-types';
 
-class SearchPage extends React.Component {
+const SearchPage = () => {
+  // set state
+  // const [state, setState] = useState(value);
 
-    constructor(props) {
-        super(props);
-        this.state = {
-        };
-    }
+  // deconstruct props
+  // const [props] = props;
 
-    render() {
-        return (
-            <>
-                <Navigation />
-            </>
-        );
-    }
-}
+  // TODO: fetch data from backend
+  useEffect(() => {
+
+  }, []);
+
+  // TODO: Render component
+  return (
+    <>
+      <Navigation />
+      <div>This is the search page</div>
+    </>
+  );
+};
+
+// TODO: PropTypes
+SearchPage.propTypes = {
+
+};
 
 export default SearchPage;

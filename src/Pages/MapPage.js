@@ -1,23 +1,37 @@
 import '../App.css';
-import React from 'react';
+import React, {
+  // useState,
+  useEffect,
+} from 'react';
 import Navigation from '../Components/Navigation';
+// import PropTypes from 'prop-types';
 
+// this line will become const MapPage = (props) => { once there are props
+const MapPage = () => {
+  // set state
+  // const [state, setState] = useState(value);
 
-class MapPage extends React.Component {
+  // deconstruct props
+  // const [props] = props;
 
-    constructor(props) {
-        super(props);
-        this.state = {
-        };
-    }
+  // TODO: fetch data from backend
+  useEffect(() => {
 
-    render() {
-        return (
-            <>
-                <Navigation />
-            </>
-        );
-    }
-}
+  }, []);
+
+  // TODO: Render component
+
+  return (
+    <>
+      <Navigation />
+      <div>This is the map page</div>
+    </>
+  );
+};
+
+// TODO: PropTypes
+MapPage.propTypes = {
+
+};
 
 export default MapPage;
