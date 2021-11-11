@@ -1,4 +1,9 @@
-from app import app, db, bp
+# pylint: disable=E1101
+# pylint: disable=C0413
+# pylint: disable=W1508
+# pylint: disable=R0903
+# pylint: disable=W0603
+from app import app, db
 from models import User, FavoriteRestraunts, Friends, UserPost, PostComments
 import flask
 from flask_login import (
@@ -12,8 +17,7 @@ import os
 import json
 import requests
 from oauthlib.oauth2 import WebApplicationClient
-from project2.yelpInfo import query_api, query_resturants
-import pyopenssl
+from yelpInfo import query_api, query_resturants
 from googleauth import get_google_provider_cfg
 from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv, find_dotenv
@@ -43,26 +47,7 @@ def timeConvert(miliTime):
         hours -= 12
     return(("%d:%02d" + setting) % (hours, minutes))
 
-@bp.route("/discover")
-@login_required
-def discover():
-    rest_name = flask.request.json.get("resturant_name")
-    yelp_results = query_resturants(rest_name, current_user.zipCode)
-    resturant_data = []
-    for x in range(len(yelp_results["names"])): 
-        rest_info = {
-            'name' : yelp_results["names"][x], 
-            'location' : yelp_results["locations"][x],
-            'opening' : timeConvert(yelp_results["hours"][x][0]), 
-            'closing': timeConvert(yelp_results["hours"][x][1]),
-            'phone_number' : yelp_results["phone_numbers"][x],
-            'rating' : yelp_results['ratingsgit '][x],
-            'categories' : yelp_results['resturant_type_categories'][x][0]["title"],
-            'image' : yelp_results['pictures'][x]
-        }
-        resturant_data.append(rest_info)
-    #data = json.dumps(DATA)
-    return flask.jsonify(resturant_data)
+bp = flask.Blueprint("bp", __name__, template_folder="./build")
 
 @bp.route("/profile")
 @login_required
@@ -195,10 +180,67 @@ def logout():
     return flask.redirect(flask.url_for("bp.index"))
 
 
-@app.route("/save", methods=["POST"])
-def save():
-    ...
 
+@app.route("/search", methods = "POST")
+@login_required
+def discover_post():
+    rest_name = flask.request.get("resturant_name")
+    yelp_results = query_resturants(rest_name, current_user.zipCode)
+    resturant_data = []
+    for x in range(len(yelp_results["names"])): 
+        rest_info = {
+            'name' : yelp_results["names"][x], 
+            'location' : yelp_results["locations"][x],
+            'opening' : timeConvert(yelp_results["hours"][x][0]), 
+            'closing': timeConvert(yelp_results["hours"][x][1]),
+            'phone_number' : yelp_results["phone_numbers"][x],
+            'rating' : yelp_results['ratingsgit '][x],
+            'categories' : yelp_results['resturant_type_categories'][x][0]["title"],
+            'image' : yelp_results['pictures'][x]
+        }
+        resturant_data.append(rest_info)
+    #data = json.dumps(DATA)
+    return flask.jsonify(resturant_data)
+
+@app.route("/addFollower", methods = ["POST"])
+@login_required
+def addFollower():
+    #recieved follower_id
+    follower_id = flask.request.json.get("follower_id")
+    #query to verify they are not already following
+    following_check = Friends.query.filter_by(user_id = current_user.username, FriendID = follower_id).all()
+    if not following_check: 
+        friend_request = Friends(user_id = current_user.username, FriendID=follower_id)
+        db.session.add(friend_request)
+        try:
+            db.session.commit()
+            return flask.jsonify({"status": 200, "message": "You have successfully followed this person."})
+        except Exception as e:
+            db.session.rollback()
+            db.session.flush()
+            return flask.jsonify({"status": 400, "message": "Failed to commit friend request to the database. Please Try again."})
+    else:
+        return flask.jsonify({"status": 400, "message": "You are already friends with this person"})
+
+@app.route("/deleteFollower", methods = ["POST"])
+@login_required
+def deleteFollower():
+    follower_id = flask.request.json.get("follower_id")
+    currentDB = Friends.query.filter_by(user_id=current_user.username).all()
+    extraVal = list((set(currentDB)-set(follower_id)))[0]
+    if extraVal:
+        removeFollower = Friends.query.filter(
+            (Friends.user_id==current_user.username) & (Friends.FriendID==extraVal.follower_id)).first()
+        db.session.delete(removeFollower)
+        try:
+            db.session.commit()
+            return flask.jsonify({"status": 200, "message": "You have successfully unfollowed this user."})
+        except Exception as e:
+            db.session.rollback()
+            db.session.flush()
+            return flask.jsonify({"status": 400, "message": "Failed to commit unfriend request to the database. Please Try again."})
+    else:
+        return flask.jsonify({"status": 400, "message": "You are not friends with this person. Please try again to friend this user."})
 
 @app.route("/")
 def main():
