@@ -123,7 +123,7 @@ function Map(props){
                       <div>
                         <h2>{selectedRestaurantName}</h2>
                         <img src={selectedRestaurantImage}/>
-                        <p>{selectedRestaurantRating}</p>
+                        <p>Rating: {selectedRestaurantRating}</p>
                       </div></InfoWindow>
               )}
       </GoogleMap>
