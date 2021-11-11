@@ -1,15 +1,15 @@
-from flask import Flask, render_template
-import os
-import requests
 import flask
-import json
+import os
 from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv, find_dotenv
-
 load_dotenv(find_dotenv())
-
 app = flask.Flask(__name__, static_folder="./build/static")
 # This tells our Flask app to look at the results of `npm build` instead of the
+# actual files in /templates when we're looking for the index page file. This allows
+# us to load React code into a webpage. Look up create-react-app for more reading on
+# why this is necessary.
+bp = flask.Blueprint("bp", __name__, template_folder="./build")
+
 db_url = os.getenv("DATABASE_URL")
 if db_url.startswith("postgres://"):
     db_url = db_url.replace("postgres://", "postgresql://", 1)
@@ -17,81 +17,4 @@ app.config["SQLALCHEMY_DATABASE_URI"] = db_url
 # Gets rid of a warning
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.secret_key = os.environ.get("SECRET_KEY")
-
 db = SQLAlchemy(app)
-
-
-bp = flask.Blueprint("bp", __name__, template_folder="./build")
-
-yelp_client_id = os.getenv("YELP_CLIENTID")
-yelp_api_key = os.getenv("YELP_APIKEY")
-business_search_url = "https://api.yelp.com/v3/businesses/search"
-newheaders = {'Authorization': 'bearer %s' % yelp_api_key}
-parameters = {'term':'food',
-    'location':'30303',
-    'limit': 25
-}
-search_response = requests.get(business_search_url, headers = newheaders, params = parameters)
-response_data = search_response.json()
-
-
-@bp.route('/zipcode', methods=['GET','POST']) 
-def zipcode():
-
-    if flask.request.method == 'POST':
-            
-        zip_code = flask.request.json.get("zipcode")
-        search_params = {'term':'restaurants',
-                        'location':zip_code,
-                        'limit':25
-        }
-        restaurant_search_response = requests.get(business_search_url, headers = newheaders, params = search_params)
-        restaurant_search_response_data = restaurant_search_response.json()
-        businesses =  restaurant_search_response_data["businesses"]
-
-        name = []
-        img_url = []
-        rating = []
-        is_closed = []
-        url = []
-        coord = []
-        id = []
-        
-        for business in businesses:
-            name.append(business["name"])
-            img_url.append(business["image_url"])
-            rating.append(business["rating"])
-            is_closed.append(business["is_closed"])
-            url.append(business["url"])
-            coord.append(business["coordinates"])
-            id.append(business["id"])
-
-
-
-        DATA ={
-            "names":name,
-            "img_urls":img_url,
-            "ratings":rating,
-            "is_closeds":is_closed,
-            "urls":url,
-            "coords":coord,
-        
-            "ids":id,
-        }
-
-
-        return flask.jsonify({"data":DATA})
-        
-    else:
-        return flask.render_template("index.html")
-
-    
-    
-
-app.register_blueprint(bp)
-
-@app.route('/') 
-def main():
-    return flask.redirect(flask.url_for("bp.zipcode"))
-
-app.run(debug=True)

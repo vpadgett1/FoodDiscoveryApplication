@@ -1,19 +1,4 @@
 {
-<<<<<<< HEAD
-  "name": "my-app",
-  "version": "0.1.0",
-  "private": true,
-  "dependencies": {
-    "@react-google-maps/api": "^2.5.0",
-    "@testing-library/jest-dom": "^5.15.0",
-    "@testing-library/react": "^11.2.7",
-    "@testing-library/user-event": "^12.8.3",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2",
-    "react-google-maps": "^9.4.5",
-    "react-scripts": "4.0.3",
-    "web-vitals": "^1.1.2"
-=======
   "dependencies": {
     "@testing-library/jest-dom": "^5.11.9",
     "@testing-library/react": "^11.2.5",
@@ -26,7 +11,6 @@
     "react-router-dom": "^6.0.0",
     "react-scripts": "^4.0.2",
     "web-vitals": "^1.1.0"
->>>>>>> 04d68785c281dede05e5bcf71262a10ad11c4ab3
   },
   "scripts": {
     "start": "react-scripts start",
@@ -51,10 +35,6 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-<<<<<<< HEAD
-  }
-=======
   },
   "proxy": "http://localhost:8081"
->>>>>>> 04d68785c281dede05e5bcf71262a10ad11c4ab3
 }
