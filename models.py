@@ -23,13 +23,13 @@ class User(UserMixin, db.Model):
 class FavoriteRestraunts(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     RestaurantName = db.Column(db.String(120))
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+    user_id = db.Column(db.Integer, db.ForeignKey("User.id"))
 
 
 class Friends(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     FriendID = db.Column(db.String(120))
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+    user_id = db.Column(db.Integer, db.ForeignKey("User.id"))
 
 
 class UserPost(UserMixin, db.Model):
@@ -39,7 +39,7 @@ class UserPost(UserMixin, db.Model):
     postTitle = db.Column(db.String(50), nullable=False)
     postLikes = db.Column(db.Integer)
     RestaurantName = db.Column(db.String(120))
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+    user_id = db.Column(db.Integer, db.ForeignKey("User.id"))
     post_comments = db.relationship("UserPost", backref="user", lazy=True)
 
 

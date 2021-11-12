@@ -28,6 +28,8 @@ load_dotenv(find_dotenv())
 # OAuth 2 client setup
 client = WebApplicationClient(os.environ.get("GOOGLE_CLIENT_ID", None))
 
+os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+
 login_manager = LoginManager()
 login_manager.init_app(app)
 
@@ -112,7 +114,7 @@ def login():
     # scopes that let you retrieve user's profile from Google
     request_uri = client.prepare_request_uri(
         authorization_endpoint,
-        redirect_uri=requests.base_url + "/callback",
+        redirect_uri=flask.request.base_url + "/callback",
         scope=["openid", "email", "profile"],
     )
     return flask.redirect(request_uri)
@@ -121,21 +123,21 @@ def login():
 @app.route("/login/callback")
 def callback():
     # Get authorization code Google sent back to you
-    code = requests.args.get("code")
+    code = flask.request.args.get("code")
     google_provider_cfg = get_google_provider_cfg()
     token_endpoint = google_provider_cfg["token_endpoint"]
     # Prepare and send a request to get tokens! Yay tokens!
     token_url, headers, body = client.prepare_token_request(
         token_endpoint,
-        authorization_response=requests.url,
-        redirect_url=requests.base_url,
+        authorization_response=flask.request.url,
+        redirect_url=flask.request.base_url,
         code=code,
     )
     token_response = requests.post(
         token_url,
         headers=headers,
         data=body,
-        auth=(os.getenv(GOOGLE_CLIENT_ID), os.getenv(GOOGLE_CLIENT_SECRET)),
+        auth=(os.getenv("GOOGLE_CLIENT_ID"), os.getenv("GOOGLE_CLIENT_SECRET")),
     )
     # Parse the tokens!
     client.parse_request_body_response(json.dumps(token_response.json()))
@@ -162,6 +164,8 @@ def callback():
     # Doesn't exist? Add it to the database.
     if not User.query.filter_by(id=unique_id).first():
         db.session.add(user)
+        return flask.redirect(flask.url_for(#pathing redirect for onboarding page
+        ))
 
     # Begin user session by logging the user in
     login_user(user)
@@ -169,10 +173,7 @@ def callback():
     # Send user back to homepage
     return flask.redirect(flask.url_for("bp.index"))
 
-@app.route("/login", methods=["POST"])
-def login_post():
-    ...
-    
+
 @app.route("/logout")
 @login_required
 def logout():
@@ -180,8 +181,7 @@ def logout():
     return flask.redirect(flask.url_for("bp.index"))
 
 
-
-@app.route("/search", methods = "POST")
+@app.route("/search", methods = ["POST"])
 @login_required
 def discover_post():
     rest_name = flask.request.get("resturant_name")
@@ -242,6 +242,30 @@ def deleteFollower():
     else:
         return flask.jsonify({"status": 400, "message": "You are not friends with this person. Please try again to friend this user."})
 
+app.route("/getPostsByUser", methods = ["GET"])
+def getPostsByUser():
+    posts = UserPost.query.filter_by(user_id = current_user.username).all()
+    postsData = []
+    for post in posts:
+        postComments = PostComments.query.filter_by(post_id=post.id)
+        postCommentsList = []
+        for comment in postComments:
+            commentData = {
+                "AuthorID": comment.AuthorID,
+                "postText": comment.postText,
+            }
+            postCommentsList.append(commentData)
+        singlepostData = {
+            "AuthorID": posts.AuthorID,
+            "postText": posts.postText,
+            "postTitle": posts.postTitle,
+            "postLikes": posts.postLikes,
+            "RestaurantName": posts.RestaurantName,
+            "comments": postCommentsList,
+        }
+        postsData.append(singlepostData)
+    return flask.render_template("", postsData = postsData)
+
 @app.route("/")
 def main():
     if current_user.is_authenticated:
@@ -257,4 +281,4 @@ def main():
         return '<a class="button" href="/login">Google Login</a>'
 
 if __name__ == "__main__":
-    app.run(host=os.getenv("IP", "0.0.0.0"), port=int(os.getenv("PORT", 8081)), debug=True)
+    app.run(host=os.getenv("IP", "127.0.0.1"), port=int(os.getenv("PORT", 5000)), debug=True)
