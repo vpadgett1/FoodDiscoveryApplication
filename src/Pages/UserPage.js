@@ -3,7 +3,7 @@ import React, {
   useState,
   useEffect,
 } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 // import PropTypes from 'prop-types';
 import Navigation from '../Components/Navigation';
 import CatPfp from '../assets/CatProfilePic.png';
@@ -18,6 +18,19 @@ const UserPage = () => {
       RestaurantID: 'id',
     },
   ]);
+
+  function test() {
+    const location = useLocation();
+    const { userId } = location.state;
+
+    if (location && userId) {
+      console.log(userId);
+    } else {
+      console.log('error');
+    }
+  }
+
+  test();
 
   // deconstruct props
   // const [props] = props;
@@ -65,20 +78,45 @@ const UserPage = () => {
     );
   }
 
-  const onClickAddFriendButton = () => {
+  const onClickAddFriendButton = async () => {
     // get the button
     const addFriendButton = document.getElementById('addFriendButton');
     // remove friend, otherwise add friend
     if (isFriend) {
+      // disable button from being pressed while writing to the database
+
+      // remove new relationship to the database
+      /* await fetch('\\deleteFollower')
+        .then((response) => response.json())
+        .then((data) => {
+          console.log(data);
+          // make button usable again
+          addFriendButton.innerHTML = 'Add Friend';
+          setIsFriend(false);
+        }).catch((error) => console.log(error)); */
+
+      // make button usable again - remove these two lines when fetch is implemented
       addFriendButton.innerHTML = 'Add Friend';
       setIsFriend(false);
     } else {
+      // disable button from being pressed while writing to the database
+
+      // add new relationship to the database
+      /* await fetch('\\addFollower')
+        .then((response) => response.json())
+        .then((data) => {
+          console.log(data);
+          // make button usable again
+          addFriendButton.innerHTML = 'Remove Friend';
+          setIsFriend(true);
+        }).catch((error) => console.log(error)); */
+
+      // make button usable again - remove these two lines when fetch is implemented
       addFriendButton.innerHTML = 'Remove Friend';
       setIsFriend(true);
     }
   };
 
-  // TODO: Render component
   return (
     <>
       <Navigation />
