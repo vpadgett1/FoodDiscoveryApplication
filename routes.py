@@ -4,7 +4,7 @@
 # pylint: disable=R0903
 # pylint: disable=W0603
 from app import app, db
-from models import User, FavoriteRestraunts, Friends, UserPost, PostComments
+from models import user, favorite_restraunts, friends, user_post, post_comments
 import flask
 from flask_login import (
     LoginManager,
@@ -41,7 +41,6 @@ def load_user(user_id):
 def timeConvert(miliTime):
     miliTime = int(miliTime)
     hours = miliTime / 100
-    print(hours)
     minutes = 00
     setting = "AM"
     if hours > 12:
@@ -74,7 +73,7 @@ def profile():
     UserPosts = current_user.UserPost
     UserPostsList = []
     for x in range(len(UserPosts)):
-        postComments = PostComments.query.filter_by(post_id=UserPosts[x].id)
+        postComments = post_comments.query.filter_by(post_id=UserPosts[x].id)
         postCommentsList = []
         for y in range(len(postComments)):
             commentData = {
@@ -151,7 +150,7 @@ def callback():
     # The user authenticated with Google, authorized your
     # app, and now you've verified their email through Google!
     if userinfo_response.json().get("email_verified"):
-        unique_id = userinfo_response.json()["sub"]
+        #unique_id = userinfo_response.json()["sub"]
         users_email = userinfo_response.json()["email"]
         picture = userinfo_response.json()["picture"]
         users_name = userinfo_response.json()["given_name"]
@@ -159,16 +158,16 @@ def callback():
         return "User email not available or not verified by Google.", 400
     # Create a user in your db with the information provided
     # by Google
-    user = User(id=unique_id, name=users_name, email=users_email, profile_pic=picture)
+    newUser = user(username=users_name, email=users_email, profile_pic=picture)
     
     # Doesn't exist? Add it to the database.
-    if not User.query.filter_by(id=unique_id).first():
-        db.session.add(user)
-        return flask.redirect(flask.url_for(#pathing redirect for onboarding page
-        ))
+    if not user.query.filter_by(username=users_name).first():
+        db.session.add(newUser)
+        #return flask.redirect(flask.url_for(#pathing redirect for onboarding page
+        #))
 
     # Begin user session by logging the user in
-    login_user(user)
+    login_user(newUser)
 
     # Send user back to homepage
     return flask.redirect(flask.url_for("bp.index"))
@@ -199,7 +198,7 @@ def discover_post():
             'image' : yelp_results['pictures'][x]
         }
         resturant_data.append(rest_info)
-    #data = json.dumps(DATA)
+    #return flask.render_template("", resturant_data = resturant_data)
     return flask.jsonify(resturant_data)
 
 @app.route("/addFollower", methods = ["POST"])
@@ -208,9 +207,9 @@ def addFollower():
     #recieved follower_id
     follower_id = flask.request.json.get("follower_id")
     #query to verify they are not already following
-    following_check = Friends.query.filter_by(user_id = current_user.username, FriendID = follower_id).all()
+    following_check = friends.query.filter_by(user_id = current_user.username, FriendID = follower_id).all()
     if not following_check: 
-        friend_request = Friends(user_id = current_user.username, FriendID=follower_id)
+        friend_request = friends(user_id = current_user.username, FriendID=follower_id)
         db.session.add(friend_request)
         try:
             db.session.commit()
@@ -226,11 +225,11 @@ def addFollower():
 @login_required
 def deleteFollower():
     follower_id = flask.request.json.get("follower_id")
-    currentDB = Friends.query.filter_by(user_id=current_user.username).all()
+    currentDB = friends.query.filter_by(user_id=current_user.username).all()
     extraVal = list((set(currentDB)-set(follower_id)))[0]
     if extraVal:
-        removeFollower = Friends.query.filter(
-            (Friends.user_id==current_user.username) & (Friends.FriendID==extraVal.follower_id)).first()
+        removeFollower = friends.query.filter(
+            (friends.user_id==current_user.username) & (friends.FriendID==extraVal.follower_id)).first()
         db.session.delete(removeFollower)
         try:
             db.session.commit()
@@ -244,10 +243,10 @@ def deleteFollower():
 
 app.route("/getPostsByUser", methods = ["GET"])
 def getPostsByUser():
-    posts = UserPost.query.filter_by(user_id = current_user.username).all()
+    posts = user_post.query.filter_by(user_id = current_user.username).all()
     postsData = []
     for post in posts:
-        postComments = PostComments.query.filter_by(post_id=post.id)
+        postComments = post_comments.query.filter_by(post_id=post.id)
         postCommentsList = []
         for comment in postComments:
             commentData = {
