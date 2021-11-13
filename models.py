@@ -19,6 +19,12 @@ class user(UserMixin, db.Model):
     friends = db.relationship("friends", backref="user", lazy=True)
     posts = db.relationship("user_post", backref="user", lazy=True)
 
+    def __repr__(self):
+        return f"<User {self.username}>"
+
+    def get_username(self):
+        return self.username
+
 
 class favorite_restraunts(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)

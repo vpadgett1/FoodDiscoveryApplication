@@ -31,12 +31,13 @@ client = WebApplicationClient(os.environ.get("GOOGLE_CLIENT_ID", None))
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
 login_manager = LoginManager()
+login_manager.login_view = "login"
 login_manager.init_app(app)
 
-# Flask-Login helper to retrieve a user from our db
+
 @login_manager.user_loader
-def load_user(user_id):
-    return User.get(user_id)
+def load_user(user_name):
+    return user.query.get(user_name)
 
 def timeConvert(miliTime):
     miliTime = int(miliTime)
@@ -154,6 +155,8 @@ def callback():
         users_email = userinfo_response.json()["email"]
         picture = userinfo_response.json()["picture"]
         users_name = userinfo_response.json()["given_name"]
+        print(users_email)
+        print(users_name)
     else:
         return "User email not available or not verified by Google.", 400
     # Create a user in your db with the information provided
@@ -170,8 +173,17 @@ def callback():
     login_user(newUser)
 
     # Send user back to homepage
-    return flask.redirect(flask.url_for("bp.index"))
+    return flask.redirect(flask.url_for("testing_login"))
 
+@app.route("/testing_login")
+def testing_login():
+    return (
+            "<p>Hello, {}! You're logged in! Email: {}</p>"
+            "<div><p>Google Profile Picture:</p>"
+            '<img src="{}" alt="Google profile pic"></img></div>'
+            '<a class="button" href="/logout">Logout</a>'.format(
+                current_user.name, current_user.email, current_user.profile_pic
+            ))
 
 @app.route("/logout")
 @login_required
