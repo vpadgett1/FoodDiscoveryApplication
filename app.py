@@ -1,3 +1,8 @@
+# pylint: disable=E1101
+# pylint: disable=C0413
+# pylint: disable=W1508
+# pylint: disable=R0903
+# pylint: disable=W0603
 import flask
 import os
 from flask_sqlalchemy import SQLAlchemy
