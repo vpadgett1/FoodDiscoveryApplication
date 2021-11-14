@@ -24,11 +24,12 @@ from dotenv import load_dotenv, find_dotenv
 from yelpInfo import *
 
 load_dotenv(find_dotenv())
+os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
 # OAuth 2 client setup
 client = WebApplicationClient(os.environ.get("GOOGLE_CLIENT_ID", None))
 
-os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
 login_manager = LoginManager()
 login_manager.login_view = "login"
@@ -39,6 +40,7 @@ login_manager.init_app(app)
 def load_user(user_name):
     return user.query.get(user_name)
 
+
 def timeConvert(miliTime):
     miliTime = int(miliTime)
     hours = miliTime / 100
@@ -47,9 +49,11 @@ def timeConvert(miliTime):
     if hours > 12:
         setting = "PM"
         hours -= 12
-    return(("%d:%02d" + setting) % (hours, minutes))
+    return ("%d:%02d" + setting) % (hours, minutes)
+
 
 bp = flask.Blueprint("bp", __name__, template_folder="./build")
+
 
 @bp.route("/profile")
 @login_required
@@ -104,6 +108,7 @@ def profile():
 
 app.register_blueprint(bp)
 
+
 @app.route("/login")
 def login():
     # Find out what URL to hit for Google login
@@ -126,7 +131,7 @@ def callback():
     code = flask.request.args.get("code")
     google_provider_cfg = get_google_provider_cfg()
     token_endpoint = google_provider_cfg["token_endpoint"]
-    # Prepare and send a request to get tokens! Yay tokens!
+    # Prepare and send a request to get tokens!
     token_url, headers, body = client.prepare_token_request(
         token_endpoint,
         authorization_response=flask.request.url,
@@ -139,7 +144,6 @@ def callback():
         data=body,
         auth=(os.getenv("GOOGLE_CLIENT_ID"), os.getenv("GOOGLE_CLIENT_SECRET")),
     )
-    # Parse the tokens!
     client.parse_request_body_response(json.dumps(token_response.json()))
     # Now that you have tokens (yay) let's find and hit the URL
     # from Google that gives you the user's profile information,
@@ -151,111 +155,131 @@ def callback():
     # The user authenticated with Google, authorized your
     # app, and now you've verified their email through Google!
     if userinfo_response.json().get("email_verified"):
-        #unique_id = userinfo_response.json()["sub"]
         users_email = userinfo_response.json()["email"]
         picture = userinfo_response.json()["picture"]
         users_name = userinfo_response.json()["given_name"]
-        print(users_email)
-        print(users_name)
     else:
         return "User email not available or not verified by Google.", 400
-    # Create a user in your db with the information provided
-    # by Google
+    # Create a user in your db with the information provided by Google
     newUser = user(username=users_name, email=users_email, profile_pic=picture)
-    
+
     # Doesn't exist? Add it to the database.
     if not user.query.filter_by(username=users_name).first():
         db.session.add(newUser)
-        #return flask.redirect(flask.url_for(#pathing redirect for onboarding page
-        #))
+        db.session.commit()
+        return flask.redirect(flask.url_for("index.html"))
 
-    # Begin user session by logging the user in
-    login_user(newUser)
+    login_user(user.query.filter_by(username=users_name).first())
 
     # Send user back to homepage
-    return flask.redirect(flask.url_for("testing_login"))
+    return flask.redirect(flask.url_for("index.html"))
 
-@app.route("/testing_login")
-def testing_login():
-    return (
-            "<p>Hello, {}! You're logged in! Email: {}</p>"
-            "<div><p>Google Profile Picture:</p>"
-            '<img src="{}" alt="Google profile pic"></img></div>'
-            '<a class="button" href="/logout">Logout</a>'.format(
-                current_user.name, current_user.email, current_user.profile_pic
-            ))
 
 @app.route("/logout")
 @login_required
 def logout():
     logout_user()
-    return flask.redirect(flask.url_for("bp.index"))
+    return flask.redirect(flask.url_for("index.html"))
 
 
-@app.route("/search", methods = ["POST"])
+@app.route("/search", methods=["POST"])
 @login_required
 def discover_post():
     rest_name = flask.request.get("resturant_name")
     yelp_results = query_resturants(rest_name, current_user.zipCode)
     resturant_data = []
-    for x in range(len(yelp_results["names"])): 
+    for x in range(len(yelp_results["names"])):
         rest_info = {
-            'name' : yelp_results["names"][x], 
-            'location' : yelp_results["locations"][x],
-            'opening' : timeConvert(yelp_results["hours"][x][0]), 
-            'closing': timeConvert(yelp_results["hours"][x][1]),
-            'phone_number' : yelp_results["phone_numbers"][x],
-            'rating' : yelp_results['ratingsgit '][x],
-            'categories' : yelp_results['resturant_type_categories'][x][0]["title"],
-            'image' : yelp_results['pictures'][x]
+            "name": yelp_results["names"][x],
+            "location": yelp_results["locations"][x],
+            "opening": timeConvert(yelp_results["hours"][x][0]),
+            "closing": timeConvert(yelp_results["hours"][x][1]),
+            "phone_number": yelp_results["phone_numbers"][x],
+            "rating": yelp_results["ratingsgit "][x],
+            "categories": yelp_results["resturant_type_categories"][x][0]["title"],
+            "image": yelp_results["pictures"][x],
         }
         resturant_data.append(rest_info)
-    #return flask.render_template("", resturant_data = resturant_data)
+    # return flask.render_template("", resturant_data = resturant_data)
     return flask.jsonify(resturant_data)
 
-@app.route("/addFollower", methods = ["POST"])
+
+@app.route("/addFollower", methods=["POST"])
 @login_required
 def addFollower():
-    #recieved follower_id
+    # recieved follower_id
     follower_id = flask.request.json.get("follower_id")
-    #query to verify they are not already following
-    following_check = friends.query.filter_by(user_id = current_user.username, FriendID = follower_id).all()
-    if not following_check: 
-        friend_request = friends(user_id = current_user.username, FriendID=follower_id)
+    # query to verify they are not already following
+    following_check = friends.query.filter_by(
+        user_id=current_user.username, FriendID=follower_id
+    ).all()
+    if not following_check:
+        friend_request = friends(user_id=current_user.username, FriendID=follower_id)
         db.session.add(friend_request)
         try:
             db.session.commit()
-            return flask.jsonify({"status": 200, "message": "You have successfully followed this person."})
+            return flask.jsonify(
+                {
+                    "status": 200,
+                    "message": "You have successfully followed this person.",
+                }
+            )
         except Exception as e:
             db.session.rollback()
             db.session.flush()
-            return flask.jsonify({"status": 400, "message": "Failed to commit friend request to the database. Please Try again."})
+            return flask.jsonify(
+                {
+                    "status": 400,
+                    "message": "Failed to commit friend request to the database. Please Try again.",
+                }
+            )
     else:
-        return flask.jsonify({"status": 400, "message": "You are already friends with this person"})
+        return flask.jsonify(
+            {"status": 400, "message": "You are already friends with this person"}
+        )
 
-@app.route("/deleteFollower", methods = ["POST"])
+
+@app.route("/deleteFollower", methods=["POST"])
 @login_required
 def deleteFollower():
     follower_id = flask.request.json.get("follower_id")
     currentDB = friends.query.filter_by(user_id=current_user.username).all()
-    extraVal = list((set(currentDB)-set(follower_id)))[0]
+    extraVal = list((set(currentDB) - set(follower_id)))[0]
     if extraVal:
         removeFollower = friends.query.filter(
-            (friends.user_id==current_user.username) & (friends.FriendID==extraVal.follower_id)).first()
+            (friends.user_id == current_user.username)
+            & (friends.FriendID == extraVal.follower_id)
+        ).first()
         db.session.delete(removeFollower)
         try:
             db.session.commit()
-            return flask.jsonify({"status": 200, "message": "You have successfully unfollowed this user."})
+            return flask.jsonify(
+                {
+                    "status": 200,
+                    "message": "You have successfully unfollowed this user.",
+                }
+            )
         except Exception as e:
             db.session.rollback()
             db.session.flush()
-            return flask.jsonify({"status": 400, "message": "Failed to commit unfriend request to the database. Please Try again."})
+            return flask.jsonify(
+                {
+                    "status": 400,
+                    "message": "Failed to commit unfriend request to the database. Please Try again.",
+                }
+            )
     else:
-        return flask.jsonify({"status": 400, "message": "You are not friends with this person. Please try again to friend this user."})
+        return flask.jsonify(
+            {
+                "status": 400,
+                "message": "You are not friends with this person. Please try again to friend this user.",
+            }
+        )
 
-app.route("/getPostsByUser", methods = ["GET"])
+
+app.route("/getPostsByUser", methods=["GET"])
 def getPostsByUser():
-    posts = user_post.query.filter_by(user_id = current_user.username).all()
+    posts = user_post.query.filter_by(user_id=current_user.username).all()
     postsData = []
     for post in posts:
         postComments = post_comments.query.filter_by(post_id=post.id)
@@ -275,21 +299,18 @@ def getPostsByUser():
             "comments": postCommentsList,
         }
         postsData.append(singlepostData)
-    return flask.render_template("", postsData = postsData)
+    return flask.render_template("index.html", postsData=postsData)
+
 
 @app.route("/")
 def main():
     if current_user.is_authenticated:
-        return (
-            "<p>Hello, {}! You're logged in! Email: {}</p>"
-            "<div><p>Google Profile Picture:</p>"
-            '<img src="{}" alt="Google profile pic"></img></div>'
-            '<a class="button" href="/logout">Logout</a>'.format(
-                current_user.name, current_user.email, current_user.profile_pic
-            )
-        )
+        return (flask.redirect(flask.url_for("index.html")))
     else:
-        return '<a class="button" href="/login">Google Login</a>'
+        return (flask.redirect(flask.url_for("index.html")))
+
 
 if __name__ == "__main__":
-    app.run(host=os.getenv("IP", "127.0.0.1"), port=int(os.getenv("PORT", 5000)), debug=True)
+    app.run(
+        host=os.getenv("IP", "127.0.0.1"), port=int(os.getenv("PORT", 5000)), debug=True
+    )
