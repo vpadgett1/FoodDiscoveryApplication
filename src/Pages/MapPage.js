@@ -34,4 +34,6 @@ MapPage.propTypes = {
 
 };
 
+
+
 export default MapPage;

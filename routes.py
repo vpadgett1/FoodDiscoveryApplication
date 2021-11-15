@@ -17,11 +17,10 @@ import os
 import json
 import requests
 from oauthlib.oauth2 import WebApplicationClient
-from yelpInfo import query_api, query_resturants
 from googleauth import get_google_provider_cfg
 from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv, find_dotenv
-from yelpInfo import *
+from yelpInfo import query_resturants, query_one_resturant, query_api
 
 load_dotenv(find_dotenv())
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
@@ -105,9 +104,53 @@ def profile():
         }
     )
 
+@bp.route('/zipcode', methods=['GET','POST']) 
+def zipcode():
+    if flask.request.method == 'POST':
+        yelp_api_key = os.getenv("YELP_APIKEY")
+        business_search_url = "https://api.yelp.com/v3/businesses/search"
+        newheaders = {'Authorization': 'bearer %s' % yelp_api_key}
+        zip_code = current_user.zipcode
+        search_params = {'term':'restaurants',
+                        'location':zip_code,
+                        'limit':25
+        }
+        restaurant_search_response = requests.get(business_search_url, headers = newheaders, params = search_params)
+        restaurant_search_response_data = restaurant_search_response.json()
+        businesses =  restaurant_search_response_data["businesses"]
+
+        name = []
+        img_url = []
+        rating = []
+        is_closed = []
+        url = []
+        coord = []
+        id = []
+        
+        for business in businesses:
+            name.append(business["name"])
+            img_url.append(business["image_url"])
+            rating.append(business["rating"])
+            is_closed.append(business["is_closed"])
+            url.append(business["url"])
+            coord.append(business["coordinates"])
+            id.append(business["id"])
+
+        DATA ={
+            "names":name,
+            "img_urls":img_url,
+            "ratings":rating,
+            "is_closeds":is_closed,
+            "urls":url,
+            "coords":coord,
+            "ids":id,
+        }
+
+        return flask.jsonify({"data":DATA})       
+    else:
+        return flask.render_template("index.html")
 
 app.register_blueprint(bp)
-
 
 @app.route("/login")
 def login():
@@ -174,10 +217,24 @@ def logout():
     logout_user()
     return flask.redirect(flask.url_for("index.html"))
 
+@app.route("/post", methods=["POST","GET"])
+def post():
+    if flask.request.method == 'POST':
+        postInput = flask.request.json.get("get_user_post") 
+        post = user_post(postText = postInput)
+        db.session.add(post)
+        db.session.commit()
+        
+    else:
+        user_posts = user_post.postText.query.all()
+        post_list = []
+        for posts in user_posts:
+            post_list.append(posts.postText)
+        return flask.jsonify({"data":post_list})
 
 @app.route("/search", methods=["POST"])
 @login_required
-def discover_post():
+def search_post():
     rest_name = flask.request.get("resturant_name")
     yelp_results = query_resturants(rest_name, current_user.zipCode)
     resturant_data = []
