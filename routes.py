@@ -127,11 +127,9 @@ def login():
 
 @app.route("/login/callback")
 def callback():
-    # Get authorization code Google sent back to you
     code = flask.request.args.get("code")
     google_provider_cfg = get_google_provider_cfg()
     token_endpoint = google_provider_cfg["token_endpoint"]
-    # Prepare and send a request to get tokens!
     token_url, headers, body = client.prepare_token_request(
         token_endpoint,
         authorization_response=flask.request.url,
@@ -145,33 +143,28 @@ def callback():
         auth=(os.getenv("GOOGLE_CLIENT_ID"), os.getenv("GOOGLE_CLIENT_SECRET")),
     )
     client.parse_request_body_response(json.dumps(token_response.json()))
-    # Now that you have tokens (yay) let's find and hit the URL
-    # from Google that gives you the user's profile information,
-    # including their Google profile image and email
     userinfo_endpoint = google_provider_cfg["userinfo_endpoint"]
     uri, headers, body = client.add_token(userinfo_endpoint)
     userinfo_response = requests.get(uri, headers=headers, data=body)
-    # You want to make sure their email is verified.
-    # The user authenticated with Google, authorized your
-    # app, and now you've verified their email through Google!
     if userinfo_response.json().get("email_verified"):
         users_email = userinfo_response.json()["email"]
         picture = userinfo_response.json()["picture"]
         users_name = userinfo_response.json()["given_name"]
     else:
         return "User email not available or not verified by Google.", 400
-    # Create a user in your db with the information provided by Google
+    # Create a user in our database with the information provided by the Google response json
     newUser = user(username=users_name, email=users_email, profile_pic=picture)
 
-    # Doesn't exist? Add it to the database.
+    # User does not already exist? Add them to the database.
     if not user.query.filter_by(username=users_name).first():
         db.session.add(newUser)
         db.session.commit()
+        #send user to the onboarding page to fill out more information
         return flask.redirect(flask.url_for("index.html"))
-
+    #login the user so they can remain logged in unless logged out
     login_user(user.query.filter_by(username=users_name).first())
 
-    # Send user back to homepage
+    # Send user to the discovery page
     return flask.redirect(flask.url_for("index.html"))
 
 
