@@ -15,7 +15,21 @@ const DiscoverPage = () => {
     content: '',
     id: '',
   }]);
-
+  
+  const addItem = (type, content) => {
+    setItems((state) => [...state, { type, content, id: '' }]);
+  };
+  // It will always update the page to be the most recent state
+  const updateItem = (id, newContent) => { // takes in id of item updating and the new content
+    setItems((state) => {
+      // gets correct item by using id to retrieve index
+      const itemIndex = state.findIndex((item) => item.id === id);
+      const newState = [...state]; // uses array spread to create old state in an immutable way
+      newState[itemIndex].content = newContent; // updates the content of entry by using index
+      return newState;// return new array
+    });
+  };
+  
   // deconstruct props
   // const [props] = props;
 
