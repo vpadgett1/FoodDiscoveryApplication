@@ -15,7 +15,7 @@ const DiscoverPage = () => {
     content: '',
     id: '',
   }]);
-  
+
   const addItem = (type, content) => {
     setItems((state) => [...state, { type, content, id: '' }]);
   };
@@ -44,7 +44,6 @@ const DiscoverPage = () => {
     <>
       <Navigation />
       <div>This is the discover page</div>
-   
       <div className = "post">
       <h3> Username </h3>
       <div className = "postTitle">
