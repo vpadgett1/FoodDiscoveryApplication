@@ -22,12 +22,12 @@ const Navigation = () => {
 
   // TODO: Render component
   return (
-    <>
+    <div className="navigation">
       <Link to="/discover">Discover</Link>
       <Link to="/search">Search</Link>
       <Link to="/map">Map</Link>
       <Link to="/profile">Profile</Link>
-    </>
+    </div>
   );
 };
 
