@@ -3,6 +3,9 @@
 # pylint: disable=W1508
 # pylint: disable=R0903
 # pylint: disable=W0603
+from typing import NewType
+
+from requests.api import post
 from app import app, db
 from models import user, favorite_restraunts, friends, user_post, post_comments
 import flask
@@ -225,6 +228,48 @@ def createAccount():
             == zipcode
         ):
             status = "success"
+    return flask.jsonify(status)
+
+
+@app.route("/createPost", methods=["POST"])
+@login_required
+def createPost():
+    AuthorID = flask.request.get("AuthorID")
+    postText = flask.request.get("postText")
+    postTitle = flask.request.get("postTitle")
+    RestaurantName = flask.request.get("RestaurantName")
+    newUserPost = user_post(
+        AuthorID=AuthorID,
+        postText=postText,
+        postTitle=postTitle,
+        RestaurantName=RestaurantName,
+        postLikes=0,
+        user_id=current_user.id,
+    )
+    db.session.add(newUserPost)
+    db.session.commit()
+
+    status = "failed"
+    if user_post.query.filter_by(postTitle=postTitle, AuthorID=AuthorID).first():
+        status = "success"
+    return flask.jsonify(status)
+
+
+@app.route("/createComment", methods=["POST"])
+@login_required
+def createComment():
+    AuthorID = flask.request.get("AuthorID")
+    postText = flask.request.get("postText")
+    post_id = flask.request.get("post_id")
+    newUserComment = post_comments(
+        AuthorID=AuthorID, postText=postText, post_id=post_id
+    )
+    db.session.add(newUserComment)
+    db.session.commit()
+
+    status = "failed"
+    if post_comments.query.filter_by(AuthorID=AuthorID, post_id=post_id).first():
+        status = "success"
     return flask.jsonify(status)
 
 

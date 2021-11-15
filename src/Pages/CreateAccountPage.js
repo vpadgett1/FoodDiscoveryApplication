@@ -22,8 +22,7 @@ const CreateAccountPage = () => {
   // TODO: Render component
   return (
     <>
-      <Link to="/onboarding">Regular User</Link>
-      <Link to="/merchant">Merchant User</Link>
+      <Link to="/onboarding">Create Account</Link>
       <div>This is the create account page</div>
     </>
   );
