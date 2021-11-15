@@ -201,6 +201,33 @@ def logout():
     return flask.redirect(flask.url_for("bp.index"))
 
 
+@app.route("/createAccount", methods=["POST"])
+@login_required
+def createAccount():
+    zipcode = flask.request.get("zipcode")
+    current_user.zipCode = zipcode
+    db.session.commit()
+    yelpID = flask.request.get("yelpID")
+    if yelpID:
+        current_user.yelpRestaurantID = yelpID
+        db.session.commit()
+
+    status = "failed"
+    if user.query.filter_by(
+        username=current_user.username, email=current_user.email
+    ).first():
+        if (
+            user.query.filter_by(
+                username=current_user.username, email=current_user.email
+            )
+            .first()
+            .zipCode
+            == zipcode
+        ):
+            status = "success"
+    return flask.jsonify(status)
+
+
 @app.route("/search", methods=["POST"])
 @login_required
 def discover_post():
