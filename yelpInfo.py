@@ -173,6 +173,35 @@ def query_one_resturant(term, location):
     # print(DATA)
     return DATA
 
+def query_one_resturant(yelp_id):
+    """Queries the API by the input values from the user.
+    Args:
+        term (str): The search term to query.
+        location (str): The location of the business to query.
+    """
+    if not yelp_id:
+        return None
+    response = get_business(API_KEY, yelp_id)
+    names = response["name"]
+    location = response["location"]
+    openhours = response["hours"]
+    openinghour = openhours[0]["open"][0]["start"]
+    closinghour = openhours[0]["open"][0]["end"]
+    phone_numbers = response["display_phone"]
+    rating = response["rating"]
+    resturant_type_categories = response["categories"]
+    pictures = response["image_url"]
+
+    DATA = {
+        'names' : names,
+        'locations': location,
+        'hours': [openinghour, closinghour],
+        'phone_numbers': phone_numbers,
+        'ratings' : rating,
+        'resturant_type_categories' : resturant_type_categories,
+        'pictures' : pictures
+    }
+    return DATA
 
 # a fucntion to query specific data from the resturants that we queery from instead of just the information from one specific resturant based on the query.
 def query_resturants(term, location, limit):

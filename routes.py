@@ -474,6 +474,98 @@ def deleteFollower():
             "message": "You are not friends with this person. Please try again to friend this user.",
         }
 
+@app.route("/addFavoriteRestaurant", methods=["POST"])
+@login_required
+def addFavoriteRestaurant():
+    # recieved follower_id
+    yelp_restaurant_id = flask.request.json.get("yelp_restaurant_id")
+    # query to verify they are not already following
+    following_check = favorite_restraunts.query.filter_by(
+        user_id=current_user.username, RestaurantName=yelp_restaurant_id
+    ).all()
+    if not following_check:
+        follow_request = favorite_restraunts(user_id=current_user.username, RestaurantName=yelp_restaurant_id)
+        db.session.add(follow_request)
+        try:
+            db.session.commit()
+            return flask.jsonify(
+                {
+                    "status": 200,
+                    "message": "You have successfully added this restaurant to your favorites.",
+                }
+            )
+        except Exception as e:
+            db.session.rollback()
+            db.session.flush()
+            return flask.jsonify(
+                {
+                    "status": 400,
+                    "message": "Failed to commit favorite restaurant request to the database. Please Try again.",
+                }
+            )
+    else:
+        return flask.jsonify(
+            {
+                "status": 400,
+                "message": "You have already favorited this restaurant. Please try again to remove this restaurant from your favorites.",
+            }
+        )
+
+@app.route("/deleteFavoriteRestaurant", methods=["POST"])
+@login_required
+def deleteFavoriteRestaurant():
+    yelp_restaurant_id = flask.request.json.get("yelp_restaurant_id")
+    currentDB = favorite_restraunts.query.filter_by(user_id=current_user.username).all()
+    extraVal = list((set(currentDB) - set(yelp_restaurant_id)))[0]
+    if extraVal:
+        removeFollower = friends.query.filter(
+            (favorite_restraunts.user_id == current_user.username)
+            & (favorite_restraunts.RestaurantName == extraVal.yelp_restaurant_id)
+        ).first()
+        db.session.delete(removeFollower)
+        try:
+            db.session.commit()
+            return flask.jsonify(
+                {
+                    "status": 200,
+                    "message": "You have successfully removed this restaurant from your favorites.",
+                }
+            )
+        except Exception as e:
+            db.session.rollback()
+            db.session.flush()
+            return flask.jsonify(
+                {
+                    "status": 400,
+                    "message": "Failed to commit unfavorite restaurant request to the database. Please Try again.",
+                }
+            )
+    else:
+        return flask.jsonify(
+            {
+                "status": 400,
+                "message": "You have not favorited this restaurant. Please try again to add this restaurant to your favorites.",
+            }
+        )
+
+app.route("/getRestaurantData", methods = ["GET"])
+def getRestaurantData():
+    restaurant_id = current_user.yelpRestaurantID
+    store_data = query_one_resturant(restaurant_id)
+    if not store_data:
+        return flask.jsonify(
+            {
+                "status": 400,
+                "message": "Could not find data for this restaurant.",
+            }
+        )
+    return flask.jsonify(
+                {
+                    "status": 200,
+                    "message": "Retrieved restaurant data.",
+                    "data" : store_data
+                }
+            )
 
 app.route("/getPostsByUser", methods=["GET"])
 
