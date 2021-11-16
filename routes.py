@@ -196,6 +196,59 @@ def testing_login():
         )
     )
 
+@app.route('/map', methods=['GET','POST']) 
+def map():
+
+    if flask.request.method == 'POST':
+            
+        zip_code = flask.request.json.get("zipcode")
+        print(zip_code)
+        search_limit = 13
+        # search_params = {'term':'restaurants',
+        #                 'location':zip_code,
+        #                 'limit':25
+        # }
+        # restaurant_search_response = requests.get(business_search_url, headers = newheaders, params = search_params)
+        restaurant_results = query_resturants('restaurant', zip_code, search_limit)
+        print(restaurant_results)
+
+        name = []
+        img_url = []
+        rating = []
+        is_closed = []
+        url = []
+        coord = []
+        id = []
+        for x in range(len(restaurant_results["names"])): 
+            rest_info = {
+                'name' : restaurant_results["names"][x], 
+                'location' : restaurant_results["locations"][x],
+                'coordinates':restaurant_results["coordinates"][x],
+                'opening' : timeConvert(restaurant_results["hours"][x][0]), 
+                'closing': timeConvert(restaurant_results["hours"][x][1]),
+                'phone_number' : restaurant_results["phone_numbers"][x],
+                'rating' : restaurant_results['ratings'][x],
+                'categories' : restaurant_results['resturant_type_categories'][x][0]["title"],
+                'image' : restaurant_results['pictures'][x]
+              }
+            name.append(rest_info["name"])
+            img_url.append(rest_info["image"])
+            rating.append(rest_info["rating"])
+            coord.append(rest_info["coordinates"])
+
+      
+        DATA ={
+            "names":name,
+            "img_urls":img_url,
+            "ratings":rating,
+            "coords":coord,
+        }
+
+
+        return flask.jsonify({"data":DATA})
+        
+    else:
+        return flask.render_template("index.html")
 
 @app.route("/logout")
 @login_required
@@ -277,7 +330,8 @@ def createComment():
 @login_required
 def discover_post():
     rest_name = flask.request.get("resturant_name")
-    yelp_results = query_resturants(rest_name, current_user.zipCode)
+    result_limit = 3
+    yelp_results = query_resturants(rest_name, current_user.zipCode,result_limit)
     resturant_data = []
     for x in range(len(yelp_results["names"])):
         rest_info = {
