@@ -1,4 +1,6 @@
-# Flask and `create-react-app`
+# READ ME: Information on FoodMe, your newest food recommendations application
+## [Link to FoodMe Application](https://still-badlands-73263.herokuapp.com/)
+This web application has been created and designed to become your new home for recieving food recommendations from your friends. Here you can follow your friends and watch as they post the latest places they have ate and whether they would recommend this resturant to places or no. 
 
 ## Requirements
 

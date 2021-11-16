@@ -51,9 +51,6 @@ def request(host, path, api_key, url_params=None):
     headers = {
         "Authorization": "Bearer %s" % api_key,
     }
-  
-    print(u"Querying {0} ...".format(url))
-
     response = requests.request("GET", url, headers=headers, params=url_params)
 
     print(response)
@@ -75,6 +72,7 @@ def search(api_key, term, location):
         "limit": SEARCH_LIMIT,
     }
     return request(API_HOST, SEARCH_PATH, api_key, url_params=url_params)
+
 
 def search_withLimit(api_key, term, location, limit):
     """Query the Search API by a search term and location.
@@ -111,6 +109,8 @@ def query_api(term, location):
         term (str): The search term to query.
         location (str): The location of the business to query.
     """
+    if not term:
+        return None
     response = search(API_KEY, term, location)
 
     businesses = response.get("businesses")
@@ -121,14 +121,57 @@ def query_api(term, location):
 
     business_id = businesses[0]["id"]
 
-    print(
-        u"{0} businesses found, querying business info "
-        'for the top result "{1}" ...'.format(len(businesses), business_id)
-    )
     response = get_business(API_KEY, business_id)
+    return response["name"]
 
-    print(u'Result for business "{0}" found:'.format(business_id))
-    pprint.pprint(response, indent=2)
+
+def query_one_resturant(term, location):
+    """Queries the API by the input values from the user.
+    Args:
+        term (str): The search term to query.
+        location (str): The location of the business to query.
+    """
+    if not term:
+        return None
+    # search for resturants with the API_KEY, the term (such as Starbucks, etc.), and the users zipcode that they stored in their profile
+    response = search(API_KEY, term, location)
+    # print(response)
+    businesses = response.get("businesses")
+    # print(businesses)
+    names = []
+    locations = []
+    hours = []
+    phone_numbers = []
+    rating = []
+    resturant_type_categories = []
+    pictures = []
+    if not businesses:
+        print(u"No businesses for {0} in {1} found.".format(term, location))
+        return
+    business_id = businesses[0]["id"]
+    response = get_business(API_KEY, business_id)
+    names.append(response["name"])
+    locations.append(response["location"])
+    openhours = response["hours"]
+    openinghour = openhours[0]["open"][0]["start"]
+    closinghour = openhours[0]["open"][0]["end"]
+    hours.append([openinghour, closinghour])
+    phone_numbers.append(response["display_phone"])
+    rating.append(response["rating"])
+    resturant_type_categories.append(response["categories"])
+    pictures.append(response["image_url"])
+
+    DATA = {
+        "names": names,
+        "locations": locations,
+        "hours": hours,
+        "phone_numbers": phone_numbers,
+        "ratings": rating,
+        "resturant_type_categories": resturant_type_categories,
+        "pictures": pictures,
+    }
+    # print(DATA)
+    return DATA
 
 
 # a fucntion to query specific data from the resturants that we queery from instead of just the information from one specific resturant based on the query.
@@ -138,10 +181,11 @@ def query_resturants(term, location, limit):
         term (str): The search term to query.
         location (str): The location of the business to query.
     """
+    if not term:
+        return None
     # search for resturants with the API_KEY, the term (such as Starbucks, etc.), and the users zipcode that they stored in their profile
     response = search_withLimit(API_KEY, term, location, limit)
-
-    print(response)
+    # print(response)
     businesses = response.get("businesses")
     # print(businesses)
     names = []
@@ -188,34 +232,35 @@ def query_resturants(term, location, limit):
         "ratings": rating,
         "resturant_type_categories": resturant_type_categories,
         "pictures": pictures,
-        "coordinates":coordinates,
+        "coordinates": coordinates,
     }
     # data = json.dumps(DATA)
+    # print(DATA)
     return DATA
 
 
-def main():
-    parser = argparse.ArgumentParser()
+# def main():
+#     parser = argparse.ArgumentParser()
 
-    parser.add_argument('-q', '--term', dest='term', default=DEFAULT_TERM,
-                        type=str, help='Search term (default: %(default)s)')
-    parser.add_argument('-l', '--location', dest='location',
-                        default=DEFAULT_LOCATION, type=str,
-                        help='Search location (default: %(default)s)')
+#     parser.add_argument('-q', '--term', dest='term', default=DEFAULT_TERM,
+#                         type=str, help='Search term (default: %(default)s)')
+#     parser.add_argument('-l', '--location', dest='location',
+#                         default=DEFAULT_LOCATION, type=str,
+#                         help='Search location (default: %(default)s)')
 
-    input_values = parser.parse_args()
+#     input_values = parser.parse_args()
 
-    try:
-        query_resturants(input_values.term, input_values.location)
-    except HTTPError as error:
-        sys.exit(
-            'Encountered HTTP error {0} on {1}:\n {2}\nAbort program.'.format(
-                error.code,
-                error.url,
-                error.read(),
-            )
-        )
+#     try:
+#         query_one_resturant(input_values.term, input_values.location)
+#     except HTTPError as error:
+#         sys.exit(
+#             'Encountered HTTP error {0} on {1}:\n {2}\nAbort program.'.format(
+#                 error.code,
+#                 error.url,
+#                 error.read(),
+#             )
+#         )
 
 
-if __name__ == '__main__':
-    main()
+# if __name__ == '__main__':
+#     main()

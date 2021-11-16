@@ -20,11 +20,10 @@ import os
 import json
 import requests
 from oauthlib.oauth2 import WebApplicationClient
-from yelpInfo import query_api, query_resturants
 from googleauth import get_google_provider_cfg
 from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv, find_dotenv
-from yelpInfo import *
+from yelpInfo import query_resturants, query_one_resturant, query_api
 
 load_dotenv(find_dotenv())
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
@@ -107,6 +106,52 @@ def profile():
     }
 
 
+@bp.route("/zipcode", methods=["GET", "POST"])
+def zipcode():
+    if flask.request.method == "POST":
+        yelp_api_key = os.getenv("YELP_APIKEY")
+        business_search_url = "https://api.yelp.com/v3/businesses/search"
+        newheaders = {"Authorization": "bearer %s" % yelp_api_key}
+        zip_code = current_user.zipcode
+        search_params = {"term": "restaurants", "location": zip_code, "limit": 25}
+        restaurant_search_response = requests.get(
+            business_search_url, headers=newheaders, params=search_params
+        )
+        restaurant_search_response_data = restaurant_search_response.json()
+        businesses = restaurant_search_response_data["businesses"]
+
+        name = []
+        img_url = []
+        rating = []
+        is_closed = []
+        url = []
+        coord = []
+        id = []
+
+        for business in businesses:
+            name.append(business["name"])
+            img_url.append(business["image_url"])
+            rating.append(business["rating"])
+            is_closed.append(business["is_closed"])
+            url.append(business["url"])
+            coord.append(business["coordinates"])
+            id.append(business["id"])
+
+        DATA = {
+            "names": name,
+            "img_urls": img_url,
+            "ratings": rating,
+            "is_closeds": is_closed,
+            "urls": url,
+            "coords": coord,
+            "ids": id,
+        }
+
+        return flask.jsonify({"data": DATA})
+    else:
+        return flask.render_template("index.html")
+
+
 app.register_blueprint(bp)
 
 
@@ -129,11 +174,9 @@ def login():
 
 @app.route("/login/callback")
 def callback():
-    # Get authorization code Google sent back to you
     code = flask.request.args.get("code")
     google_provider_cfg = get_google_provider_cfg()
     token_endpoint = google_provider_cfg["token_endpoint"]
-    # Prepare and send a request to get tokens! Yay tokens!
     token_url, headers, body = client.prepare_token_request(
         token_endpoint,
         authorization_response=flask.request.url,
@@ -146,28 +189,17 @@ def callback():
         data=body,
         auth=(os.getenv("GOOGLE_CLIENT_ID"), os.getenv("GOOGLE_CLIENT_SECRET")),
     )
-    # Parse the tokens!
     client.parse_request_body_response(json.dumps(token_response.json()))
-    # Now that you have tokens (yay) let's find and hit the URL
-    # from Google that gives you the user's profile information,
-    # including their Google profile image and email
     userinfo_endpoint = google_provider_cfg["userinfo_endpoint"]
     uri, headers, body = client.add_token(userinfo_endpoint)
     userinfo_response = requests.get(uri, headers=headers, data=body)
-    # You want to make sure their email is verified.
-    # The user authenticated with Google, authorized your
-    # app, and now you've verified their email through Google!
     if userinfo_response.json().get("email_verified"):
-        # unique_id = userinfo_response.json()["sub"]
         users_email = userinfo_response.json()["email"]
         picture = userinfo_response.json()["picture"]
         users_name = userinfo_response.json()["given_name"]
-        print(users_email)
-        print(users_name)
     else:
         return "User email not available or not verified by Google.", 400
-    # Create a user in your db with the information provided
-    # by Google
+    # Create a user in our database with the information provided by the Google response json
     newUser = user(username=users_name, email=users_email, profile_pic=picture)
 
     # Doesn't exist? Add it to the database.
@@ -209,11 +241,12 @@ def discover():
 def merchant():
     return flask.render_template("index.html")
 
-@app.route('/map', methods=['GET','POST']) 
+
+@app.route("/map", methods=["GET", "POST"])
 def map():
 
-    if flask.request.method == 'POST':
-            
+    if flask.request.method == "POST":
+
         zip_code = flask.request.json.get("zipcode")
         print(zip_code)
         search_limit = 13
@@ -222,7 +255,7 @@ def map():
         #                 'limit':25
         # }
         # restaurant_search_response = requests.get(business_search_url, headers = newheaders, params = search_params)
-        restaurant_results = query_resturants('restaurant', zip_code, search_limit)
+        restaurant_results = query_resturants("restaurant", zip_code, search_limit)
         print(restaurant_results)
 
         name = []
@@ -232,42 +265,59 @@ def map():
         url = []
         coord = []
         id = []
-        for x in range(len(restaurant_results["names"])): 
+        for x in range(len(restaurant_results["names"])):
             rest_info = {
-                'name' : restaurant_results["names"][x], 
-                'location' : restaurant_results["locations"][x],
-                'coordinates':restaurant_results["coordinates"][x],
-                'opening' : timeConvert(restaurant_results["hours"][x][0]), 
-                'closing': timeConvert(restaurant_results["hours"][x][1]),
-                'phone_number' : restaurant_results["phone_numbers"][x],
-                'rating' : restaurant_results['ratings'][x],
-                'categories' : restaurant_results['resturant_type_categories'][x][0]["title"],
-                'image' : restaurant_results['pictures'][x]
-              }
+                "name": restaurant_results["names"][x],
+                "location": restaurant_results["locations"][x],
+                "coordinates": restaurant_results["coordinates"][x],
+                "opening": timeConvert(restaurant_results["hours"][x][0]),
+                "closing": timeConvert(restaurant_results["hours"][x][1]),
+                "phone_number": restaurant_results["phone_numbers"][x],
+                "rating": restaurant_results["ratings"][x],
+                "categories": restaurant_results["resturant_type_categories"][x][0][
+                    "title"
+                ],
+                "image": restaurant_results["pictures"][x],
+            }
             name.append(rest_info["name"])
             img_url.append(rest_info["image"])
             rating.append(rest_info["rating"])
             coord.append(rest_info["coordinates"])
 
-      
-        DATA ={
-            "names":name,
-            "img_urls":img_url,
-            "ratings":rating,
-            "coords":coord,
+        DATA = {
+            "names": name,
+            "img_urls": img_url,
+            "ratings": rating,
+            "coords": coord,
         }
 
+        return flask.jsonify({"data": DATA})
 
-        return flask.jsonify({"data":DATA})
-        
     else:
         return flask.render_template("index.html")
+
 
 @app.route("/logout")
 @login_required
 def logout():
     logout_user()
     return {"status": "success"}
+
+
+@app.route("/post", methods=["POST", "GET"])
+def post():
+    if flask.request.method == "POST":
+        postInput = flask.request.json.get("get_user_post")
+        post = user_post(postText=postInput)
+        db.session.add(post)
+        db.session.commit()
+
+    else:
+        user_posts = user_post.postText.query.all()
+        post_list = []
+        for posts in user_posts:
+            post_list.append(posts.postText)
+        return flask.jsonify({"data": post_list})
 
 
 @app.route("/createAccount", methods=["POST"])
@@ -343,10 +393,10 @@ def createComment():
 
 @app.route("/search", methods=["POST"])
 @login_required
-def discover_post():
+def search_post():
     rest_name = flask.request.get("resturant_name")
     result_limit = 3
-    yelp_results = query_resturants(rest_name, current_user.zipCode,result_limit)
+    yelp_results = query_resturants(rest_name, current_user.zipCode, result_limit)
     resturant_data = []
     for x in range(len(yelp_results["names"])):
         rest_info = {
@@ -449,7 +499,7 @@ def getPostsByUser():
             "comments": postCommentsList,
         }
         postsData.append(singlepostData)
-    return flask.render_template("", postsData=postsData)
+    return flask.render_template("index.html", postsData=postsData)
 
 
 @app.route("/getUserInfoByEmail")
