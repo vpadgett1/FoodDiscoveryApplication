@@ -468,6 +468,23 @@ def getDetailedUserInfo():
     }
 
 
+# returns a status and boolean true/false depending on
+# if the user is friends with the given user id
+@app.route("/isFriends")
+def isFriends():
+    # query the database for a relationship between the
+    # two. If exists, return true.
+    follower_id = flask.request.args.get("follower_id")
+    following_check = friends.query.filter_by(
+        user_id=current_user.id, FriendID=follower_id
+    ).all()
+
+    if following_check == None:
+        return {"status": 200, "isFriends": False}
+
+    return {"status": 200, "isFriends": True}
+
+
 @app.route("/")
 def main():
     if current_user.is_authenticated:

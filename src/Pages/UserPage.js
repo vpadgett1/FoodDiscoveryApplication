@@ -19,6 +19,8 @@ const UserPage = () => {
     },
   ]);
   const [otherUserID, setUserID] = useState('');
+  const [name, setName] = useState('');
+  const [profilePic, setProfilePic] = useState('');
 
   function test() {
     if (otherUserID === '') {
@@ -37,10 +39,29 @@ const UserPage = () => {
   test();
 
   async function getDetailedUserInfo() {
+    // get information about the user
     if (otherUserID !== '') {
       await fetch(`/getDetailedUserInfo?userID=${otherUserID}`)
         .then((response) => response.json())
         .then((data) => {
+          console.log(data);
+
+          if (data.UserDATA) {
+            setName(data.UserDATA.name);
+            setProfilePic(data.UserDATA.profilePic);
+          }
+
+          if (data.UserFavRestaurantsList) {
+            setUserFavoriteRestaurants([...data.UserFavRestaurantsList]);
+          }
+        }).catch((error) => console.log(error));
+
+      await fetch(`/isFriends?follower_id=${otherUserID}`)
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.status === 200) {
+            setIsFriend(data.isFriends);
+          }
           console.log(data);
         }).catch((error) => console.log(error));
     }
@@ -48,7 +69,7 @@ const UserPage = () => {
 
   useEffect(() => {
     // get user data from the backend
-    const FavoriteRestaurantDummyData = [
+    /* const FavoriteRestaurantDummyData = [
       {
         RestaurantName: 'name',
         RestaurantID: 'id',
@@ -61,9 +82,10 @@ const UserPage = () => {
         RestaurantName: 'name3',
         RestaurantID: 'id3',
       },
-    ];
+    ]; */
     getDetailedUserInfo();
-    setUserFavoriteRestaurants([...FavoriteRestaurantDummyData]);
+    // check if the current user is friends with the user
+    // setUserFavoriteRestaurants([...FavoriteRestaurantDummyData]);
   }, [otherUserID]);
 
   function renderUserPosts() {
@@ -96,34 +118,31 @@ const UserPage = () => {
       // disable button from being pressed while writing to the database
 
       // remove new relationship to the database
-      /* await fetch('\\deleteFollower')
+      await fetch(`/deleteFollower?follower_id=${otherUserID}`)
         .then((response) => response.json())
         .then((data) => {
           console.log(data);
           // make button usable again
-          addFriendButton.innerHTML = 'Add Friend';
-          setIsFriend(false);
-        }).catch((error) => console.log(error)); */
-
-      // make button usable again - remove these two lines when fetch is implemented
-      addFriendButton.innerHTML = 'Add Friend';
-      setIsFriend(false);
+          if (data.status === 200) {
+            addFriendButton.innerHTML = 'Add Friend';
+            setIsFriend(false);
+          }
+        }).catch((error) => console.log(error));
     } else {
       // disable button from being pressed while writing to the database
 
       // add new relationship to the database
-      /* await fetch('\\addFollower')
+      await fetch(`/addFollower?follower_id=${otherUserID}`)
         .then((response) => response.json())
         .then((data) => {
           console.log(data);
           // make button usable again
-          addFriendButton.innerHTML = 'Remove Friend';
-          setIsFriend(true);
-        }).catch((error) => console.log(error)); */
 
-      // make button usable again - remove these two lines when fetch is implemented
-      addFriendButton.innerHTML = 'Remove Friend';
-      setIsFriend(true);
+          if (data.status === 200) {
+            addFriendButton.innerHTML = 'Remove Friend';
+            setIsFriend(true);
+          }
+        }).catch((error) => console.log(error));
     }
   };
 
@@ -132,10 +151,10 @@ const UserPage = () => {
       <Navigation />
       <div className="leftSideUserProfile">
         <div className="basicInfo">
-          <img src={CatPfp} alt="profile img" />
-          <div className="userName">Name of User</div>
+          <img src={profilePic === '' ? CatPfp : profilePic} alt="profile img" />
+          <div className="userName">{name === '' ? 'Loading' : name}</div>
         </div>
-        <button type="button" id="addFriendButton" onClick={onClickAddFriendButton}>Add Friend</button>
+        <button type="button" id="addFriendButton" onClick={onClickAddFriendButton}>{isFriend ? 'Remove Friend' : 'Add Friend'}</button>
       </div>
       <div className="rightSideUserProfile">
         {renderUserFavoriteRestaurants()}
