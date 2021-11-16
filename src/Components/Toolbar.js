@@ -1,6 +1,8 @@
 import React from 'react';
 import { componentMapping } from './Item';
 
+// looping over each key in componentMapping and creates button for it
+// to add a new item
 const Toolbar = (props) => {
   const { addItem } = [props];
   return (

@@ -11,8 +11,6 @@ import sys
 import urllib
 import os
 from dotenv import load_dotenv, find_dotenv
-load_dotenv(find_dotenv())
-from datetime import datetime
 
 # This client code can run on Python 2.x or 3.x.  Your imports can be
 # simpler if you only need one of those.
@@ -31,8 +29,8 @@ BUSINESS_PATH = "/v3/businesses/"  # Business ID will come after slash.
 
 
 # Defaults for our simple example.
-DEFAULT_TERM = 'dinner'
-DEFAULT_LOCATION = 'San Francisco, CA'
+DEFAULT_TERM = "dinner"
+DEFAULT_LOCATION = "San Francisco, CA"
 SEARCH_LIMIT = 3
 
 
@@ -49,15 +47,13 @@ def request(host, path, api_key, url_params=None):
         HTTPError: An error occurs from the HTTP request.
     """
     url_params = url_params or {}
-    url = '{0}{1}'.format(host, quote(path.encode('utf8')))
+    url = "{0}{1}".format(host, quote(path.encode("utf8")))
     headers = {
-        'Authorization': 'Bearer %s' % api_key,
+        "Authorization": "Bearer %s" % api_key,
     }
+    response = requests.request("GET", url, headers=headers, params=url_params)
 
-    print(u'Querying {0} ...'.format(url))
-
-    response = requests.request('GET', url, headers=headers, params=url_params)
-
+    print(response)
     return response.json()
 
 
@@ -74,6 +70,23 @@ def search(api_key, term, location):
         "term": term.replace(" ", "+"),
         "location": location.replace(" ", "+"),
         "limit": SEARCH_LIMIT,
+    }
+    return request(API_HOST, SEARCH_PATH, api_key, url_params=url_params)
+
+
+def search_withLimit(api_key, term, location, limit):
+    """Query the Search API by a search term and location.
+    Args:
+        term (str): The search term passed to the API.
+        location (str): The search location passed to the API.
+    Returns:
+        dict: The JSON response from the request.
+    """
+
+    url_params = {
+        "term": term.replace(" ", "+"),
+        "location": location.replace(" ", "+"),
+        "limit": limit,
     }
     return request(API_HOST, SEARCH_PATH, api_key, url_params=url_params)
 
@@ -96,36 +109,35 @@ def query_api(term, location):
         term (str): The search term to query.
         location (str): The location of the business to query.
     """
+    if not term:
+        return None
     response = search(API_KEY, term, location)
 
-    businesses = response.get('businesses')
+    businesses = response.get("businesses")
 
     if not businesses:
-        print(u'No businesses for {0} in {1} found.'.format(term, location))
+        print(u"No businesses for {0} in {1} found.".format(term, location))
         return
 
-    business_id = businesses[0]['id']
+    business_id = businesses[0]["id"]
 
-    print(u'{0} businesses found, querying business info ' \
-        'for the top result "{1}" ...'.format(
-            len(businesses), business_id))
     response = get_business(API_KEY, business_id)
+    return response["name"]
 
-    print(u'Result for business "{0}" found:'.format(business_id))
-    pprint.pprint(response, indent=2)
 
-# a fucntion to query specific data from the resturants that we queery from instead of just the information from one specific resturant based on the query. 
-def query_resturants(term, location):
+def query_one_resturant(term, location):
     """Queries the API by the input values from the user.
     Args:
         term (str): The search term to query.
         location (str): The location of the business to query.
     """
-    #search for resturants with the API_KEY, the term (such as Starbucks, etc.), and the users zipcode that they stored in their profile
+    if not term:
+        return None
+    # search for resturants with the API_KEY, the term (such as Starbucks, etc.), and the users zipcode that they stored in their profile
     response = search(API_KEY, term, location)
-    #print(response)
+    # print(response)
     businesses = response.get("businesses")
-    #print(businesses)
+    # print(businesses)
     names = []
     locations = []
     hours = []
@@ -136,7 +148,87 @@ def query_resturants(term, location):
     if not businesses:
         print(u"No businesses for {0} in {1} found.".format(term, location))
         return
-    for business in businesses: 
+    business_id = businesses[0]["id"]
+    response = get_business(API_KEY, business_id)
+    names.append(response["name"])
+    locations.append(response["location"])
+    openhours = response["hours"]
+    openinghour = openhours[0]["open"][0]["start"]
+    closinghour = openhours[0]["open"][0]["end"]
+    hours.append([openinghour, closinghour])
+    phone_numbers.append(response["display_phone"])
+    rating.append(response["rating"])
+    resturant_type_categories.append(response["categories"])
+    pictures.append(response["image_url"])
+
+    DATA = {
+        "names": names,
+        "locations": locations,
+        "hours": hours,
+        "phone_numbers": phone_numbers,
+        "ratings": rating,
+        "resturant_type_categories": resturant_type_categories,
+        "pictures": pictures,
+    }
+    # print(DATA)
+    return DATA
+
+def query_one_resturant(yelp_id):
+    """Queries the API by the input values from the user.
+    Args:
+        term (str): The search term to query.
+        location (str): The location of the business to query.
+    """
+    if not yelp_id:
+        return None
+    response = get_business(API_KEY, yelp_id)
+    names = response["name"]
+    location = response["location"]
+    openhours = response["hours"]
+    openinghour = openhours[0]["open"][0]["start"]
+    closinghour = openhours[0]["open"][0]["end"]
+    phone_numbers = response["display_phone"]
+    rating = response["rating"]
+    resturant_type_categories = response["categories"]
+    pictures = response["image_url"]
+
+    DATA = {
+        'names' : names,
+        'locations': location,
+        'hours': [openinghour, closinghour],
+        'phone_numbers': phone_numbers,
+        'ratings' : rating,
+        'resturant_type_categories' : resturant_type_categories,
+        'pictures' : pictures
+    }
+    return DATA
+
+# a fucntion to query specific data from the resturants that we queery from instead of just the information from one specific resturant based on the query.
+def query_resturants(term, location, limit):
+    """Queries the API by the input values from the user.
+    Args:
+        term (str): The search term to query.
+        location (str): The location of the business to query.
+    """
+    if not term:
+        return None
+    # search for resturants with the API_KEY, the term (such as Starbucks, etc.), and the users zipcode that they stored in their profile
+    response = search_withLimit(API_KEY, term, location, limit)
+    # print(response)
+    businesses = response.get("businesses")
+    # print(businesses)
+    names = []
+    locations = []
+    hours = []
+    phone_numbers = []
+    rating = []
+    resturant_type_categories = []
+    pictures = []
+    coordinates = []
+    if not businesses:
+        print(u"No businesses for {0} in {1} found.".format(term, location))
+        return
+    for business in businesses:
         business_id = business["id"]
 
         # print(
@@ -144,6 +236,8 @@ def query_resturants(term, location):
         # '   for the top result "{1}" ...'.format(len(businesses), business_id)
         # )
         response = get_business(API_KEY, business_id)
+
+        # print(response)
 
         names.append(response["name"])
         locations.append(response["location"])
@@ -155,21 +249,24 @@ def query_resturants(term, location):
         rating.append(response["rating"])
         resturant_type_categories.append(response["categories"])
         pictures.append(response["image_url"])
+        coordinates.append(response["coordinates"])
 
         # print(u'Result for business "{0}" found:'.format(business_id))
         # pprint.pprint(response, indent=2)
     DATA = {
-        'names' : names,
-        'locations': locations,
-        'hours': hours,
-        'phone_numbers': phone_numbers,
-        'ratings' : rating,
-        'resturant_type_categories' : resturant_type_categories,
-        'pictures' : pictures
+        "names": names,
+        "locations": locations,
+        "hours": hours,
+        "phone_numbers": phone_numbers,
+        "ratings": rating,
+        "resturant_type_categories": resturant_type_categories,
+        "pictures": pictures,
+        "coordinates": coordinates,
     }
-    #data = json.dumps(DATA)
+    # data = json.dumps(DATA)
+    # print(DATA)
     return DATA
-    
+
 
 # def main():
 #     parser = argparse.ArgumentParser()
@@ -183,7 +280,7 @@ def query_resturants(term, location):
 #     input_values = parser.parse_args()
 
 #     try:
-#         query_resturants(input_values.term, input_values.location)
+#         query_one_resturant(input_values.term, input_values.location)
 #     except HTTPError as error:
 #         sys.exit(
 #             'Encountered HTTP error {0} on {1}:\n {2}\nAbort program.'.format(

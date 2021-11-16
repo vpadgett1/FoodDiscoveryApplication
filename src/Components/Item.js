@@ -37,7 +37,7 @@ const Item = (props) => {
         <textarea
           ref={textBox}
           value={content}
-          onChange={(e) => updateItem(e.target.value)}
+          // onChange={updateItem(content)}
         />
       // eslint-disable-next-line no-undef
       ) : componentMapping[type](content, updateItem)}
