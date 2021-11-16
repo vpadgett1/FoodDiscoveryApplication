@@ -6,6 +6,7 @@
 from app import db
 from flask_login import UserMixin
 
+
 class user(UserMixin, db.Model):
     id = db.Column(
         db.Integer, primary_key=True
@@ -54,5 +55,6 @@ class post_comments(UserMixin, db.Model):
     AuthorID = db.Column(db.String(100), nullable=False)
     postText = db.Column(db.String(300), nullable=False)
     post_id = db.Column(db.Integer, db.ForeignKey("user_post.id"))
+
 
 db.create_all()
