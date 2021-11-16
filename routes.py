@@ -207,15 +207,6 @@ def callback():
     if not user.query.filter_by(username=users_name).first():
         db.session.add(newUser)
         db.session.commit()
-<<<<<<< HEAD
-        #send user to the onboarding page to fill out more information
-        return flask.redirect(flask.url_for("bp.index"))
-    #login the user so they can remain logged in unless logged out
-    login_user(user.query.filter_by(username=users_name).first())
-
-    # Send user to the discovery page
-    return flask.redirect(flask.url_for("bp.index"))
-=======
         previousUser = False
         # return flask.redirect(flask.url_for(#pathing redirect for onboarding page
         # ))
@@ -235,7 +226,6 @@ def callback():
     # if not, send to onboarding
     return flask.redirect(flask.url_for("onboarding"))
 
->>>>>>> b84c030e7de9cfb7b5cb774d2d06ece52fce682f
 
 @app.route("/onboarding")
 def onboarding():
@@ -311,12 +301,7 @@ def map():
 @login_required
 def logout():
     logout_user()
-<<<<<<< HEAD
     return flask.redirect(flask.url_for("bp.index"))
-=======
-    return {"status": "success"}
-
->>>>>>> b84c030e7de9cfb7b5cb774d2d06ece52fce682f
 
 @app.route("/post", methods=["POST", "GET"])
 def post():
@@ -582,8 +567,6 @@ def getRestaurantData():
             )
 
 app.route("/getPostsByUser", methods=["GET"])
-
-
 def getPostsByUser():
     posts = user_post.query.filter_by(user_id=current_user.username).all()
     postsData = []
@@ -704,10 +687,6 @@ def main():
             return flask.redirect(flask.url_for("discover"))
     else:
         return flask.render_template("index.html")
-<<<<<<< HEAD
-
-=======
->>>>>>> b84c030e7de9cfb7b5cb774d2d06ece52fce682f
 
 
 if __name__ == "__main__":
