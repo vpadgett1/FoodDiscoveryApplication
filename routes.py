@@ -151,7 +151,7 @@ def zipcode():
 
         return flask.jsonify({"data":DATA})       
     else:
-        return flask.render_template("index.html")
+        return flask.render_template("bp.index")
 
 app.register_blueprint(bp)
 
@@ -206,12 +206,12 @@ def callback():
         db.session.add(newUser)
         db.session.commit()
         #send user to the onboarding page to fill out more information
-        return flask.redirect(flask.url_for("index.html"))
+        return flask.redirect(flask.url_for("bp.index"))
     #login the user so they can remain logged in unless logged out
     login_user(user.query.filter_by(username=users_name).first())
 
     # Send user to the discovery page
-    return flask.redirect(flask.url_for("index.html"))
+    return flask.redirect(flask.url_for("bp.index"))
 
 
 @app.route('/map', methods=['GET','POST']) 
@@ -266,13 +266,13 @@ def map():
         return flask.jsonify({"data":DATA})
         
     else:
-        return flask.render_template("index.html")
+        return flask.render_template("bp.index")
 
 @app.route("/logout")
 @login_required
 def logout():
     logout_user()
-    return flask.redirect(flask.url_for("index.html"))
+    return flask.redirect(flask.url_for("bp.index"))
 
 @app.route("/post", methods=["POST","GET"])
 def post():
@@ -568,15 +568,18 @@ def getPostsByUser():
             "comments": postCommentsList,
         }
         postsData.append(singlepostData)
-    return flask.render_template("index.html", postsData=postsData)
+    return flask.render_template("bp.index", postsData=postsData)
 
 
 @app.route("/")
 def main():
     if current_user.is_authenticated:
-        return (flask.redirect(flask.url_for("index.html")))
+        if current_user.yelpRestaurantID:
+            return flask.redirect(flask.url_for("merchant"))
+        else:
+            return flask.redirect(flask.url_for("discover"))
     else:
-        return (flask.redirect(flask.url_for("index.html")))
+        return flask.render_template("index.html")
 
 
 
