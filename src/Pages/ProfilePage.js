@@ -3,7 +3,7 @@ import React, {
   useState,
   useEffect,
 } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Navigation from '../Components/Navigation';
 // import PropTypes from 'prop-types';
 
@@ -13,8 +13,15 @@ const ProfilePage = () => {
   const [currentDisplay, setCurrentDisplay] = useState('General');
   const [friendsList, setFriendsList] = useState([]);
   const [favoriteRestaurantList, setUserFavoriteRestaurants] = useState([]);
+  const [userPosts, setUserPosts] = useState([]);
+  const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
+  const [profilePic, setProfilePic] = useState('');
+  const [zipcode, setZipcode] = useState('');
 
-  const dummyFriendsListData = [
+  const navigate = useNavigate();
+
+  /* const dummyFriendsListData = [
     {
       name: 'friend 1',
       user_id: 'id1',
@@ -42,14 +49,53 @@ const ProfilePage = () => {
       RestaurantName: 'name3',
       RestaurantID: 'id3',
     },
-  ];
+  ]; */
   // deconstruct props
   // const [props] = props;
 
-  // TODO: fetch data from backend
+  async function getUserProfileInformation() {
+    await fetch('/getUserProfile')
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+        // get data for General tab
+        if (data.UserDATA) {
+          if (data.UserDATA.email) {
+            setEmail(data.UserDATA.email);
+          }
+          if (data.UserDATA.name) {
+            setName(data.UserDATA.name);
+          }
+          if (data.UserDATA.profilePic) {
+            setProfilePic(data.UserDATA.profilePic);
+          }
+          if (data.UserDATA.zipcode) {
+            setZipcode(data.UserDATA.zipcode);
+          }
+
+          // get friends list
+          if (data.UserFriendsList) {
+            setFriendsList([...data.UserFriendsList]);
+          }
+
+          // get favorite restaurants
+          if (data.UserFavRestaurantsList) {
+            setUserFavoriteRestaurants([...data.UserFavRestaurantsList]);
+          }
+
+          // get user posts
+          if (data.UserPostsList) {
+            setUserPosts([...data.UserPostsList]);
+            console.log(userPosts);
+          }
+        }
+      }).catch((error) => console.log(error));
+  }
+
   useEffect(() => {
-    setFriendsList(dummyFriendsListData);
-    setUserFavoriteRestaurants([...FavoriteRestaurantDummyData]);
+    getUserProfileInformation();
+    // setFriendsList(dummyFriendsListData);
+    // setUserFavoriteRestaurants([...FavoriteRestaurantDummyData]);
   }, []);
 
   function changeDisplay(buttonPressed) {
@@ -73,34 +119,61 @@ const ProfilePage = () => {
   }
 
   function deleteFromFriendsList(userID) {
-    // find index of the friend on the friends list
-    const tempFriendsList = [...friendsList];
-    const index = tempFriendsList.findIndex((x) => x.user_id === userID);
+    // delete in database
+    fetch(`/deleteFollower?follower_id=${userID}`)
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.status === 200) {
+          // find index of the friend on the friends list
+          const tempFriendsList = [...friendsList];
+          const index = tempFriendsList.findIndex((x) => x.user_id === userID);
 
-    // create new array without that index
-    if (index !== -1) {
-      tempFriendsList.splice(index, 1);
+          // create new array without that index
+          if (index !== -1) {
+            tempFriendsList.splice(index, 1);
 
-      // set friends list to the new array
-      setFriendsList([...tempFriendsList]);
-    }
+            // set friends list to the new array
+            setFriendsList([...tempFriendsList]);
+          }
+        }
+        console.log(data);
+      }).catch((error) => console.log(error));
   }
 
-  function addToFriendsList() {
-    // fetch user from database
-
+  async function addToFriendsList() {
     // get the text in the text field
-    const searchFriendField = document.getElementById('inputFriendID');
+    const searchFriendField = document.getElementById('inputFriendID').value;
 
-    // create friend
-    const addFriend = {
-      name: searchFriendField.value,
-      user_id: searchFriendField.value,
-    };
+    // fetch user from database
+    await fetch(`/getUserInfoByEmail?email=${searchFriendField}`)
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+        // create friend
+        const addFriend = {
+          user_id: data.id,
+        };
 
-    // update state
-    setFriendsList([...friendsList, addFriend]);
+        // add friend in database
+        fetch(`/addFollower?follower_id=${addFriend.user_id}`)
+          .then((response) => response.json())
+          .then((result) => {
+            // update state
+            if (result.status === 200) {
+              setFriendsList([...friendsList, addFriend]);
+            }
+          }).catch((error) => console.log(error));
+      }).catch((error) => console.log(error));
   }
+
+  const logout = async () => {
+    await fetch('/logout')
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+        navigate('/', { replace: true });
+      }).catch((error) => console.log(error));
+  };
 
   function renderLeftSide() {
     return (
@@ -109,6 +182,7 @@ const ProfilePage = () => {
         <button type="button" onClick={() => changeDisplay('FriendsList')}>Friends List</button>
         <button type="button" onClick={() => changeDisplay('FavoriteRestaurants')}>Favorite Restaurants</button>
         <button type="button" onClick={() => changeDisplay('YourPosts')}>Your Posts</button>
+        <button type="button" onClick={logout}>Logout</button>
       </>
     );
   }
@@ -117,15 +191,27 @@ const ProfilePage = () => {
     return (
       <>
         <div>General Rendered</div>
-        <div>Name of User</div>
-        <div>Date joined</div>
-        <div>Username</div>
-        <div>Email</div>
-        <div>Zip Code</div>
+        <img src={profilePic} alt="profile pic" />
+        <div>
+          Name of User:
+          {' '}
+          {name}
+        </div>
+        <div>
+          Email of User:
+          {' '}
+          {email}
+        </div>
+        <div>
+          Zip Code:
+          {' '}
+          {zipcode}
+        </div>
       </>
     );
   }
 
+  // NOTE: In sprint 2, ideally also display the name of the user and not just the id ({x.name})
   function renderFriendsList() {
     return (
       <>
@@ -138,7 +224,7 @@ const ProfilePage = () => {
               to="/userprofile"
               state={{ userId: x.user_id }}
             >
-              {x.name}
+              {x.user_id}
             </Link>
             <button type="button" onClick={() => deleteFromFriendsList(x.user_id)}>Delete</button>
           </>

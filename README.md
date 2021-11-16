@@ -35,3 +35,7 @@ This web application has been created and designed to become your new home for r
 ## Props
 
 1. `npm i -S prop-types`
+
+## Google Maps API
+
+1. run `npm install react-google-maps` to be able to use Google Maps api on the front end

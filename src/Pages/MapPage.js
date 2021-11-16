@@ -150,6 +150,4 @@ Map.propTypes = {
   restaurantRatings: PropTypes.string.isRequired,
 };
 
-
-
 export default MapPage;

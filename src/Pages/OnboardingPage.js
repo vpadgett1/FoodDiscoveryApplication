@@ -6,13 +6,13 @@ import React, {
 import { useNavigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
 
+// YELP ID TO USE FOR TESTING: WavvLdfdP6g8aZTtbBQHTw
 // this line will become const OnboardingPage = (props) => { once there are props
 const OnboardingPage = () => {
   // set state
   const [selectedButton, setSelectedButton] = useState('none');
 
   const navigate = useNavigate();
-
   // deconstruct props
 
   // TODO: fetch data from backend
@@ -34,13 +34,22 @@ const OnboardingPage = () => {
 
   const createRegularUserAccount = async () => {
     // get input
-    const input = document.getElementById('zipCodeInput').value;
+    const zipcode = document.getElementById('zipCodeInput').value;
 
     // send to database, wait until db responds before continueing
-    console.log(input);
+    await fetch(`/createAccount?zipcode=${zipcode}`, {
+      method: 'POST',
+    })
+      .then((response) => response.json())
+      .then((result) => {
+        console.log(result);
 
-    // go to next page
-    navigate('/discover');
+        // go to next page
+        if (result.status === 'success') {
+          navigate('/discover');
+        }
+      })
+      .catch((response) => console.log(response));
   };
 
   function renderRegularUserQuestions() {
@@ -55,18 +64,30 @@ const OnboardingPage = () => {
 
   const createMerchantUserAccount = async () => {
     // get input
-    const input = document.getElementById('yelpRestaurantID').value;
+    const yelpID = document.getElementById('yelpRestaurantID').value;
+    const zipcode = document.getElementById('zipCodeInput').value;
 
     // send to database, wait until db responds before continueing
-    console.log(input);
+    await fetch(`/createAccount?zipcode=${zipcode}&yelpID=${yelpID}`, {
+      method: 'POST',
+    })
+      .then((response) => response.json())
+      .then((result) => {
+        console.log(result);
 
-    // go to next page
-    navigate('/merchant');
+        // go to next page
+        if (result.status === 'success') {
+          navigate('/merchant');
+        }
+      })
+      .catch((response) => console.log(response));
   };
 
   function renderMerchantUserQuestions() {
     return (
       <>
+        <div>Please enter your zip code</div>
+        <input type="text" placeholder="Zip Code" id="zipCodeInput" />
         <div>Please enter your yelp restaurant id</div>
         <input type="text" placeholder="Zip Code" id="yelpRestaurantID" />
         <button type="button" onClick={createMerchantUserAccount}>Continue</button>
