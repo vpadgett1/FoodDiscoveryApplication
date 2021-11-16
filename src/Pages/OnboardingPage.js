@@ -37,12 +37,8 @@ const OnboardingPage = () => {
     const zipcode = document.getElementById('zipCodeInput').value;
 
     // send to database, wait until db responds before continueing
-    await fetch('/createAccount', {
+    await fetch(`/createAccount?zipcode=${zipcode}`, {
       method: 'POST',
-      body: {
-        yelpID: null,
-        zipcode,
-      },
     })
       .then((response) => response.json())
       .then((result) => {
@@ -72,12 +68,8 @@ const OnboardingPage = () => {
     const zipcode = document.getElementById('zipCodeInput').value;
 
     // send to database, wait until db responds before continueing
-    await fetch('/createAccount', {
+    await fetch(`/createAccount?zipcode=${zipcode}&yelpID=${yelpID}`, {
       method: 'POST',
-      body: {
-        yelpID,
-        zipcode,
-      },
     })
       .then((response) => response.json())
       .then((result) => {

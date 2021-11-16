@@ -58,7 +58,7 @@ def timeConvert(miliTime):
 bp = flask.Blueprint("bp", __name__, template_folder="./build")
 
 
-@bp.route("/profile")
+@bp.route("/getUserProfile")
 @login_required
 def profile():
     UserDATA = {
@@ -68,17 +68,17 @@ def profile():
         "zipcode": current_user.zipCode,
         "yelpRestaurantID": current_user.yelpRestaurantID,
     }
-    UserFriends = current_user.Friends
+    UserFriends = current_user.friends
     UserFriendsList = []
     for x in range(len(UserFriends)):
         UserFriendsList.append(UserFriends[x].FriendID)
 
-    UserFavoriteRestaurants = current_user.FavoriteRestaurants
+    UserFavoriteRestaurants = current_user.favs
     UserFavRestaurantsList = []
     for x in range(len(UserFavoriteRestaurants)):
         UserFavRestaurantsList.append(UserFavoriteRestaurants[x].Restaurant)
 
-    UserPosts = current_user.UserPost
+    UserPosts = current_user.posts
     UserPostsList = []
     for x in range(len(UserPosts)):
         postComments = post_comments.query.filter_by(post_id=UserPosts[x].id)
@@ -99,14 +99,12 @@ def profile():
         }
         UserPostsList.append(PostDATA)
 
-    return flask.jsonify(
-        {
-            "UserDATA": UserDATA,
-            "UserFriendsList": UserFriendsList,
-            "UserFavRestaurantsList": UserFavRestaurantsList,
-            "UserPostsList": UserPostsList,
-        }
-    )
+    return {
+        "UserDATA": UserDATA,
+        "UserFriendsList": UserFriendsList,
+        "UserFavRestaurantsList": UserFavRestaurantsList,
+        "UserPostsList": UserPostsList,
+    }
 
 
 app.register_blueprint(bp)
@@ -196,6 +194,11 @@ def discover():
     return flask.render_template("index.html")
 
 
+@app.route("/merchant")
+def merchant():
+    return flask.render_template("index.html")
+
+
 @app.route("/logout")
 @login_required
 def logout():
@@ -207,6 +210,8 @@ def logout():
 @login_required
 def createAccount():
     zipcode = flask.request.args.get("zipcode")
+    print("Printing zip code")
+    print(zipcode)
     current_user.zipCode = zipcode
     db.session.commit()
     yelpID = flask.request.args.get("yelpID")
@@ -397,7 +402,10 @@ def getPostsByUser():
 @app.route("/")
 def main():
     if current_user.is_authenticated:
-        return flask.redirect(flask.url_for("discover"))
+        if current_user.yelpRestaurantID:
+            return flask.redirect(flask.url_for("merchant"))
+        else:
+            return flask.redirect(flask.url_for("discover"))
     else:
         return flask.render_template("index.html")
 

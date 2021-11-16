@@ -13,6 +13,10 @@ const ProfilePage = () => {
   const [currentDisplay, setCurrentDisplay] = useState('General');
   const [friendsList, setFriendsList] = useState([]);
   const [favoriteRestaurantList, setUserFavoriteRestaurants] = useState([]);
+  const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
+  const [profilePic, setProfilePic] = useState('');
+  const [zipcode, setZipcode] = useState('');
 
   const navigate = useNavigate();
 
@@ -48,8 +52,31 @@ const ProfilePage = () => {
   // deconstruct props
   // const [props] = props;
 
-  // TODO: fetch data from backend
+  async function getUserProfileInformation() {
+    await fetch('/getUserProfile')
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+        // get data for General tab
+        if (data.UserDATA) {
+          if (data.UserDATA.email) {
+            setEmail(data.UserDATA.email);
+          }
+          if (data.UserDATA.name) {
+            setName(data.UserDATA.name);
+          }
+          if (data.UserDATA.profilePic) {
+            setProfilePic(data.UserDATA.profilePic);
+          }
+          if (data.UserDATA.zipcode) {
+            setZipcode(data.UserDATA.zipcode);
+          }
+        }
+      }).catch((error) => console.log(error));
+  }
+
   useEffect(() => {
+    getUserProfileInformation();
     setFriendsList(dummyFriendsListData);
     setUserFavoriteRestaurants([...FavoriteRestaurantDummyData]);
   }, []);
@@ -129,11 +156,22 @@ const ProfilePage = () => {
     return (
       <>
         <div>General Rendered</div>
-        <div>Name of User</div>
-        <div>Date joined</div>
-        <div>Username</div>
-        <div>Email</div>
-        <div>Zip Code</div>
+        <img src={profilePic} alt="profile pic" />
+        <div>
+          Name of User:
+          {' '}
+          {name}
+        </div>
+        <div>
+          Email of User:
+          {' '}
+          {email}
+        </div>
+        <div>
+          Zip Code:
+          {' '}
+          {zipcode}
+        </div>
       </>
     );
   }
