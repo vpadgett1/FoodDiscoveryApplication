@@ -149,7 +149,7 @@ def zipcode():
 
         return flask.jsonify({"data": DATA})
     else:
-        return flask.render_template("bp.index")
+        return flask.render_template("index.html")
 
 
 app.register_blueprint(bp)
@@ -294,14 +294,15 @@ def map():
         return flask.jsonify({"data": DATA})
 
     else:
-        return flask.render_template("bp.index")
+        return flask.render_template("index.html")
 
 
 @app.route("/logout")
 @login_required
 def logout():
     logout_user()
-    return flask.redirect(flask.url_for("bp.index"))
+    return {"status": "success"}
+
 
 @app.route("/post", methods=["POST", "GET"])
 def post():
@@ -567,6 +568,8 @@ def getRestaurantData():
             )
 
 app.route("/getPostsByUser", methods=["GET"])
+
+
 def getPostsByUser():
     posts = user_post.query.filter_by(user_id=current_user.username).all()
     postsData = []
@@ -588,7 +591,7 @@ def getPostsByUser():
             "comments": postCommentsList,
         }
         postsData.append(singlepostData)
-    return flask.render_template("bp.index", postsData=postsData)
+    return flask.render_template("index.html", postsData=postsData)
 
 
 @app.route("/getUserInfoByEmail")
