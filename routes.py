@@ -6,7 +6,7 @@
 from typing import NewType
 
 from requests.api import post
-from app import app, db
+from app import app, db, oauth
 from models import user, favorite_restraunts, friends, user_post, post_comments
 import flask
 from flask_login import (
@@ -19,7 +19,6 @@ from flask_login import (
 import os
 import json
 import requests
-import flask_oauth 
 from flask_oauthlib.client import OAuth, OAuthException
 from googleauth import get_google_provider_cfg
 from flask_sqlalchemy import SQLAlchemy
@@ -30,8 +29,7 @@ load_dotenv(find_dotenv())
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
 # OAuth 2 client setup
-client = oauthlib.WebApplicationClient(os.environ.get("GOOGLE_CLIENT_ID", None))
-
+#client = oauthlib.WebApplicationClient(os.environ.get("GOOGLE_CLIENT_ID", None))
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
 login_manager = LoginManager()
@@ -155,49 +153,45 @@ def zipcode():
 
 app.register_blueprint(bp)
 
+google = oauth.remote_app(
+    'google',
+    consumer_key=app.config.get('GOOGLE_CLIENT_ID'),
+    consumer_secret=app.config.get('GOOGLE_CLIENT_SECRET'),
+    request_token_params={
+        'scope': 'email'
+    },
+    base_url='https://www.googleapis.com/oauth2/v1/',
+    request_token_url=None,
+    access_token_method='POST',
+    access_token_url='https://accounts.google.com/o/oauth2/token',
+    authorize_url='https://accounts.google.com/o/oauth2/auth',
+)
 
-@app.route("/login")
+
+@app.route('/login')
 def login():
-    # Find out what URL to hit for Google login
-    google_provider_cfg = get_google_provider_cfg()
-    authorization_endpoint = google_provider_cfg["authorization_endpoint"]
+    return google.authorize(callback=flask.url_for('authorized', _external=True))
 
-    # Use library to construct the request for Google login and provide
-    # scopes that let you retrieve user's profile from Google
-    request_uri = client.prepare_request_uri(
-        authorization_endpoint,
-        redirect_uri=flask.request.base_url + "/callback",
-        scope=["openid", "email", "profile"],
-    )
-    # return flask.redirect(request_uri)
-    return {"url": request_uri}
+@google.tokengetter
+def get_google_oauth_token():
+    return flask.session.get('google_token')
 
 
-@app.route("/login/callback")
-def callback():
-    code = flask.request.args.get("code")
-    google_provider_cfg = get_google_provider_cfg()
-    token_endpoint = google_provider_cfg["token_endpoint"]
-    token_url, headers, body = client.prepare_token_request(
-        token_endpoint,
-        authorization_response=flask.request.url,
-        redirect_url=flask.request.base_url,
-        code=code,
-    )
-    token_response = requests.post(
-        token_url,
-        headers=headers,
-        data=body,
-        auth=(os.getenv("GOOGLE_CLIENT_ID"), os.getenv("GOOGLE_CLIENT_SECRET")),
-    )
-    client.parse_request_body_response(json.dumps(token_response.json()))
-    userinfo_endpoint = google_provider_cfg["userinfo_endpoint"]
-    uri, headers, body = client.add_token(userinfo_endpoint)
-    userinfo_response = requests.get(uri, headers=headers, data=body)
-    if userinfo_response.json().get("email_verified"):
-        users_email = userinfo_response.json()["email"]
-        picture = userinfo_response.json()["picture"]
-        users_name = userinfo_response.json()["given_name"]
+@app.route('/login/authorized')
+def authorized():
+    resp = google.authorized_response()
+    if resp is None:
+        return 'Access denied: reason=%s error=%s' % (
+            flask.request.args['error_reason'],
+            flask.request.args['error_description']
+        )
+    flask.session['google_token'] = (resp['access_token'], '')
+    me = google.get('userinfo')
+    #userinfo_response = requests.get(uri, headers=headers, data=body)
+    if me.json().get("email_verified"):
+        users_email = me.json()["email"]
+        picture = me.json()["picture"]
+        users_name = me.json()["given_name"]
     else:
         return "User email not available or not verified by Google.", 400
     # Create a user in our database with the information provided by the Google response json
@@ -302,7 +296,8 @@ def map():
 @login_required
 def logout():
     logout_user()
-    return {"status": "success"}
+    flask.session.pop('google_token', None)
+    return flask.redirect(flask.url_for('login'))
 
 
 @app.route("/post", methods=["POST", "GET"])
