@@ -24,6 +24,7 @@ from googleauth import get_google_provider_cfg
 from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv, find_dotenv
 from yelpInfo import query_resturants, query_one_resturant, query_api
+from werkzeug.security import generate_password_hash, check_password_hash
 
 load_dotenv(find_dotenv())
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
@@ -155,77 +156,129 @@ def zipcode():
 app.register_blueprint(bp)
 
 
-@app.route("/login")
+# @app.route("/login")
+# def login():
+#     # Find out what URL to hit for Google login
+#     google_provider_cfg = get_google_provider_cfg()
+#     authorization_endpoint = google_provider_cfg["authorization_endpoint"]
+
+#     # Use library to construct the request for Google login and provide
+#     # scopes that let you retrieve user's profile from Google
+#     request_uri = client.prepare_request_uri(
+#         authorization_endpoint,
+#         redirect_uri=flask.request.base_url + "/callback",
+#         scope=["openid", "email", "profile"],
+#     )
+#     # return flask.redirect(request_uri)
+#     return {"url": request_uri}
+
+
+# @app.route("/login/callback")
+# def callback():
+#     code = flask.request.args.get("code")
+#     google_provider_cfg = get_google_provider_cfg()
+#     token_endpoint = google_provider_cfg["token_endpoint"]
+#     token_url, headers, body = client.prepare_token_request(
+#         token_endpoint,
+#         authorization_response=flask.request.url,
+#         redirect_url=flask.request.base_url,
+#         code=code,
+#     )
+#     token_response = requests.post(
+#         token_url,
+#         headers=headers,
+#         data=body,
+#         auth=(os.getenv("GOOGLE_CLIENT_ID"), os.getenv("GOOGLE_CLIENT_SECRET")),
+#     )
+#     client.parse_request_body_response(json.dumps(token_response.json()))
+#     userinfo_endpoint = google_provider_cfg["userinfo_endpoint"]
+#     uri, headers, body = client.add_token(userinfo_endpoint)
+#     userinfo_response = requests.get(uri, headers=headers, data=body)
+#     if userinfo_response.json().get("email_verified"):
+#         users_email = userinfo_response.json()["email"]
+#         picture = userinfo_response.json()["picture"]
+#         users_name = userinfo_response.json()["given_name"]
+#     else:
+#         return "User email not available or not verified by Google.", 400
+#     # Create a user in our database with the information provided by the Google response json
+#     newUser = user(username=users_name, email=users_email, profile_pic=picture)
+
+#     # Doesn't exist? Add it to the database.
+#     previousUser = True
+#     if not user.query.filter_by(username=users_name).first():
+#         db.session.add(newUser)
+#         db.session.commit()
+#         previousUser = False
+#         # return flask.redirect(flask.url_for(#pathing redirect for onboarding page
+#         # ))
+
+#     # Begin user session by logging the user in
+#     login_user(user.query.filter_by(username=users_name).first())
+
+#     # if user already exists, send straight to their home page
+#     if previousUser:
+#         # if merchant user, send to merchant homepage
+#         # otherwise, regular
+#         if current_user.yelpRestaurantID:
+#             return flask.redirect(flask.url_for("merchant"))
+#         else:
+#             return flask.redirect(flask.url_for("discover"))
+
+#     # if not, send to onboarding
+#     return flask.redirect(flask.url_for("onboarding"))
+
+@app.route("/login", methods = ["GET"])
 def login():
-    # Find out what URL to hit for Google login
-    google_provider_cfg = get_google_provider_cfg()
-    authorization_endpoint = google_provider_cfg["authorization_endpoint"]
-
-    # Use library to construct the request for Google login and provide
-    # scopes that let you retrieve user's profile from Google
-    request_uri = client.prepare_request_uri(
-        authorization_endpoint,
-        redirect_uri=flask.request.base_url + "/callback",
-        scope=["openid", "email", "profile"],
-    )
-    # return flask.redirect(request_uri)
-    return {"url": request_uri}
-
-
-@app.route("/login/callback")
-def callback():
-    code = flask.request.args.get("code")
-    google_provider_cfg = get_google_provider_cfg()
-    token_endpoint = google_provider_cfg["token_endpoint"]
-    token_url, headers, body = client.prepare_token_request(
-        token_endpoint,
-        authorization_response=flask.request.url,
-        redirect_url=flask.request.base_url,
-        code=code,
-    )
-    token_response = requests.post(
-        token_url,
-        headers=headers,
-        data=body,
-        auth=(os.getenv("GOOGLE_CLIENT_ID"), os.getenv("GOOGLE_CLIENT_SECRET")),
-    )
-    client.parse_request_body_response(json.dumps(token_response.json()))
-    userinfo_endpoint = google_provider_cfg["userinfo_endpoint"]
-    uri, headers, body = client.add_token(userinfo_endpoint)
-    userinfo_response = requests.get(uri, headers=headers, data=body)
-    if userinfo_response.json().get("email_verified"):
-        users_email = userinfo_response.json()["email"]
-        picture = userinfo_response.json()["picture"]
-        users_name = userinfo_response.json()["given_name"]
-    else:
-        return "User email not available or not verified by Google.", 400
-    # Create a user in our database with the information provided by the Google response json
-    newUser = user(username=users_name, email=users_email, profile_pic=picture)
-
-    # Doesn't exist? Add it to the database.
-    previousUser = True
-    if not user.query.filter_by(username=users_name).first():
-        db.session.add(newUser)
-        db.session.commit()
-        previousUser = False
-        # return flask.redirect(flask.url_for(#pathing redirect for onboarding page
-        # ))
-
-    # Begin user session by logging the user in
-    login_user(user.query.filter_by(username=users_name).first())
-
-    # if user already exists, send straight to their home page
-    if previousUser:
-        # if merchant user, send to merchant homepage
-        # otherwise, regular
+    if current_user.is_authenticated:
         if current_user.yelpRestaurantID:
             return flask.redirect(flask.url_for("merchant"))
         else:
             return flask.redirect(flask.url_for("discover"))
-
     # if not, send to onboarding
     return flask.redirect(flask.url_for("onboarding"))
 
+@app.route("/login", methods = ["POST"])
+def login_post():
+    username = flask.request.form.get("login_user")
+    user_pass = flask.request.form.get("login_pass")
+
+    user_info = user.query.filter_by(username=username).first()
+
+    # check if the user actually exists
+    # take the user-supplied password, hash it, and compare it to the hashed password in the database
+    if not user_info or not check_password_hash(user.password, user_pass):
+        flask.flash(
+            "This username and password combination is incorrect. Please try again."
+        )
+        return flask.redirect(flask.url_for("login"))
+
+    # if the above check passes, then we know the user has the right credentials
+    login_user(user_info, remember=True)
+    return flask.redirect(flask.url_for("display"))
+
+@app.route("/signup", methods = ["GET"])
+def signup():
+    return flask.render_template("signup.html")
+
+
+@app.route("/signup", methods=["POST"])
+def signup_post():
+    if flask.request.method == "POST":
+        login_user = flask.request.form.get("login_user")
+        login_pass = flask.request.form.get("login_pass")
+        user_email = flask.request.form.get("user_email")
+        user_info = user.query.filter_by(username=login_user).first()
+
+        if user_info:
+            flask.flash("This username has already been taken. Please choose another.")
+            return flask.redirect(flask.url_for("/signup"))
+
+        password = generate_password_hash(login_pass)
+        login_info = user(username=login_user, password=password, email=user_email)
+        db.session.add(login_info)
+        db.session.commit()
+
+    return flask.redirect(flask.url_for("login"))
 
 @app.route("/onboarding")
 def onboarding():
