@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-props-no-spreading */
 import React from 'react';
 
 // an array of objects to show each textarea or post on a page (
@@ -12,14 +13,16 @@ const item = {
   type: 'some-type',
   content: 'some-content',
 };
-// export const componentMapping = {
-//   img: (content) => <Image {...content} />,
-// };
+export const componentMapping = {
+  // eslint-disable-next-line react/jsx-no-undef
+  img: (content, updateItem) => <Image {...content} updateItem={updateItem} />,
+};
 const Item = (props) => {
   const {
-    type, content, updateItem, pressingKey,
+    type, content, updateItem, onKeyPress,
   } = [props];
 
+  // ref for DOM elements
   const textBox = React.useRef();
 
   React.useEffect(() => {
@@ -32,13 +35,13 @@ const Item = (props) => {
     <div>
       {!type ? (
         <textarea
-          pressingKey={pressingKey}
+          onKeyPress={onKeyPress}
           ref={textBox}
           value={content}
           onChange={(e) => updateItem(e.target.value)}
         />
       // eslint-disable-next-line no-undef
-      ) : componentMapping[type](content)}
+      ) : componentMapping[type](content, updateItem)}
     </div>
   );
 };
