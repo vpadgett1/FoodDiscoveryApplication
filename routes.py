@@ -71,7 +71,7 @@ def profile():
     UserFriends = current_user.friends
     UserFriendsList = []
     for x in range(len(UserFriends)):
-        UserFriendsList.append(UserFriends[x].FriendID)
+        UserFriendsList.append({"user_id": UserFriends[x].FriendID})
 
     UserFavoriteRestaurants = current_user.favs
     UserFavRestaurantsList = []
@@ -171,16 +171,27 @@ def callback():
     newUser = user(username=users_name, email=users_email, profile_pic=picture)
 
     # Doesn't exist? Add it to the database.
+    previousUser = True
     if not user.query.filter_by(username=users_name).first():
         db.session.add(newUser)
         db.session.commit()
+        previousUser = False
         # return flask.redirect(flask.url_for(#pathing redirect for onboarding page
         # ))
 
     # Begin user session by logging the user in
     login_user(user.query.filter_by(username=users_name).first())
 
-    # Send user back to homepage
+    # if user already exists, send straight to their home page
+    if previousUser:
+        # if merchant user, send to merchant homepage
+        # otherwise, regular
+        if current_user.yelpRestaurantID:
+            return flask.redirect(flask.url_for("merchant"))
+        else:
+            return flask.redirect(flask.url_for("discover"))
+
+    # if not, send to onboarding
     return flask.redirect(flask.url_for("onboarding"))
 
 
@@ -299,77 +310,65 @@ def discover_post():
     return flask.jsonify(resturant_data)
 
 
-@app.route("/addFollower", methods=["POST"])
+@app.route("/addFollower")
 @login_required
 def addFollower():
     # recieved follower_id
-    follower_id = flask.request.json.get("follower_id")
+    follower_id = flask.request.args.get("follower_id")
     # query to verify they are not already following
     following_check = friends.query.filter_by(
-        user_id=current_user.username, FriendID=follower_id
+        user_id=current_user.id, FriendID=follower_id
     ).all()
     if not following_check:
-        friend_request = friends(user_id=current_user.username, FriendID=follower_id)
+        friend_request = friends(user_id=current_user.id, FriendID=follower_id)
         db.session.add(friend_request)
         try:
             db.session.commit()
-            return flask.jsonify(
-                {
-                    "status": 200,
-                    "message": "You have successfully followed this person.",
-                }
-            )
+            return {
+                "status": 200,
+                "message": "You have successfully followed this person.",
+            }
         except Exception as e:
             db.session.rollback()
             db.session.flush()
-            return flask.jsonify(
-                {
-                    "status": 400,
-                    "message": "Failed to commit friend request to the database. Please Try again.",
-                }
-            )
+            return {
+                "status": 400,
+                "message": "Failed to commit friend request to the database. Please Try again.",
+            }
     else:
-        return flask.jsonify(
-            {"status": 400, "message": "You are already friends with this person"}
-        )
+        return {"status": 400, "message": "You are already friends with this person"}
 
 
-@app.route("/deleteFollower", methods=["POST"])
+@app.route("/deleteFollower")
 @login_required
 def deleteFollower():
-    follower_id = flask.request.json.get("follower_id")
-    currentDB = friends.query.filter_by(user_id=current_user.username).all()
+    follower_id = flask.request.args.get("follower_id")
+    currentDB = friends.query.filter_by(user_id=current_user.id).all()
     extraVal = list((set(currentDB) - set(follower_id)))[0]
     if extraVal:
         removeFollower = friends.query.filter(
-            (friends.user_id == current_user.username)
-            & (friends.FriendID == extraVal.follower_id)
+            (friends.user_id == current_user.id)
+            & (friends.FriendID == extraVal.FriendID)
         ).first()
         db.session.delete(removeFollower)
         try:
             db.session.commit()
-            return flask.jsonify(
-                {
-                    "status": 200,
-                    "message": "You have successfully unfollowed this user.",
-                }
-            )
+            return {
+                "status": 200,
+                "message": "You have successfully unfollowed this user.",
+            }
         except Exception as e:
             db.session.rollback()
             db.session.flush()
-            return flask.jsonify(
-                {
-                    "status": 400,
-                    "message": "Failed to commit unfriend request to the database. Please Try again.",
-                }
-            )
-    else:
-        return flask.jsonify(
-            {
+            return {
                 "status": 400,
-                "message": "You are not friends with this person. Please try again to friend this user.",
+                "message": "Failed to commit unfriend request to the database. Please Try again.",
             }
-        )
+    else:
+        return {
+            "status": 400,
+            "message": "You are not friends with this person. Please try again to friend this user.",
+        }
 
 
 app.route("/getPostsByUser", methods=["GET"])
@@ -397,6 +396,76 @@ def getPostsByUser():
         }
         postsData.append(singlepostData)
     return flask.render_template("", postsData=postsData)
+
+
+@app.route("/getUserInfoByEmail")
+@login_required
+def getUserInfoByEmail():
+    # get all the info of a user given their email as input
+    email = flask.request.args.get("email")
+    otherUser = user.query.filter_by(email=email).first()
+    UserDATA = {
+        "id": otherUser.id,
+        "name": otherUser.username,
+        "email": otherUser.email,
+        "profilePic": otherUser.profile_pic,
+        "zipcode": otherUser.zipCode,
+    }
+
+    return UserDATA
+
+
+@app.route("/getDetailedUserInfo")
+@login_required
+def getDetailedUserInfo():
+    # get all the info of a user given their email as input
+    userID = flask.request.args.get("userID")
+    otherUser = user.query.filter_by(id=userID).first()
+    UserDATA = {
+        "id": otherUser.id,
+        "name": otherUser.username,
+        "email": otherUser.email,
+        "profilePic": otherUser.profile_pic,
+        "zipcode": otherUser.zipCode,
+    }
+
+    UserFriends = otherUser.friends
+    UserFriendsList = []
+    for x in range(len(UserFriends)):
+        UserFriendsList.append(UserFriends[x].FriendID)
+
+    UserFavoriteRestaurants = otherUser.favs
+    UserFavRestaurantsList = []
+    for x in range(len(UserFavoriteRestaurants)):
+        UserFavRestaurantsList.append(UserFavoriteRestaurants[x].Restaurant)
+
+    UserPosts = otherUser.posts
+    UserPostsList = []
+    for x in range(len(UserPosts)):
+        postComments = post_comments.query.filter_by(post_id=UserPosts[x].id)
+        postCommentsList = []
+        for y in range(len(postComments)):
+            commentData = {
+                "AuthorID": postComments[y].AuthorID,
+                "postText": postComments[y].postText,
+            }
+            postCommentsList.append(commentData)
+        PostDATA = {
+            "AuthorID": UserPosts[x].AuthorID,
+            "postText": UserPosts[x].postText,
+            "postTitle": UserPosts[x].postTitle,
+            "postLikes": UserPosts[x].postLikes,
+            "RestaurantName": UserPosts[x].RestaurantName,
+            "comments": postCommentsList,
+        }
+        UserPostsList.append(PostDATA)
+
+    return {
+        "UserDATA": UserDATA,
+        "UserFriendsList": UserFriendsList,
+        "UserFavRestaurantsList": UserFavRestaurantsList,
+        "UserPostsList": UserPostsList,
+    }
 
 
 @app.route("/")

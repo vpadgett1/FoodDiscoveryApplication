@@ -18,24 +18,34 @@ const UserPage = () => {
       RestaurantID: 'id',
     },
   ]);
+  const [otherUserID, setUserID] = useState('');
 
   function test() {
-    const location = useLocation();
-    const { userId } = location.state;
+    if (otherUserID === '') {
+      const location = useLocation();
+      const { userId } = location.state;
 
-    if (location && userId) {
-      console.log(userId);
-    } else {
-      console.log('error');
+      if (location && userId) {
+        console.log(userId);
+        setUserID(userId);
+      } else {
+        console.log('error');
+      }
     }
   }
 
   test();
 
-  // deconstruct props
-  // const [props] = props;
+  async function getDetailedUserInfo() {
+    if (otherUserID !== '') {
+      await fetch(`/getDetailedUserInfo?userID=${otherUserID}`)
+        .then((response) => response.json())
+        .then((data) => {
+          console.log(data);
+        }).catch((error) => console.log(error));
+    }
+  }
 
-  // TODO: fetch data from backend
   useEffect(() => {
     // get user data from the backend
     const FavoriteRestaurantDummyData = [
@@ -52,9 +62,9 @@ const UserPage = () => {
         RestaurantID: 'id3',
       },
     ];
-
+    getDetailedUserInfo();
     setUserFavoriteRestaurants([...FavoriteRestaurantDummyData]);
-  }, []);
+  }, [otherUserID]);
 
   function renderUserPosts() {
     return <div>User Posts</div>;
