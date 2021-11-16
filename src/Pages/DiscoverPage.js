@@ -25,12 +25,12 @@ const DiscoverPage = () => {
 
   // Add a new item to the page where receives type and adds to the state
   // eslint-disable-next-line no-unused-vars
-  const addItem = (type, content) => {
+  function addItem(type, content) {
     setItems((state) => [...state, { type, content, id: '' }]);
-  };
+  }
 
   // It will always update the page to be the most recent state
-  const updateItem = (id, newContent) => { // takes in id of item updating and the new content
+  function updateItem(id, newContent) { // takes in id of item updating and the new content
     setItems((state) => {
       // gets correct item by using id to retrieve index
       const itemIndex = state.findIndex((item) => item.id === id);
@@ -38,13 +38,13 @@ const DiscoverPage = () => {
       newState[itemIndex].content = newContent; // updates the content of entry by using index
       return newState;// return new array
     });
-  };
+  }
   // when you press enter a new post is created
-  const onKeyPress = (e) => {
-    if (e.key === 'Enter') {
-      addItem(null, '');
-    }
-  };
+  // const onKeyPress = (e) => {
+  //   if (e.key === 'Enter') {
+  //     addItem(null, '');
+  //   }
+  // };
 
   return (
     <>
@@ -61,7 +61,7 @@ const DiscoverPage = () => {
               type={item.type}
               content={item.content}
               updateItem={(newContent) => updateItem(item.id, newContent)}
-              onKeyPress={onKeyPress}
+              // onKeyPress={onKeyPress}
 
             />
           ))}
