@@ -30,7 +30,7 @@ load_dotenv(find_dotenv())
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
 # OAuth 2 client setup
-client = oauthlib.oauth2.WebApplicationClient(os.environ.get("GOOGLE_CLIENT_ID", None))
+client = oauthlib.WebApplicationClient(os.environ.get("GOOGLE_CLIENT_ID", None))
 
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
