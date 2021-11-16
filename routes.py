@@ -19,8 +19,8 @@ from flask_login import (
 import os
 import json
 import requests
-import oauthlib
-#from oauthlib.oauth2 import WebApplicationClient
+import flask_oauth 
+from flask_oauthlib.client import OAuth, OAuthException
 from googleauth import get_google_provider_cfg
 from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv, find_dotenv
