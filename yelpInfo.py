@@ -51,7 +51,7 @@ def request(host, path, api_key, url_params=None):
     headers = {
         "Authorization": "Bearer %s" % api_key,
     }
-    response = requests.request('GET', url, headers=headers, params=url_params)
+    response = requests.request("GET", url, headers=headers, params=url_params)
 
     print(response)
     return response.json()
@@ -72,6 +72,7 @@ def search(api_key, term, location):
         "limit": SEARCH_LIMIT,
     }
     return request(API_HOST, SEARCH_PATH, api_key, url_params=url_params)
+
 
 def search_withLimit(api_key, term, location, limit):
     """Query the Search API by a search term and location.
@@ -123,6 +124,7 @@ def query_api(term, location):
     response = get_business(API_KEY, business_id)
     return response["name"]
 
+
 def query_one_resturant(term, location):
     """Queries the API by the input values from the user.
     Args:
@@ -131,11 +133,11 @@ def query_one_resturant(term, location):
     """
     if not term:
         return None
-    #search for resturants with the API_KEY, the term (such as Starbucks, etc.), and the users zipcode that they stored in their profile
+    # search for resturants with the API_KEY, the term (such as Starbucks, etc.), and the users zipcode that they stored in their profile
     response = search(API_KEY, term, location)
-    #print(response)
+    # print(response)
     businesses = response.get("businesses")
-    #print(businesses)
+    # print(businesses)
     names = []
     locations = []
     hours = []
@@ -160,17 +162,46 @@ def query_one_resturant(term, location):
     pictures.append(response["image_url"])
 
     DATA = {
+        "names": names,
+        "locations": locations,
+        "hours": hours,
+        "phone_numbers": phone_numbers,
+        "ratings": rating,
+        "resturant_type_categories": resturant_type_categories,
+        "pictures": pictures,
+    }
+    # print(DATA)
+    return DATA
+
+def query_one_resturant(yelp_id):
+    """Queries the API by the input values from the user.
+    Args:
+        term (str): The search term to query.
+        location (str): The location of the business to query.
+    """
+    if not yelp_id:
+        return None
+    response = get_business(API_KEY, yelp_id)
+    names = response["name"]
+    location = response["location"]
+    openhours = response["hours"]
+    openinghour = openhours[0]["open"][0]["start"]
+    closinghour = openhours[0]["open"][0]["end"]
+    phone_numbers = response["display_phone"]
+    rating = response["rating"]
+    resturant_type_categories = response["categories"]
+    pictures = response["image_url"]
+
+    DATA = {
         'names' : names,
-        'locations': locations,
-        'hours': hours,
+        'locations': location,
+        'hours': [openinghour, closinghour],
         'phone_numbers': phone_numbers,
         'ratings' : rating,
         'resturant_type_categories' : resturant_type_categories,
         'pictures' : pictures
     }
-    #print(DATA)
     return DATA
-
 
 # a fucntion to query specific data from the resturants that we queery from instead of just the information from one specific resturant based on the query.
 def query_resturants(term, location, limit):
@@ -181,9 +212,9 @@ def query_resturants(term, location, limit):
     """
     if not term:
         return None
-    #search for resturants with the API_KEY, the term (such as Starbucks, etc.), and the users zipcode that they stored in their profile
-    response = search(API_KEY, term, location, limit)
-    #print(response)
+    # search for resturants with the API_KEY, the term (such as Starbucks, etc.), and the users zipcode that they stored in their profile
+    response = search_withLimit(API_KEY, term, location, limit)
+    # print(response)
     businesses = response.get("businesses")
     # print(businesses)
     names = []
@@ -230,10 +261,10 @@ def query_resturants(term, location, limit):
         "ratings": rating,
         "resturant_type_categories": resturant_type_categories,
         "pictures": pictures,
-        "coordinates":coordinates,
+        "coordinates": coordinates,
     }
-    #data = json.dumps(DATA)
-    #print(DATA)
+    # data = json.dumps(DATA)
+    # print(DATA)
     return DATA
 
 
