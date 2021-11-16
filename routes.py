@@ -125,7 +125,8 @@ def login():
         redirect_uri=flask.request.base_url + "/callback",
         scope=["openid", "email", "profile"],
     )
-    return flask.redirect(request_uri)
+    # return flask.redirect(request_uri)
+    return {"url": request_uri}
 
 
 @app.route("/login/callback")
@@ -182,35 +183,33 @@ def callback():
     login_user(user.query.filter_by(username=users_name).first())
 
     # Send user back to homepage
-    return flask.redirect(flask.url_for("testing_login"))
+    return flask.redirect(flask.url_for("onboarding"))
 
 
-@app.route("/testing_login")
-def testing_login():
-    return (
-        "<p>Hello, {}! You're logged in! Email: {}</p>"
-        "<div><p>Google Profile Picture:</p>"
-        '<img src="{}" alt="Google profile pic"></img></div>'
-        '<a class="button" href="/logout">Logout</a>'.format(
-            current_user.username, current_user.email, current_user.profile_pic
-        )
-    )
+@app.route("/onboarding")
+def onboarding():
+    return flask.render_template("index.html")
+
+
+@app.route("/discover")
+def discover():
+    return flask.render_template("index.html")
 
 
 @app.route("/logout")
 @login_required
 def logout():
     logout_user()
-    return flask.redirect(flask.url_for("bp.index"))
+    return {"status": "success"}
 
 
 @app.route("/createAccount", methods=["POST"])
 @login_required
 def createAccount():
-    zipcode = flask.request.get("zipcode")
+    zipcode = flask.request.args.get("zipcode")
     current_user.zipCode = zipcode
     db.session.commit()
-    yelpID = flask.request.get("yelpID")
+    yelpID = flask.request.args.get("yelpID")
     if yelpID:
         current_user.yelpRestaurantID = yelpID
         db.session.commit()
@@ -228,7 +227,7 @@ def createAccount():
             == zipcode
         ):
             status = "success"
-    return flask.jsonify(status)
+    return {"status": status}
 
 
 @app.route("/createPost", methods=["POST"])
@@ -398,16 +397,9 @@ def getPostsByUser():
 @app.route("/")
 def main():
     if current_user.is_authenticated:
-        return (
-            "<p>Hello, {}! You're logged in! Email: {}</p>"
-            "<div><p>Google Profile Picture:</p>"
-            '<img src="{}" alt="Google profile pic"></img></div>'
-            '<a class="button" href="/logout">Logout</a>'.format(
-                current_user.username, current_user.email, current_user.profile_pic
-            )
-        )
+        return flask.redirect(flask.url_for("discover"))
     else:
-        return '<a class="button" href="/login">Google Login</a>'
+        return flask.render_template("index.html")
 
 
 if __name__ == "__main__":

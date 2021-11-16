@@ -3,7 +3,7 @@ import React, {
   useState,
   useEffect,
 } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Navigation from '../Components/Navigation';
 // import PropTypes from 'prop-types';
 
@@ -13,6 +13,8 @@ const ProfilePage = () => {
   const [currentDisplay, setCurrentDisplay] = useState('General');
   const [friendsList, setFriendsList] = useState([]);
   const [favoriteRestaurantList, setUserFavoriteRestaurants] = useState([]);
+
+  const navigate = useNavigate();
 
   const dummyFriendsListData = [
     {
@@ -102,6 +104,15 @@ const ProfilePage = () => {
     setFriendsList([...friendsList, addFriend]);
   }
 
+  const logout = async () => {
+    await fetch('/logout')
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+        navigate('/', { replace: true });
+      }).catch((error) => console.log(error));
+  };
+
   function renderLeftSide() {
     return (
       <>
@@ -109,6 +120,7 @@ const ProfilePage = () => {
         <button type="button" onClick={() => changeDisplay('FriendsList')}>Friends List</button>
         <button type="button" onClick={() => changeDisplay('FavoriteRestaurants')}>Favorite Restaurants</button>
         <button type="button" onClick={() => changeDisplay('YourPosts')}>Your Posts</button>
+        <button type="button" onClick={logout}>Logout</button>
       </>
     );
   }
