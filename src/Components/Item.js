@@ -19,7 +19,7 @@ export const componentMapping = {
 };
 const Item = (props) => {
   const {
-    type, content, updateItem, onKeyPress,
+    type, content, updateItem,
   } = [props];
 
   // ref for DOM elements
@@ -35,7 +35,6 @@ const Item = (props) => {
     <div>
       {!type ? (
         <textarea
-          onKeyPress={onKeyPress}
           ref={textBox}
           value={content}
           onChange={(e) => updateItem(e.target.value)}

@@ -1,24 +1,34 @@
-import '../App.css';
+// import '../App.css';
 import React, {
-  // useState,
-  useEffect,
+// useState,
+// useEffect,
 } from 'react';
 // import PropTypes from 'prop-types';
 import Navigation from '../Components/Navigation';
+// import Post from '../Components/Post';
+// eslint-disable-next-line import/no-named-as-default
+import Item from '../Components/Item';
+import Toolbar from '../Components/Toolbar';
 
+// import Toolbar from '../Components/Toolbar';
 // this line will become const DiscoverPage = (props) => { once there are props
 const DiscoverPage = () => {
-  <Post/>;
   // set state
+  // <Post />;
+  // eslint-disable-next-line no-unused-vars
+
   const [items, setItems] = React.useState([{
     type: null,
     content: '',
     id: '',
   }]);
 
+  // Add a new item to the page where receives type and adds to the state
+  // eslint-disable-next-line no-unused-vars
   const addItem = (type, content) => {
     setItems((state) => [...state, { type, content, id: '' }]);
   };
+
   // It will always update the page to be the most recent state
   const updateItem = (id, newContent) => { // takes in id of item updating and the new content
     setItems((state) => {
@@ -29,38 +39,52 @@ const DiscoverPage = () => {
       return newState;// return new array
     });
   };
-  
-  // deconstruct props
-  // const [props] = props;
-
-  // // TODO: fetch data from backend
-  // useEffect(() => {
-
-  // }, []);
-
-  // TODO: Render component
+  // when you press enter a new post is created
+  const onKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      addItem(null, '');
+    }
+  };
 
   return (
     <>
       <Navigation />
       <div>This is the discover page</div>
-      <div className = "post">
-      <h3> Username </h3>
-      <div className = "postTitle">
-        <h2>Post Title</h2>
+      <div className="app">
+        <h1> My Discover Page </h1>
+        <div className="post">
+          {items.map((item) => (
+            // eslint-disable-next-line react/jsx-no-undef
+            // mapping over items array
+            <Item
+              key={item.AuthorID}
+              type={item.type}
+              content={item.content}
+              updateItem={(newContent) => updateItem(item.id, newContent)}
+              onKeyPress={onKeyPress}
+
+            />
+          ))}
+
+          <Toolbar />
+
+        </div>
       </div>
-      <div className = "postText">
-        <p>Some information about some restaurant that user
-          has gone to and now talking about if friends should go
-          or not or if it really sucks.</p>
-          <div className = "postComment">
-            <p>Some comment someone left about the post</p>
-          </div>
-      </div>
-    </div>
     </>
+
   );
 };
+
+// <Toolbar addItem={addItem} />
+// deconstruct props
+// const [props] = props;
+
+// TODO: fetch data from backend
+// useEffect(() => {
+
+// }, []);
+
+// TODO: Render component
 
 // TODO: PropTypes
 DiscoverPage.propTypes = {
