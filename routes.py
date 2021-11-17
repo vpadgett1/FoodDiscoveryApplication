@@ -20,7 +20,7 @@ import os
 import json
 import requests
 import oauthlib
-#from oauthlib.oauth2 import WebApplicationClient
+from oauthlib.oauth2 import WebApplicationClient
 from googleauth import get_google_provider_cfg
 from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv, find_dotenv
@@ -30,8 +30,7 @@ load_dotenv(find_dotenv())
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
 # OAuth 2 client setup
-client = oauthlib.WebApplicationClient(os.environ.get("GOOGLE_CLIENT_ID", None))
-
+client = WebApplicationClient(os.environ.get("GOOGLE_CLIENT_ID", None))
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
 login_manager = LoginManager()
@@ -392,7 +391,7 @@ def createComment():
     return flask.jsonify(status)
 
 
-@app.route("/search", methods=["POST"])
+@app.route("/search", methods=["GET"])
 @login_required
 def search_post():
     rest_name = flask.request.get("resturant_name")
