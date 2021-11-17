@@ -45,7 +45,28 @@ const DiscoverPage = () => {
   //     addItem(null, '');
   //   }
   // };
+  async function getRestaurantData() {
+    await fetch('/getRestaurantData')
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+      }//.catch(error => console.log(error));
 
+       useEffect(() => {
+         getRestaurantInfo();
+
+ }, []);
+  }
+}
+  async function getPosts(){
+    await fetch ('/createPosts')
+      .then((response)=> response.json())
+      .then((data)) => {
+        console.log(data);
+
+      }
+      
+  }
   return (
     <>
       <Navigation />

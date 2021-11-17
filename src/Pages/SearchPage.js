@@ -1,5 +1,5 @@
 import React,
-{ useState } from 'react';
+{ useState, useEffect } from 'react';
 import Navigation from '../Components/Navigation';
 import Search from '../Components/Search';
 // eslint-disable-next-line no-unused-vars
@@ -42,7 +42,19 @@ function SearchPage() {
         </ul>
       </div>
     </>
-
   );
+
+  async function getRestaurantData() {
+    await fetch('/getRestaurantData')
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+      }//.catch(error => console.log(error));
+
+       useEffect(() => {
+         getRestaurantInfo();
+
+ }, []);
+  }
 }
 export default SearchPage;
