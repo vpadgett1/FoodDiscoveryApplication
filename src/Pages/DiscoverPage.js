@@ -5,23 +5,42 @@ import React, {
 } from 'react';
 // import PropTypes from 'prop-types';
 import Navigation from '../Components/Navigation';
+import Post from '../Components/Post';
 
-// this line will become const DiscoverPage = (props) => { once there are props
 const DiscoverPage = () => {
   // set state
   const [userID, setUserID] = useState([]);
+  const [posts, setPosts] = useState([]);
 
-  // deconstruct props
-  // const [props] = props;
+  const postDummyData = [{
+    AuthorID: 'author 1', postText: 'text 1', postTitle: 'title 1', postLikes: 0,
+  },
+  {
+    AuthorID: 'author 2', postText: 'text 2', postTitle: 'title 2', postLikes: 0,
+  },
+  {
+    AuthorID: 'author 3', postText: 'text 3', postTitle: 'title 3', postLikes: 0,
+  },
+  {
+    AuthorID: 'author 4', postText: 'text 4', postTitle: 'title 4', postLikes: 0,
+  },
+  {
+    AuthorID: 'author 5', postText: 'text 5', postTitle: 'title 5', postLikes: 0,
+  }];
 
-  // TODO: fetch data from backend
+  // getData gets all the information needed for the discover page
   async function getData() {
+    // get the user ID
     await fetch('/getUserID')
       .then((response) => response.json())
       .then((result) => {
         console.log(result);
         setUserID(result.userID);
       }).catch((error) => console.log(error));
+
+    // get content for the page
+    setPosts([...postDummyData]);
+    console.log('posts saved');
   }
 
   useEffect(() => {
@@ -41,8 +60,29 @@ const DiscoverPage = () => {
       .then((response) => response.json())
       .then((result) => {
         console.log(result);
+        // we want to add this newly created post to the top of the page
+        // so the user knows their post is rendered
+        const p = {
+          AuthorID: userID, postText: body, postTitle: title, postLikes: 0,
+        };
+        setPosts([p, ...posts]);
       }).catch((error) => console.log(error));
   };
+
+  function renderPosts() {
+    return (
+      <>
+        {posts && posts.map((x) => (
+          <Post
+            AuthorID={x.AuthorID}
+            postText={x.postText}
+            postTitle={x.postTitle}
+            postLikes={x.postLikes}
+          />
+        ))}
+      </>
+    );
+  }
 
   return (
     <>
@@ -54,13 +94,9 @@ const DiscoverPage = () => {
         <input type="text" id="restaurantName" placeholder="Name of Restaurant" />
         <button type="submit">Publish</button>
       </form>
+      {renderPosts()}
     </>
   );
-};
-
-// TODO: PropTypes
-DiscoverPage.propTypes = {
-
 };
 
 export default DiscoverPage;
