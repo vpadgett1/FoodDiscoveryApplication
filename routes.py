@@ -19,8 +19,9 @@ from flask_login import (
 import os
 import json
 import requests
-import oauthlib
+import flask_oauth
 from oauthlib.oauth2 import WebApplicationClient
+from flask_oauthlib.client import OAuth, OAuthException
 from googleauth import get_google_provider_cfg
 from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv, find_dotenv
@@ -699,5 +700,5 @@ def main():
 
 if __name__ == "__main__":
     app.run(
-        host=os.getenv("IP", "127.0.0.1"), port=int(os.getenv("PORT", 5000)), debug=True
+        host=os.getenv("IP", "0.0.0.0"), port=int(os.getenv("PORT", 5000)), debug=True
     )
