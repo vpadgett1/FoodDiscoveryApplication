@@ -170,7 +170,7 @@ google = oauth.remote_app(
 
 @app.route('/login', methods=["POST"])
 def login_post():
-    return google.authorize(callback=flask.url_for('authorized'))
+    return google.authorize(callback=flask.url_for('authorized', _external=True))
 
 @google.tokengetter
 def get_google_oauth_token():
@@ -187,11 +187,12 @@ def authorized():
         )
     flask.session['google_token'] = (resp['access_token'], '')
     me = google.get('userinfo')
+    print(me.data)
     #userinfo_response = requests.get(uri, headers=headers, data=body)
-    if me.json().get("email_verified"):
-        users_email = me.json()["email"]
-        picture = me.json()["picture"]
-        users_name = me.json()["given_name"]
+    if me.data["verified_email"]:
+        users_email = me.data["email"]
+        picture = me.data["picture"]
+        users_name = me.data["id"]
     else:
         return "User email not available or not verified by Google.", 400
     # Create a user in our database with the information provided by the Google response json
