@@ -26,6 +26,18 @@ function SearchPage() {
   const filteredRestaurant = filterRestaurant(posts, query);
   const [searchQuery, setSearchQuery] = useState(query || '');
 
+  async function getRestaurantData() {
+    await fetch('/getRestaurantData')
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+      }).catch((error) => console.log(error));
+  }
+
+  useEffect(() => {
+    getRestaurantData();
+  }, []);
+
   return (
     <>
       <Navigation />
@@ -43,18 +55,6 @@ function SearchPage() {
       </div>
     </>
   );
-
-  async function getRestaurantData() {
-    await fetch('/getRestaurantData')
-      .then((response) => response.json())
-      .then((data) => {
-        console.log(data);
-      }//.catch(error => console.log(error));
-
-       useEffect(() => {
-         getRestaurantInfo();
-
- }, []);
-  }
 }
+
 export default SearchPage;
