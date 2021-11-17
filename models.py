@@ -15,7 +15,7 @@ class user(UserMixin, db.Model):
     email = db.Column(db.String(100), unique=True)
     profile_pic = db.Column(db.String(100))
     zipCode = db.Column(db.String(20))
-    yelpRestaurantID = db.Column(db.String(20))
+    yelpRestaurantID = db.Column(db.String(100))
     favs = db.relationship("favorite_restraunts", backref="user", lazy=True)
     friends = db.relationship("friends", backref="user", lazy=True)
     posts = db.relationship("user_post", backref="user", lazy=True)

@@ -20,7 +20,7 @@ import os
 import json
 import requests
 import oauthlib
-#from oauthlib.oauth2 import WebApplicationClient
+from oauthlib.oauth2 import WebApplicationClient
 from googleauth import get_google_provider_cfg
 from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv, find_dotenv
@@ -30,7 +30,7 @@ load_dotenv(find_dotenv())
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
 # OAuth 2 client setup
-client = oauthlib.WebApplicationClient(os.environ.get("GOOGLE_CLIENT_ID", None))
+client = WebApplicationClient(os.environ.get("GOOGLE_CLIENT_ID", None))
 
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
@@ -81,7 +81,7 @@ def profile():
     UserPosts = current_user.posts
     UserPostsList = []
     for x in range(len(UserPosts)):
-        postComments = post_comments.query.filter_by(post_id=UserPosts[x].id)
+        postComments = post_comments.query.filter_by(post_id=UserPosts[x].id).all()
         postCommentsList = []
         for y in range(len(postComments)):
             commentData = {
@@ -217,6 +217,10 @@ def callback():
 
     # if user already exists, send straight to their home page
     if previousUser:
+        # check if user finished onboarding
+        print(current_user.zipCode)
+        if current_user.zipCode == None:
+            return flask.redirect(flask.url_for("onboarding"))
         # if merchant user, send to merchant homepage
         # otherwise, regular
         if current_user.yelpRestaurantID:
@@ -350,13 +354,13 @@ def createAccount():
     return {"status": status}
 
 
-@app.route("/createPost", methods=["POST"])
+@app.route("/createPost")
 @login_required
 def createPost():
-    AuthorID = flask.request.get("AuthorID")
-    postText = flask.request.get("postText")
-    postTitle = flask.request.get("postTitle")
-    RestaurantName = flask.request.get("RestaurantName")
+    AuthorID = flask.request.args.get("AuthorID")
+    postText = flask.request.args.get("postText")
+    postTitle = flask.request.args.get("postTitle")
+    RestaurantName = flask.request.args.get("RestaurantName")
     newUserPost = user_post(
         AuthorID=AuthorID,
         postText=postText,
@@ -371,7 +375,7 @@ def createPost():
     status = "failed"
     if user_post.query.filter_by(postTitle=postTitle, AuthorID=AuthorID).first():
         status = "success"
-    return flask.jsonify(status)
+    return {"status": status}
 
 
 @app.route("/createComment", methods=["POST"])
@@ -475,6 +479,7 @@ def deleteFollower():
             "message": "You are not friends with this person. Please try again to friend this user.",
         }
 
+
 @app.route("/addFavoriteRestaurant", methods=["POST"])
 @login_required
 def addFavoriteRestaurant():
@@ -485,7 +490,9 @@ def addFavoriteRestaurant():
         user_id=current_user.username, RestaurantName=yelp_restaurant_id
     ).all()
     if not following_check:
-        follow_request = favorite_restraunts(user_id=current_user.username, RestaurantName=yelp_restaurant_id)
+        follow_request = favorite_restraunts(
+            user_id=current_user.username, RestaurantName=yelp_restaurant_id
+        )
         db.session.add(follow_request)
         try:
             db.session.commit()
@@ -511,6 +518,7 @@ def addFavoriteRestaurant():
                 "message": "You have already favorited this restaurant. Please try again to remove this restaurant from your favorites.",
             }
         )
+
 
 @app.route("/deleteFavoriteRestaurant", methods=["POST"])
 @login_required
@@ -549,28 +557,17 @@ def deleteFavoriteRestaurant():
             }
         )
 
-app.route("/getRestaurantData", methods = ["GET"])
+
+@app.route("/getRestaurantData")
 def getRestaurantData():
     restaurant_id = current_user.yelpRestaurantID
     store_data = query_one_resturant(restaurant_id)
     if not store_data:
-        return flask.jsonify(
-            {
-                "status": 400,
-                "message": "Could not find data for this restaurant.",
-            }
-        )
-    return flask.jsonify(
-                {
-                    "status": 200,
-                    "message": "Retrieved restaurant data.",
-                    "data" : store_data
-                }
-            )
-
-app.route("/getPostsByUser", methods=["GET"])
+        return {"status": 400, "message": "Could not find data for this restaurant."}
+    return {"status": 200, "message": "Retrieved restaurant data.", "data": store_data}
 
 
+@app.route("/getPostsByUser", methods=["GET"])
 def getPostsByUser():
     posts = user_post.query.filter_by(user_id=current_user.username).all()
     postsData = []
@@ -680,6 +677,12 @@ def isFriends():
         return {"status": 200, "isFriends": False}
 
     return {"status": 200, "isFriends": True}
+
+
+@app.route("/getUserID")
+@login_required
+def getUserID():
+    return {"userID": current_user.id}
 
 
 @app.route("/")
