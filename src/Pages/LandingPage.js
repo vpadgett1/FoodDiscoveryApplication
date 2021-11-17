@@ -6,26 +6,27 @@ import React, {
 // import PropTypes from 'prop-types';
 
 // this line will become const LandingPage = (props) => { once there are props
-const LandingPage = () => {
-  const login = async () => {
-    await fetch('/login')
-      .then((response) => response.json())
-      .then((result) => {
-        console.log(result);
-        const uri = result.url;
-        if (uri !== '') {
-          window.location.assign(uri);
-        }
-      })
-      .catch((response) => console.log(response));
-  };
+const LandingPage = () =>
+//   const login = async () => {
+//     await fetch('/login')
+//       .then((response) => response.json())
+//       .then((result) => {
+//         console.log(result);
+//         // const uri = result.url;
+//         // if (uri !== '') {
+//         //   window.location.assign(uri);
+//         // }
+//       })
+//       .catch((response) => console.log(response));
+//   };
 
-  return (
+  // eslint-disable-next-line implicit-arrow-linebreak
+  (
     <>
-      <button type="button" onClick={login}>Log In</button>
+      <form method="POST" action="/login">
+        <input type="submit" name="Login" id="Login" />
+      </form>
       <div>Landing Page</div>
     </>
   );
-};
-
 export default LandingPage;
