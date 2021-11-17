@@ -177,19 +177,19 @@ const ProfilePage = () => {
 
   function renderLeftSide() {
     return (
-      <>
-        <button type="button" onClick={() => changeDisplay('General')}>General</button>
-        <button type="button" onClick={() => changeDisplay('FriendsList')}>Friends List</button>
-        <button type="button" onClick={() => changeDisplay('FavoriteRestaurants')}>Favorite Restaurants</button>
-        <button type="button" onClick={() => changeDisplay('YourPosts')}>Your Posts</button>
-        <button type="button" onClick={logout}>Logout</button>
-      </>
+      <div id="profilePageLeftSide">
+        <button type="button" onClick={() => changeDisplay('General')} id="GeneralButton">General</button>
+        <button type="button" onClick={() => changeDisplay('FriendsList')} id="FriendsListButton">Friends List</button>
+        <button type="button" onClick={() => changeDisplay('FavoriteRestaurants')} id="FavRestaurantButton">Favorite Restaurants</button>
+        <button type="button" onClick={() => changeDisplay('YourPosts')} id="YourPostsButton">Your Posts</button>
+        <button type="button" onClick={logout} id="LogoutButton">Logout</button>
+      </div>
     );
   }
 
   function renderGeneral() {
     return (
-      <>
+      <div id="GeneralSubcategory">
         <div>General Rendered</div>
         <img src={profilePic} alt="profile pic" />
         <div>
@@ -207,14 +207,14 @@ const ProfilePage = () => {
           {' '}
           {zipcode}
         </div>
-      </>
+      </div>
     );
   }
 
   // NOTE: In sprint 2, ideally also display the name of the user and not just the id ({x.name})
   function renderFriendsList() {
     return (
-      <>
+      <div id="FriendsListSubcategory">
         <div>Friends List Rendered</div>
         <input type="text" id="inputFriendID" placeholder="enter friend ID" />
         <button type="button" onClick={() => addToFriendsList()} id="addFriendButton">Add Friend</button>
@@ -229,13 +229,13 @@ const ProfilePage = () => {
             <button type="button" onClick={() => deleteFromFriendsList(x.user_id)}>Delete</button>
           </>
         ))}
-      </>
+      </div>
     );
   }
 
   function renderFavoriteRestaurants() {
     return (
-      <>
+      <div id="FavRestaurantSubcategory">
         <div>Favorite List Rendered</div>
         {favoriteRestaurantList.map((x) => (
           <>
@@ -247,15 +247,15 @@ const ProfilePage = () => {
             </Link>
           </>
         ))}
-      </>
+      </div>
     );
   }
 
   function renderYourPosts() {
     return (
-      <>
+      <div id="YourPostsSubcategory">
         <div>Your Posts Rendered</div>
-      </>
+      </div>
     );
   }
 
@@ -278,6 +278,7 @@ const ProfilePage = () => {
   return (
     <>
       <Navigation />
+      <div>Profile Page</div>
       <div className="mainPageBody">
         {renderLeftSide()}
         {renderBody()}
