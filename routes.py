@@ -20,7 +20,7 @@ import os
 import json
 import requests
 import oauthlib
-#from oauthlib.oauth2 import WebApplicationClient
+from oauthlib.oauth2 import WebApplicationClient
 from googleauth import get_google_provider_cfg
 from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv, find_dotenv
@@ -30,7 +30,7 @@ load_dotenv(find_dotenv())
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
 # OAuth 2 client setup
-client = oauthlib.WebApplicationClient(os.environ.get("GOOGLE_CLIENT_ID", None))
+client = WebApplicationClient(os.environ.get("GOOGLE_CLIENT_ID", None))
 
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
@@ -54,30 +54,23 @@ def timeConvert(miliTime):
         hours -= 12
     return ("%d:%02d" + setting) % (hours, minutes)
 
-
 bp = flask.Blueprint("bp", __name__, template_folder="./build")
 
-
-@bp.route("/getUserProfile")
-@login_required
-def profile():
-    UserDATA = {
-        "name": current_user.username,
-        "email": current_user.email,
-        "profilePic": current_user.profile_pic,
-        "zipcode": current_user.zipCode,
-        "yelpRestaurantID": current_user.yelpRestaurantID,
-    }
+def getFriendsList():
     UserFriends = current_user.friends
     UserFriendsList = []
     for x in range(len(UserFriends)):
         UserFriendsList.append({"user_id": UserFriends[x].FriendID})
+    return UserFriendsList
 
+def getFavoriteRestaurantsList():
     UserFavoriteRestaurants = current_user.favs
     UserFavRestaurantsList = []
     for x in range(len(UserFavoriteRestaurants)):
         UserFavRestaurantsList.append(UserFavoriteRestaurants[x].Restaurant)
+    return UserFavRestaurantsList
 
+def getPostsList():
     UserPosts = current_user.posts
     UserPostsList = []
     for x in range(len(UserPosts)):
@@ -98,6 +91,53 @@ def profile():
             "comments": postCommentsList,
         }
         UserPostsList.append(PostDATA)
+    return UserPostsList
+
+@bp.route("/getUserProfile")
+@login_required
+def profile():
+    UserDATA = {
+        "name": current_user.username,
+        "email": current_user.email,
+        "profilePic": current_user.profile_pic,
+        "zipcode": current_user.zipCode,
+        "yelpRestaurantID": current_user.yelpRestaurantID,
+    }
+    UserFriendsList = getFriendsList()
+
+    UserFavRestaurantsList = getFavoriteRestaurantsList()
+
+    UserPostsList = getPostsList()
+    # UserFriends = current_user.friends
+    # UserFriendsList = []
+    # for x in range(len(UserFriends)):
+    #     UserFriendsList.append({"user_id": UserFriends[x].FriendID})
+
+    # UserFavoriteRestaurants = current_user.favs
+    # UserFavRestaurantsList = []
+    # for x in range(len(UserFavoriteRestaurants)):
+    #     UserFavRestaurantsList.append(UserFavoriteRestaurants[x].Restaurant)
+
+    # UserPosts = current_user.posts
+    # UserPostsList = []
+    # for x in range(len(UserPosts)):
+    #     postComments = post_comments.query.filter_by(post_id=UserPosts[x].id)
+    #     postCommentsList = []
+    #     for y in range(len(postComments)):
+    #         commentData = {
+    #             "AuthorID": postComments[y].AuthorID,
+    #             "postText": postComments[y].postText,
+    #         }
+    #         postCommentsList.append(commentData)
+    #     PostDATA = {
+    #         "AuthorID": UserPosts[x].AuthorID,
+    #         "postText": UserPosts[x].postText,
+    #         "postTitle": UserPosts[x].postTitle,
+    #         "postLikes": UserPosts[x].postLikes,
+    #         "RestaurantName": UserPosts[x].RestaurantName,
+    #         "comments": postCommentsList,
+    #     }
+    #     UserPostsList.append(PostDATA)
 
     return {
         "UserDATA": UserDATA,
@@ -105,53 +145,6 @@ def profile():
         "UserFavRestaurantsList": UserFavRestaurantsList,
         "UserPostsList": UserPostsList,
     }
-
-
-@bp.route("/zipcode", methods=["GET", "POST"])
-def zipcode():
-    if flask.request.method == "POST":
-        yelp_api_key = os.getenv("YELP_APIKEY")
-        business_search_url = "https://api.yelp.com/v3/businesses/search"
-        newheaders = {"Authorization": "bearer %s" % yelp_api_key}
-        zip_code = current_user.zipcode
-        search_params = {"term": "restaurants", "location": zip_code, "limit": 25}
-        restaurant_search_response = requests.get(
-            business_search_url, headers=newheaders, params=search_params
-        )
-        restaurant_search_response_data = restaurant_search_response.json()
-        businesses = restaurant_search_response_data["businesses"]
-
-        name = []
-        img_url = []
-        rating = []
-        is_closed = []
-        url = []
-        coord = []
-        id = []
-
-        for business in businesses:
-            name.append(business["name"])
-            img_url.append(business["image_url"])
-            rating.append(business["rating"])
-            is_closed.append(business["is_closed"])
-            url.append(business["url"])
-            coord.append(business["coordinates"])
-            id.append(business["id"])
-
-        DATA = {
-            "names": name,
-            "img_urls": img_url,
-            "ratings": rating,
-            "is_closeds": is_closed,
-            "urls": url,
-            "coords": coord,
-            "ids": id,
-        }
-
-        return flask.jsonify({"data": DATA})
-    else:
-        return flask.render_template("index.html")
-
 
 app.register_blueprint(bp)
 
@@ -249,15 +242,9 @@ def map():
     if flask.request.method == "POST":
 
         zip_code = flask.request.json.get("zipcode")
-        print(zip_code)
         search_limit = 13
-        # search_params = {'term':'restaurants',
-        #                 'location':zip_code,
-        #                 'limit':25
-        # }
-        # restaurant_search_response = requests.get(business_search_url, headers = newheaders, params = search_params)
         restaurant_results = query_resturants("restaurant", zip_code, search_limit)
-        print(restaurant_results)
+        # print(restaurant_results)
 
         name = []
         img_url = []
@@ -279,7 +266,7 @@ def map():
                     "title"
                 ],
                 "image": restaurant_results["pictures"][x],
-            }
+            }   
             name.append(rest_info["name"])
             img_url.append(rest_info["image"])
             rating.append(rest_info["rating"])
@@ -411,7 +398,7 @@ def search_post():
             "image": yelp_results["pictures"][x],
         }
         resturant_data.append(rest_info)
-    # return flask.render_template("", resturant_data = resturant_data)
+    return flask.render_template("", resturant_data = resturant_data)
     return flask.jsonify(resturant_data)
 
 
@@ -569,8 +556,6 @@ def getRestaurantData():
             )
 
 app.route("/getPostsByUser", methods=["GET"])
-
-
 def getPostsByUser():
     posts = user_post.query.filter_by(user_id=current_user.username).all()
     postsData = []
