@@ -19,6 +19,7 @@ from flask_login import (
 import os
 import json
 import requests
+import oauthlib
 from oauthlib.oauth2 import WebApplicationClient
 from googleauth import get_google_provider_cfg
 from flask_sqlalchemy import SQLAlchemy
@@ -474,6 +475,7 @@ def deleteFollower():
             "message": "You are not friends with this person. Please try again to friend this user.",
         }
 
+
 @app.route("/addFavoriteRestaurant", methods=["POST"])
 @login_required
 def addFavoriteRestaurant():
@@ -484,7 +486,9 @@ def addFavoriteRestaurant():
         user_id=current_user.username, RestaurantName=yelp_restaurant_id
     ).all()
     if not following_check:
-        follow_request = favorite_restraunts(user_id=current_user.username, RestaurantName=yelp_restaurant_id)
+        follow_request = favorite_restraunts(
+            user_id=current_user.username, RestaurantName=yelp_restaurant_id
+        )
         db.session.add(follow_request)
         try:
             db.session.commit()
@@ -510,6 +514,7 @@ def addFavoriteRestaurant():
                 "message": "You have already favorited this restaurant. Please try again to remove this restaurant from your favorites.",
             }
         )
+
 
 @app.route("/deleteFavoriteRestaurant", methods=["POST"])
 @login_required
@@ -548,7 +553,10 @@ def deleteFavoriteRestaurant():
             }
         )
 
-app.route("/getRestaurantData", methods = ["GET"])
+
+app.route("/getRestaurantData", methods=["GET"])
+
+
 def getRestaurantData():
     restaurant_id = current_user.yelpRestaurantID
     store_data = query_one_resturant(restaurant_id)
@@ -560,12 +568,9 @@ def getRestaurantData():
             }
         )
     return flask.jsonify(
-                {
-                    "status": 200,
-                    "message": "Retrieved restaurant data.",
-                    "data" : store_data
-                }
-            )
+        {"status": 200, "message": "Retrieved restaurant data.", "data": store_data}
+    )
+
 
 app.route("/getPostsByUser", methods=["GET"])
 
