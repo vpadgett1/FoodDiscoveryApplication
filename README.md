@@ -1,6 +1,8 @@
 # READ ME: Information on FoodMe, your newest food recommendations application
+
 ## [Link to FoodMe Application](https://still-badlands-73263.herokuapp.com/)
-This web application has been created and designed to become your new home for recieving food recommendations from your friends. Here you can follow your friends and watch as they post the latest places they have ate and whether they would recommend this resturant to places or no. 
+
+This web application has been created and designed to become your new home for recieving food recommendations from your friends. Here you can follow your friends and watch as they post the latest places they have ate and whether they would recommend this resturant to places or no.
 
 ## Requirements
 
@@ -31,6 +33,7 @@ This web application has been created and designed to become your new home for r
 ### Disabled rules:
 
 1. no-console : This is disabled for sprint 1 where the code is not yet polished but we need to test whether or not front end is connected with back end. This should be removed by sprint 2.
+2. react/no-unused-prop-types : This is disabled on some files using propTypes due to false positives (https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/no-unused-prop-types.md)
 
 ## Props
 
