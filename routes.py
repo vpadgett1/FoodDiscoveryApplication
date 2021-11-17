@@ -19,7 +19,8 @@ from flask_login import (
 import os
 import json
 import requests
-import flask_oauth 
+import flask_oauth
+from oauthlib.oauth2 import WebApplicationClient
 from flask_oauthlib.client import OAuth, OAuthException
 from googleauth import get_google_provider_cfg
 from flask_sqlalchemy import SQLAlchemy
@@ -30,7 +31,7 @@ load_dotenv(find_dotenv())
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
 # OAuth 2 client setup
-client = oauthlib.WebApplicationClient(os.environ.get("GOOGLE_CLIENT_ID", None))
+client = WebApplicationClient(os.environ.get("GOOGLE_CLIENT_ID", None))
 
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
