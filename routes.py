@@ -199,7 +199,7 @@ def authorized():
 
     # Doesn't exist? Add it to the database.
     previousUser = True
-    if not user.query.filter_by(username=users_name).first():
+    if not user.query.filter_by(email=users_email).first():
         db.session.add(newUser)
         db.session.commit()
         previousUser = False
@@ -207,7 +207,7 @@ def authorized():
         # ))
 
     # Begin user session by logging the user in
-    login_user(user.query.filter_by(username=users_name).first())
+    login_user(user.query.filter_by(email=users_email).first())
 
     # if user already exists, send straight to their home page
     if previousUser:
@@ -301,7 +301,7 @@ def map():
 def logout():
     logout_user()
     flask.session.pop("google_token", None)
-    return flask.redirect(flask.url_for("login"))
+    return {"status": 200}
 
 
 @app.route("/post", methods=["POST", "GET"])
