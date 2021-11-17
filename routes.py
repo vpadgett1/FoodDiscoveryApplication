@@ -168,9 +168,9 @@ google = oauth.remote_app(
 )
 
 
-@app.route('/login')
-def login():
-    return google.authorize(callback=flask.url_for('authorized', _external=True))
+@app.route('/login', methods=["POST"])
+def login_post():
+    return google.authorize(callback=flask.url_for('authorized'))
 
 @google.tokengetter
 def get_google_oauth_token():
