@@ -5,7 +5,7 @@ import React, {
 } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Navigation from '../Components/Navigation';
-// import PropTypes from 'prop-types';
+import Post from '../Components/Post';
 
 // this line will become const ProfilePage = (props) => { once there are props
 const ProfilePage = () => {
@@ -20,38 +20,6 @@ const ProfilePage = () => {
   const [zipcode, setZipcode] = useState('');
 
   const navigate = useNavigate();
-
-  /* const dummyFriendsListData = [
-    {
-      name: 'friend 1',
-      user_id: 'id1',
-    },
-    {
-      name: 'friend 2',
-      user_id: 'id2',
-    },
-    {
-      name: 'friend 3',
-      user_id: 'id3',
-    },
-  ];
-
-  const FavoriteRestaurantDummyData = [
-    {
-      RestaurantName: 'name',
-      RestaurantID: 'id',
-    },
-    {
-      RestaurantName: 'name2',
-      RestaurantID: 'id2',
-    },
-    {
-      RestaurantName: 'name3',
-      RestaurantID: 'id3',
-    },
-  ]; */
-  // deconstruct props
-  // const [props] = props;
 
   async function getUserProfileInformation() {
     await fetch('/getUserProfile')
@@ -177,19 +145,19 @@ const ProfilePage = () => {
 
   function renderLeftSide() {
     return (
-      <>
-        <button type="button" onClick={() => changeDisplay('General')}>General</button>
-        <button type="button" onClick={() => changeDisplay('FriendsList')}>Friends List</button>
-        <button type="button" onClick={() => changeDisplay('FavoriteRestaurants')}>Favorite Restaurants</button>
-        <button type="button" onClick={() => changeDisplay('YourPosts')}>Your Posts</button>
-        <button type="button" onClick={logout}>Logout</button>
-      </>
+      <div id="profilePageLeftSide">
+        <button type="button" onClick={() => changeDisplay('General')} id="GeneralButton">General</button>
+        <button type="button" onClick={() => changeDisplay('FriendsList')} id="FriendsListButton">Friends List</button>
+        <button type="button" onClick={() => changeDisplay('FavoriteRestaurants')} id="FavRestaurantButton">Favorite Restaurants</button>
+        <button type="button" onClick={() => changeDisplay('YourPosts')} id="YourPostsButton">Your Posts</button>
+        <button type="button" onClick={logout} id="LogoutButton">Logout</button>
+      </div>
     );
   }
 
   function renderGeneral() {
     return (
-      <>
+      <div id="GeneralSubcategory">
         <div>General Rendered</div>
         <img src={profilePic} alt="profile pic" />
         <div>
@@ -207,14 +175,14 @@ const ProfilePage = () => {
           {' '}
           {zipcode}
         </div>
-      </>
+      </div>
     );
   }
 
   // NOTE: In sprint 2, ideally also display the name of the user and not just the id ({x.name})
   function renderFriendsList() {
     return (
-      <>
+      <div id="FriendsListSubcategory">
         <div>Friends List Rendered</div>
         <input type="text" id="inputFriendID" placeholder="enter friend ID" />
         <button type="button" onClick={() => addToFriendsList()} id="addFriendButton">Add Friend</button>
@@ -229,13 +197,13 @@ const ProfilePage = () => {
             <button type="button" onClick={() => deleteFromFriendsList(x.user_id)}>Delete</button>
           </>
         ))}
-      </>
+      </div>
     );
   }
 
   function renderFavoriteRestaurants() {
     return (
-      <>
+      <div id="FavRestaurantSubcategory">
         <div>Favorite List Rendered</div>
         {favoriteRestaurantList.map((x) => (
           <>
@@ -247,15 +215,23 @@ const ProfilePage = () => {
             </Link>
           </>
         ))}
-      </>
+      </div>
     );
   }
 
   function renderYourPosts() {
     return (
-      <>
+      <div id="YourPostsSubcategory">
         <div>Your Posts Rendered</div>
-      </>
+        {userPosts && userPosts.map((x) => (
+          <Post
+            AuthorID={x.AuthorID}
+            postText={x.postText}
+            postTitle={x.postTitle}
+            postLikes={x.postLikes}
+          />
+        ))}
+      </div>
     );
   }
 
@@ -278,17 +254,13 @@ const ProfilePage = () => {
   return (
     <>
       <Navigation />
+      <div>Profile Page</div>
       <div className="mainPageBody">
         {renderLeftSide()}
         {renderBody()}
       </div>
     </>
   );
-};
-
-// TODO: PropTypes
-ProfilePage.propTypes = {
-
 };
 
 export default ProfilePage;

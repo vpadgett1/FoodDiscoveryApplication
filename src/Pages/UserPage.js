@@ -25,45 +25,58 @@ const UserPage = () => {
   function test() {
     if (otherUserID === '') {
       const location = useLocation();
-      const { userId } = location.state;
+      if (location.state) {
+        const { userId } = location.state ? location.state : '';
 
-      if (location && userId) {
-        console.log(userId);
-        setUserID(userId);
-      } else {
-        console.log('error');
+        if (location && userId) {
+          console.log(userId);
+          setUserID(userId);
+        } else {
+          console.log('error');
+        }
       }
     }
   }
 
   test();
 
+  async function getUserInfo() {
+    return fetch(`/getDetailedUserInfo?userID=${otherUserID}`)
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+        return data;
+      }).catch((error) => console.log(error));
+  }
+
+  async function isFriends() {
+    return fetch(`/isFriends?follower_id=${otherUserID}`)
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.status === 200) {
+          return data.isFriends;
+        }
+        console.log(data);
+        return false;
+      }).catch(() => false);
+  }
+
   async function getDetailedUserInfo() {
     // get information about the user
     if (otherUserID !== '') {
-      await fetch(`/getDetailedUserInfo?userID=${otherUserID}`)
-        .then((response) => response.json())
-        .then((data) => {
-          console.log(data);
+      const userInfo = await getUserInfo();
 
-          if (data.UserDATA) {
-            setName(data.UserDATA.name);
-            setProfilePic(data.UserDATA.profilePic);
-          }
+      if (userInfo.UserDATA) {
+        setName(userInfo.UserDATA.name);
+        setProfilePic(userInfo.UserDATA.profilePic);
+      }
 
-          if (data.UserFavRestaurantsList) {
-            setUserFavoriteRestaurants([...data.UserFavRestaurantsList]);
-          }
-        }).catch((error) => console.log(error));
+      if (userInfo.UserFavRestaurantsList) {
+        setUserFavoriteRestaurants([...userInfo.UserFavRestaurantsList]);
+      }
 
-      await fetch(`/isFriends?follower_id=${otherUserID}`)
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.status === 200) {
-            setIsFriend(data.isFriends);
-          }
-          console.log(data);
-        }).catch((error) => console.log(error));
+      const friends = isFriends();
+      setIsFriend(friends);
     }
   }
 
@@ -74,22 +87,22 @@ const UserPage = () => {
   }, [otherUserID]);
 
   function renderUserPosts() {
-    return <div>User Posts</div>;
+    return <div id="userPosts">User Posts</div>;
   }
 
   function renderUserFavoriteRestaurants() {
     return (
       <>
-        <div>User Favorite Restaurants</div>
+        <div id="userFavRestaurants">User Favorite Restaurants</div>
         {UserFavoriteRestaurants.map((x) => (
-          <>
+          <div key={x.RestaurantID}>
             <Link
               to="/restaurantprofile"
               state={{ restaurantID: x.RestaurantID }}
             >
               x.RestaurantName
             </Link>
-          </>
+          </div>
         ))}
       </>
     );
@@ -101,6 +114,7 @@ const UserPage = () => {
     // remove friend, otherwise add friend
     if (isFriend) {
       // disable button from being pressed while writing to the database
+      addFriendButton.setAttribute('disabled', true);
 
       // remove new relationship to the database
       await fetch(`/deleteFollower?follower_id=${otherUserID}`)
@@ -112,9 +126,14 @@ const UserPage = () => {
             addFriendButton.innerHTML = 'Add Friend';
             setIsFriend(false);
           }
-        }).catch((error) => console.log(error));
+          addFriendButton.disabled = false;
+        }).catch((error) => {
+          console.log(error);
+          addFriendButton.disabled = false;
+        });
     } else {
       // disable button from being pressed while writing to the database
+      addFriendButton.setAttribute('disabled', true);
 
       // add new relationship to the database
       await fetch(`/addFollower?follower_id=${otherUserID}`)
@@ -127,17 +146,21 @@ const UserPage = () => {
             addFriendButton.innerHTML = 'Remove Friend';
             setIsFriend(true);
           }
-        }).catch((error) => console.log(error));
+          addFriendButton.disabled = false;
+        }).catch((error) => {
+          console.log(error);
+          addFriendButton.disabled = false;
+        });
     }
   };
 
   return (
-    <>
+    <div id="userPage">
       <Navigation />
       <div className="leftSideUserProfile">
-        <div className="basicInfo">
-          <img src={profilePic === '' ? CatPfp : profilePic} alt="profile img" />
-          <div className="userName">{name === '' ? 'Loading' : name}</div>
+        <div className="basicInfo" id="basicInfo">
+          <img id="profilepic" src={profilePic === '' ? CatPfp : profilePic} alt="profile img" />
+          <div id="userID" className="userName">{name === '' ? 'Loading' : name}</div>
         </div>
         <button type="button" id="addFriendButton" onClick={onClickAddFriendButton}>{isFriend ? 'Remove Friend' : 'Add Friend'}</button>
       </div>
@@ -146,13 +169,8 @@ const UserPage = () => {
         {renderUserPosts()}
       </div>
 
-    </>
+    </div>
   );
-};
-
-// TODO: PropTypes
-UserPage.propTypes = {
-  // userID: PropTypes.string.isRequired,
 };
 
 export default UserPage;
