@@ -11,22 +11,17 @@ const DiscoverPage = () => {
   // set state
   const [userID, setUserID] = useState([]);
   const [posts, setPosts] = useState([]);
+  const [showCreateNewPost, setShowCreateNewPost] = useState(false);
 
-  /* const postDummyData = [{
-    AuthorID: 'author 1', postText: 'text 1', postTitle: 'title 1', postLikes: 0,
-  },
-  {
-    AuthorID: 'author 2', postText: 'text 2', postTitle: 'title 2', postLikes: 0,
-  },
-  {
-    AuthorID: 'author 3', postText: 'text 3', postTitle: 'title 3', postLikes: 0,
-  },
-  {
-    AuthorID: 'author 4', postText: 'text 4', postTitle: 'title 4', postLikes: 0,
-  },
-  {
-    AuthorID: 'author 5', postText: 'text 5', postTitle: 'title 5', postLikes: 0,
-  }]; */
+  const [titleCharLength, setTitleCharLength] = useState(0);
+  const [bodyCharLength, setBodyCharLength] = useState(0);
+  const [restaurantCharLength, setRestaurantCharLength] = useState(0);
+
+  const [canPost, setCanPost] = useState(false);
+
+  const MAX_LENGTH_TITLE = 50;
+  const MAX_LENGTH_BODY = 300;
+  const MAX_LENGTH_RESTAURANT_NAME = 50;
 
   // getData gets all the information needed for the discover page
   async function getData() {
@@ -56,25 +51,30 @@ const DiscoverPage = () => {
     getData();
   }, []);
 
-  // TODO: Render component
   const createNewPost = (event) => {
     event.preventDefault();
-    // get data from forms
-    const title = document.getElementById('inputTitle').value;
-    const body = document.getElementById('inputBody').value;
-    const restName = document.getElementById('restaurantName').value;
 
-    fetch(`/createPost?AuthorID=${userID}&RestaurantName=${restName}&postText=${body}&postTitle=${title}`)
-      .then((response) => response.json())
-      .then((result) => {
-        console.log(result);
-        // we want to add this newly created post to the top of the page
-        // so the user knows their post is rendered
-        const p = {
-          AuthorID: userID, postText: body, postTitle: title, postLikes: 0,
-        };
-        setPosts([p, ...posts]);
-      }).catch((error) => console.log(error));
+    if (canPost) {
+      // get data from forms
+      const title = document.getElementById('inputTitle').value;
+      const body = document.getElementById('inputBody').value;
+      const restName = document.getElementById('restaurantName').value;
+
+      fetch(`/createPost?AuthorID=${userID}&RestaurantName=${restName}&postText=${body}&postTitle=${title}`)
+        .then((response) => response.json())
+        .then((result) => {
+          console.log(result);
+          // we want to add this newly created post to the top of the page
+          // so the user knows their post is rendered
+          const p = {
+            AuthorID: userID, postText: body, postTitle: title, postLikes: 0,
+          };
+          setPosts([p, ...posts]);
+          setShowCreateNewPost(false);
+        }).catch((error) => console.log(error));
+    } else {
+      console.log('cannot post');
+    }
   };
 
   function renderPosts() {
@@ -93,16 +93,115 @@ const DiscoverPage = () => {
     );
   }
 
+  const onClickCreateNewPost = () => {
+    if (!showCreateNewPost) {
+      setShowCreateNewPost(true);
+    }
+  };
+
+  function canTheUserPost() {
+    if (titleCharLength > 0 && bodyCharLength > 0 && restaurantCharLength > 0) {
+      setCanPost(true);
+    } else {
+      setCanPost(false);
+    }
+  }
+
+  const onChangeTitle = () => {
+    // get the title
+    const title = document.getElementById('inputTitle').value;
+
+    // get the length
+    const { length } = title;
+
+    // change state
+    setTitleCharLength(length);
+
+    canTheUserPost();
+  };
+
+  const onChangeBody = () => {
+    // get the body
+    const body = document.getElementById('inputBody').value;
+
+    // get the length
+    const { length } = body;
+
+    // change state
+    setBodyCharLength(length);
+
+    canTheUserPost();
+  };
+
+  const onChangeRestaurant = () => {
+    // get the restaurant name
+    const restName = document.getElementById('restaurantName').value;
+
+    // get the length
+    const { length } = restName;
+
+    // change state
+    setRestaurantCharLength(length);
+
+    canTheUserPost();
+  };
+
+  const onCancelCreateNewPost = () => {
+    // set all character lengths back to 0
+    setTitleCharLength(0);
+    setBodyCharLength(0);
+    setRestaurantCharLength(0);
+
+    // hide create new post
+    setShowCreateNewPost(false);
+  };
+
+  function renderCreateNewPost() {
+    if (showCreateNewPost) {
+      return (
+        <div className="discoverPageBackground">
+          <div className="createNewPost">
+            <form onSubmit={createNewPost} className="createNewPostForm">
+              <div className="createNewPostInput">
+                <input type="text" id="inputTitle" placeholder="Title of Post" maxLength={MAX_LENGTH_TITLE} onChange={onChangeTitle} />
+                <div className="charCount">
+                  {titleCharLength}
+                  /
+                  {MAX_LENGTH_TITLE}
+                </div>
+              </div>
+              <div className="createNewPostInput">
+                <textarea id="inputBody" placeholder="What's on your mind?" rows="5" maxLength={MAX_LENGTH_BODY} onChange={onChangeBody} />
+                <div className="charCount">
+                  {bodyCharLength}
+                  /
+                  {MAX_LENGTH_BODY}
+                </div>
+              </div>
+              <div className="createNewPostInput">
+                <input type="text" id="restaurantName" placeholder="Name of Restaurant" maxLength={MAX_LENGTH_RESTAURANT_NAME} onChange={onChangeRestaurant} />
+                <div className="charCount">
+                  {restaurantCharLength}
+                  /
+                  {MAX_LENGTH_RESTAURANT_NAME}
+                </div>
+              </div>
+              <button type="submit" className={canPost ? 'canPost' : ''}>Publish</button>
+              <button type="button" onClick={onCancelCreateNewPost} id="CancelCreateNewPost">Cancel</button>
+            </form>
+          </div>
+        </div>
+
+      );
+    }
+    return (<></>);
+  }
+
   return (
     <>
+      {renderCreateNewPost()}
       <Navigation />
-      <div>This is the discover page</div>
-      <form onSubmit={createNewPost}>
-        <input type="text" id="inputTitle" placeholder="Enter Title" />
-        <input type="text" id="inputBody" placeholder="Enter Body" />
-        <input type="text" id="restaurantName" placeholder="Name of Restaurant" />
-        <button type="submit">Publish</button>
-      </form>
+      <button type="button" id="createNewPostButton" onClick={onClickCreateNewPost}>+</button>
       {renderPosts()}
     </>
   );
