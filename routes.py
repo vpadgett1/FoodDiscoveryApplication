@@ -631,7 +631,7 @@ def getDetailedUserInfo():
     UserPosts = otherUser.posts
     UserPostsList = []
     for x in range(len(UserPosts)):
-        postComments = post_comments.query.filter_by(post_id=UserPosts[x].id)
+        postComments = post_comments.query.filter_by(post_id=UserPosts[x].id).all()
         postCommentsList = []
         for y in range(len(postComments)):
             commentData = {
@@ -678,6 +678,50 @@ def isFriends():
 @login_required
 def getUserID():
     return {"userID": current_user.id}
+
+
+@app.route("/getDiscoverPage")
+def getDiscoverPage():
+    userID = current_user.id
+    # Get all the friends of this user
+    UserFriends = current_user.friends
+    UserFriendsList = []
+    for x in range(len(UserFriends)):
+        # get the friend from the user
+        f = user.query.filter_by(id=UserFriends[x].FriendID).first()
+        UserFriendsList.append(
+            {"friendID": UserFriends[x].FriendID, "friendProfilePic": f.profile_pic}
+        )
+
+    print(UserFriendsList)
+
+    # Get all the posts from the friends of this user
+    DiscoverPagePosts = []
+    for friend in range(len(UserFriendsList)):
+        friend_posts = user_post.query.filter_by(
+            user_id=UserFriendsList[friend]["friendID"]
+        ).all()
+        for x in range(len(friend_posts)):
+            print(friend_posts[x])
+            DiscoverPagePosts.append(
+                {
+                    "id": friend_posts[x].id,
+                    "AuthorID": friend_posts[x].AuthorID,
+                    "postText": friend_posts[x].postText,
+                    "postTitle": friend_posts[x].postTitle,
+                    "postLikes": friend_posts[x].postLikes,
+                    "RestaurantName": friend_posts[x].RestaurantName,
+                    "user_id": friend_posts[x].user_id,
+                    "post_comments": friend_posts[x].post_comments,
+                    "profilePic": UserFriendsList[friend]["friendProfilePic"],
+                }
+            )
+
+    # Get all the restaurants of this user
+
+    # Get all the posts from restaurants this user follows
+
+    return {"status": 200, "posts": DiscoverPagePosts}
 
 
 @app.route("/")

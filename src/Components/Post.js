@@ -14,7 +14,7 @@ const Post = (props) => {
   // deconstruct props - uncomment the below
   // once the props are used
   const {
-    AuthorID, postText, postTitle, postLikes,
+    AuthorID, postText, postTitle, postLikes, profilePic,
   } = props;
 
   // TODO: fetch data from backend
@@ -30,6 +30,7 @@ const Post = (props) => {
   return (
     <>
       <div>this is a post</div>
+      <img src={profilePic} alt="profile" />
       <div>
         AuthorID:
         {' '}
@@ -61,6 +62,7 @@ Post.propTypes = {
   postText: PropTypes.string.isRequired,
   postTitle: PropTypes.string.isRequired,
   postLikes: PropTypes.number.isRequired,
+  profilePic: PropTypes.string.isRequired,
   /* postComments: PropTypes.arrayOf(PropTypes.shape({
     id: PropTypes.number.isRequired,
     postText: PropTypes.string.isRequired,

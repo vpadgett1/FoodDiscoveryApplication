@@ -12,7 +12,7 @@ const DiscoverPage = () => {
   const [userID, setUserID] = useState([]);
   const [posts, setPosts] = useState([]);
 
-  const postDummyData = [{
+  /* const postDummyData = [{
     AuthorID: 'author 1', postText: 'text 1', postTitle: 'title 1', postLikes: 0,
   },
   {
@@ -26,7 +26,7 @@ const DiscoverPage = () => {
   },
   {
     AuthorID: 'author 5', postText: 'text 5', postTitle: 'title 5', postLikes: 0,
-  }];
+  }]; */
 
   // getData gets all the information needed for the discover page
   async function getData() {
@@ -39,7 +39,15 @@ const DiscoverPage = () => {
       }).catch((error) => console.log(error));
 
     // get content for the page
-    setPosts([...postDummyData]);
+    await fetch('/getDiscoverPage')
+      .then((response) => response.json())
+      .then((result) => {
+        console.log(result);
+        if (result.status && result.status === 200) {
+          setPosts([...result.posts]);
+        }
+      })
+      .catch((error) => console.log(error));
     console.log('posts saved');
   }
 
@@ -78,6 +86,7 @@ const DiscoverPage = () => {
             postText={x.postText}
             postTitle={x.postTitle}
             postLikes={x.postLikes}
+            profilePic={x.profilePic}
           />
         ))}
       </>
