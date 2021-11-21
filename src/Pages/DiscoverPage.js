@@ -1,4 +1,5 @@
 import '../App.css';
+import '../styling/DiscoverPage.css';
 import React, {
   useState,
   useEffect,
@@ -9,7 +10,9 @@ import Post from '../Components/Post';
 
 const DiscoverPage = () => {
   // set state
-  const [userID, setUserID] = useState([]);
+  const [userID, setUserID] = useState('');
+  const [userName, setUserName] = useState('');
+  const [userProfilePic, setUserProfilePic] = useState('');
   const [posts, setPosts] = useState([]);
   const [showCreateNewPost, setShowCreateNewPost] = useState(false);
 
@@ -29,8 +32,21 @@ const DiscoverPage = () => {
     await fetch('/getUserID')
       .then((response) => response.json())
       .then((result) => {
-        console.log(result);
         setUserID(result.userID);
+      }).catch((error) => console.log(error));
+
+    // get the user name
+    await fetch('/getUserName')
+      .then((response) => response.json())
+      .then((result) => {
+        setUserName(result.username);
+      }).catch((error) => console.log(error));
+
+    // get the user profile pic
+    await fetch('/getUserProfilePic')
+      .then((response) => response.json())
+      .then((result) => {
+        setUserProfilePic(result.profile_pic);
       }).catch((error) => console.log(error));
 
     // get content for the page
@@ -79,17 +95,22 @@ const DiscoverPage = () => {
 
   function renderPosts() {
     return (
-      <>
+      <div className="DiscoverPagePosts">
         {posts && posts.map((x) => (
           <Post
+            postID={x.id}
             AuthorID={x.AuthorID}
             postText={x.postText}
             postTitle={x.postTitle}
             postLikes={x.postLikes}
             profilePic={x.profilePic}
+            postComments={x.post_comments}
+            currentUserID={userID}
+            currentUserProfilePic={userProfilePic}
+            currentUserName={userName}
           />
         ))}
-      </>
+      </div>
     );
   }
 
@@ -198,12 +219,12 @@ const DiscoverPage = () => {
   }
 
   return (
-    <>
+    <div className="discoverPage">
       {renderCreateNewPost()}
       <Navigation />
       <button type="button" id="createNewPostButton" onClick={onClickCreateNewPost}>+</button>
       {renderPosts()}
-    </>
+    </div>
   );
 };
 

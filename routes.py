@@ -373,12 +373,12 @@ def createPost():
     return {"status": status}
 
 
-@app.route("/createComment", methods=["POST"])
+@app.route("/createComment")
 @login_required
 def createComment():
-    AuthorID = flask.request.get("AuthorID")
-    postText = flask.request.get("postText")
-    post_id = flask.request.get("post_id")
+    AuthorID = flask.request.args.get("AuthorID")
+    postText = flask.request.args.get("postText")
+    post_id = flask.request.args.get("post_id")
     newUserComment = post_comments(
         AuthorID=AuthorID, postText=postText, post_id=post_id
     )
@@ -680,6 +680,18 @@ def getUserID():
     return {"userID": current_user.id}
 
 
+@app.route("/getUserName")
+@login_required
+def getUserName():
+    return {"username": current_user.username}
+
+
+@app.route("/getUserProfilePic")
+@login_required
+def getUserProfilePic():
+    return {"profile_pic": current_user.profile_pic}
+
+
 @app.route("/getDiscoverPage")
 def getDiscoverPage():
     userID = current_user.id
@@ -702,7 +714,21 @@ def getDiscoverPage():
             user_id=UserFriendsList[friend]["friendID"]
         ).all()
         for x in range(len(friend_posts)):
-            print(friend_posts[x])
+            postComments = post_comments.query.filter_by(
+                post_id=friend_posts[x].id
+            ).all()
+            postCommentsList = []
+            for y in range(len(postComments)):
+                # Get the user who posted this comment to get their
+                # profile pic and name
+                commentor = user.query.filter_by(id=postComments[y].AuthorID).first()
+                commentData = {
+                    "AuthorID": postComments[y].AuthorID,
+                    "postText": postComments[y].postText,
+                    "CommentorProfilePic": commentor.profile_pic,
+                    "CommentorName": commentor.username,
+                }
+                postCommentsList.append(commentData)
             DiscoverPagePosts.append(
                 {
                     "id": friend_posts[x].id,
@@ -712,7 +738,7 @@ def getDiscoverPage():
                     "postLikes": friend_posts[x].postLikes,
                     "RestaurantName": friend_posts[x].RestaurantName,
                     "user_id": friend_posts[x].user_id,
-                    "post_comments": friend_posts[x].post_comments,
+                    "post_comments": postCommentsList,
                     "profilePic": UserFriendsList[friend]["friendProfilePic"],
                 }
             )
