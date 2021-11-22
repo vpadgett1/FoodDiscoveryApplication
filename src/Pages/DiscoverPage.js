@@ -7,6 +7,8 @@ import React, {
 // import PropTypes from 'prop-types';
 import Navigation from '../Components/Navigation';
 import Post from '../Components/Post';
+import PopUpMessage from '../Components/PopUpMessage';
+import Raincloud from '../assets/MakeFriends.png';
 
 const DiscoverPage = () => {
   // set state
@@ -21,6 +23,12 @@ const DiscoverPage = () => {
   const [restaurantCharLength, setRestaurantCharLength] = useState(0);
 
   const [canPost, setCanPost] = useState(false);
+
+  const [noContentError, setNoContentError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [noFriends, setNoFriends] = useState(false);
+
+  const [showMessage, setShowMessage] = useState(false);
 
   const MAX_LENGTH_TITLE = 50;
   const MAX_LENGTH_BODY = 300;
@@ -55,7 +63,16 @@ const DiscoverPage = () => {
       .then((result) => {
         console.log(result);
         if (result.status && result.status === 200) {
-          setPosts([...result.posts]);
+          if (result.noContent && result.noContent === true) {
+            setNoContentError(true);
+            setErrorMessage(result.message);
+          } else {
+            setPosts([...result.posts]);
+            if (result.noFriends) {
+              setNoFriends(result.noFriends);
+              setErrorMessage(result.message);
+            }
+          }
         }
       })
       .catch((error) => console.log(error));
@@ -79,14 +96,26 @@ const DiscoverPage = () => {
       fetch(`/createPost?AuthorID=${userID}&RestaurantName=${restName}&postText=${body}&postTitle=${title}`)
         .then((response) => response.json())
         .then((result) => {
-          console.log(result);
-          // we want to add this newly created post to the top of the page
-          // so the user knows their post is rendered
-          const p = {
-            AuthorID: userID, postText: body, postTitle: title, postLikes: 0,
-          };
-          setPosts([p, ...posts]);
-          setShowCreateNewPost(false);
+          if (result.status && result.status === 200) {
+            const { postID } = result;
+            // we want to add this newly created post to the top of the page
+            // so the user knows their post is rendered
+            const p = {
+              AuthorID: userID,
+              postText: body,
+              postTitle: title,
+              postLikes: 0,
+              id: postID,
+              profilePic: userProfilePic,
+              post_comments: [],
+              currentUserID: userID,
+              currentUserProfilePic: userProfilePic,
+              currentUserName: userName,
+              AuthorName: userName,
+            };
+            setPosts([p, ...posts]);
+            setShowCreateNewPost(false);
+          }
         }).catch((error) => console.log(error));
     } else {
       console.log('cannot post');
@@ -94,6 +123,41 @@ const DiscoverPage = () => {
   };
 
   function renderPosts() {
+    if (noContentError) {
+      return (
+        <div className="DiscoverPageError">
+          <img src={Raincloud} alt="Sad raincloud" />
+          <div>{errorMessage}</div>
+        </div>
+      );
+    }
+
+    if (noFriends) {
+      return (
+        <div className="DiscoverPagePosts">
+          {posts && posts.map((x) => (
+            <Post
+              postID={x.id}
+              AuthorID={x.AuthorID}
+              postText={x.postText}
+              postTitle={x.postTitle}
+              postLikes={x.postLikes}
+              profilePic={x.profilePic}
+              postComments={x.post_comments}
+              currentUserID={userID}
+              currentUserProfilePic={userProfilePic}
+              currentUserName={userName}
+              AuthorName={x.AuthorName}
+            />
+          ))}
+          <div className="DiscoverPageError">
+            <img src={Raincloud} alt="Sad raincloud" />
+            <div>{errorMessage}</div>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="DiscoverPagePosts">
         {posts && posts.map((x) => (
@@ -108,6 +172,7 @@ const DiscoverPage = () => {
             currentUserID={userID}
             currentUserProfilePic={userProfilePic}
             currentUserName={userName}
+            AuthorName={x.AuthorName}
           />
         ))}
       </div>
@@ -167,7 +232,7 @@ const DiscoverPage = () => {
     canTheUserPost();
   };
 
-  const onCancelCreateNewPost = () => {
+  const cancelCreateNewPost = () => {
     // set all character lengths back to 0
     setTitleCharLength(0);
     setBodyCharLength(0);
@@ -175,6 +240,16 @@ const DiscoverPage = () => {
 
     // hide create new post
     setShowCreateNewPost(false);
+    setShowMessage(false);
+  };
+
+  const onCancelCreateNewPost = () => {
+    // if the lengths of any of the sections is longer than 0, display the pop up
+    if (titleCharLength > 0 || bodyCharLength > 0 || restaurantCharLength > 0) {
+      setShowMessage(true);
+    } else {
+      cancelCreateNewPost();
+    }
   };
 
   function renderCreateNewPost() {
@@ -218,8 +293,24 @@ const DiscoverPage = () => {
     return (<></>);
   }
 
+  function renderMessage() {
+    if (showMessage) {
+      return (
+        <PopUpMessage
+          continueText="continue"
+          doNotcontinueText="do not"
+          continueFunc={cancelCreateNewPost}
+          doNotContinueFunc={() => setShowMessage(false)}
+          message="Warning: You have unsaved changes. Continueing will not save your work. Continue?"
+        />
+      );
+    }
+    return (<></>);
+  }
+
   return (
     <div className="discoverPage">
+      {renderMessage()}
       {renderCreateNewPost()}
       <Navigation />
       <button type="button" id="createNewPostButton" onClick={onClickCreateNewPost}>+</button>

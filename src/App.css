@@ -60,6 +60,18 @@
   font-size: 18px;
 }
 
+.post-user-info div a,
+.commentProfileInfo div a {
+  text-decoration: none;
+  color: black;
+}
+
+.post-user-info div a:hover,
+.commentProfileInfo div a:hover {
+  text-decoration: underline;
+  color: #ffe7ca;
+}
+
 .postTitle {
   padding-left: 24px;
   font-size: 18px;
@@ -174,4 +186,58 @@
   width: 25px;
   height: 25px;
   filter: invert(100%) sepia(99%) saturate(0%) hue-rotate(254deg) brightness(105%) contrast(101%);
+}
+
+/* CSS For Pop Up Messages */
+.popUpBackground {
+  height: 100%;
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.3);
+  position: absolute;
+  z-index: 4;
+}
+
+.popup {
+  position: absolute;
+  background-color: white;
+  z-index: 4;
+  margin: auto;
+  top: calc((100% - 200px - 40px) / 2);
+  left: calc((100% - 500px - 40px) / 2);
+  height: 200px;
+  width: 500px;
+  border-radius: 20px;
+  text-align: center;
+}
+
+.popup .message {
+  padding: 20px;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 24px;
+}
+
+.popup-buttons {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+}
+
+.popup-buttons .rightButton {
+  width: 50%;
+  height: 50px;
+  border-bottom-right-radius: 20px;
+  font-family: 'Open Sans', sans-serif;
+  background-color: #ff9921;
+  color: white;
+  border: none;
+  font-size: 18px;
+}
+
+.popup-buttons .leftButton {
+  width: 50%;
+  height: 50px;
+  border-bottom-left-radius: 20px;
+  font-family: 'Open Sans', sans-serif;
+  border: none;
+  font-size: 18px;
 }

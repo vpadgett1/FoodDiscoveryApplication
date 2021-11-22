@@ -367,10 +367,13 @@ def createPost():
     db.session.add(newUserPost)
     db.session.commit()
 
-    status = "failed"
-    if user_post.query.filter_by(postTitle=postTitle, AuthorID=AuthorID).first():
-        status = "success"
-    return {"status": status}
+    status = 400
+    postID = 0
+    post = user_post.query.filter_by(postTitle=postTitle, AuthorID=AuthorID).first()
+    if post:
+        status = 200
+        postID = post.id
+    return {"status": status, "postID": postID}
 
 
 @app.route("/createComment")
@@ -694,7 +697,11 @@ def getUserProfilePic():
 
 @app.route("/getDiscoverPage")
 def getDiscoverPage():
-    userID = current_user.id
+    # things to send to discover page
+    status = 200
+    noContent = True
+    noFriends = False
+    message = ""
     # Get all the friends of this user
     UserFriends = current_user.friends
     UserFriendsList = []
@@ -702,52 +709,83 @@ def getDiscoverPage():
         # get the friend from the user
         f = user.query.filter_by(id=UserFriends[x].FriendID).first()
         UserFriendsList.append(
-            {"friendID": UserFriends[x].FriendID, "friendProfilePic": f.profile_pic}
+            {
+                "friendID": UserFriends[x].FriendID,
+            }
         )
 
-    print(UserFriendsList)
+    # if the user has no friends, send a message
+    if len(UserFriendsList) == 0:
+        message = "You have no friends or favorite restaurants. Go add some!"
+        noFriends = True
 
     # Get all the posts from the friends of this user
     DiscoverPagePosts = []
     for friend in range(len(UserFriendsList)):
-        friend_posts = user_post.query.filter_by(
-            user_id=UserFriendsList[friend]["friendID"]
-        ).all()
-        for x in range(len(friend_posts)):
-            postComments = post_comments.query.filter_by(
-                post_id=friend_posts[x].id
-            ).all()
-            postCommentsList = []
-            for y in range(len(postComments)):
-                # Get the user who posted this comment to get their
-                # profile pic and name
-                commentor = user.query.filter_by(id=postComments[y].AuthorID).first()
-                commentData = {
-                    "AuthorID": postComments[y].AuthorID,
-                    "postText": postComments[y].postText,
-                    "CommentorProfilePic": commentor.profile_pic,
-                    "CommentorName": commentor.username,
-                }
-                postCommentsList.append(commentData)
-            DiscoverPagePosts.append(
-                {
-                    "id": friend_posts[x].id,
-                    "AuthorID": friend_posts[x].AuthorID,
-                    "postText": friend_posts[x].postText,
-                    "postTitle": friend_posts[x].postTitle,
-                    "postLikes": friend_posts[x].postLikes,
-                    "RestaurantName": friend_posts[x].RestaurantName,
-                    "user_id": friend_posts[x].user_id,
-                    "post_comments": postCommentsList,
-                    "profilePic": UserFriendsList[friend]["friendProfilePic"],
-                }
-            )
+        DiscoverPagePosts.extend(getPosts(UserFriendsList[friend]["friendID"]))
+
+    # get all the posts made by the current user
+    current_user_posts = getPosts(current_user.id)
+    if len(current_user_posts) != 0:
+        noContent = False
+        DiscoverPagePosts.extend(current_user_posts)
 
     # Get all the restaurants of this user
 
     # Get all the posts from restaurants this user follows
 
-    return {"status": 200, "posts": DiscoverPagePosts}
+    # if there are no posts, send a message
+    if len(DiscoverPagePosts) == 0:
+        return {
+            "status": 200,
+            "noContent": True,
+            "message": "There are currently no posts in your feed. Why not make the first?",
+        }
+
+    # sort the posts by most newly created to the least newly created
+
+    return {
+        "status": 200,
+        "noContent": noContent,
+        "noFriends": noFriends,
+        "message": message,
+        "posts": DiscoverPagePosts,
+    }
+
+
+def getPosts(userID):
+    posts = []
+    author = user.query.filter_by(id=userID).first()
+    query_posts = user_post.query.filter_by(user_id=userID).all()
+    for x in range(len(query_posts)):
+        postComments = post_comments.query.filter_by(post_id=query_posts[x].id).all()
+        postCommentsList = []
+        for y in range(len(postComments)):
+            # Get the user who posted this comment to get their
+            # profile pic and name
+            commentor = user.query.filter_by(id=postComments[y].AuthorID).first()
+            commentData = {
+                "AuthorID": postComments[y].AuthorID,
+                "postText": postComments[y].postText,
+                "CommentorProfilePic": commentor.profile_pic,
+                "CommentorName": commentor.username,
+            }
+            postCommentsList.append(commentData)
+        posts.append(
+            {
+                "id": query_posts[x].id,
+                "AuthorID": query_posts[x].AuthorID,
+                "postText": query_posts[x].postText,
+                "postTitle": query_posts[x].postTitle,
+                "postLikes": query_posts[x].postLikes,
+                "RestaurantName": query_posts[x].RestaurantName,
+                "user_id": query_posts[x].user_id,
+                "post_comments": postCommentsList,
+                "profilePic": author.profile_pic,
+                "AuthorName": author.username,
+            }
+        )
+    return posts
 
 
 @app.route("/")

@@ -2,6 +2,7 @@
 import '../App.css';
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
+import { Link } from 'react-router-dom';
 import Heart from '../assets/Heart.png';
 import Comment from '../assets/Comment.png';
 import Arrow from '../assets/Arrow.png';
@@ -14,6 +15,8 @@ const Post = (props) => {
   const [liked,
     // setLiked
   ] = useState(false);
+
+  const [additionalComments, setAdditionalComments] = useState([]);
 
   // deconstruct props - uncomment the below
   // once the props are used
@@ -28,6 +31,7 @@ const Post = (props) => {
     currentUserID,
     currentUserProfilePic,
     currentUserName,
+    AuthorName,
   } = props;
 
   const postComment = (event) => {
@@ -39,7 +43,22 @@ const Post = (props) => {
 
     fetch(`/createComment?AuthorID=${currentUserID}&postText=${input}&post_id=${postID}`)
       .then((response) => response.json())
-      .then((result) => console.log(result))
+      .then((result) => {
+        console.log(result);
+
+        // display the comment
+        const newComment = {
+          AuthorID: currentUserID,
+          CommentorProfilePic: currentUserProfilePic,
+          CommentorName: currentUserName,
+          postText: input,
+        };
+
+        setAdditionalComments([newComment, ...additionalComments]);
+
+        // hide the create comment section
+        setShowCreateComment(false);
+      })
       .catch((error) => console.log(error));
   };
 
@@ -62,8 +81,9 @@ const Post = (props) => {
     );
   }
 
+  // Render the comments on a post
   function renderComments() {
-    if (postComments && postComments.length === 0) {
+    if (postComments && postComments.length === 0 && additionalComments.length === 0) {
       return (
         <div className="comment">
           No comments
@@ -73,14 +93,38 @@ const Post = (props) => {
 
     return (
       <>
+        {additionalComments && additionalComments.map((x) => (
+          <div className="comment">
+            <div className="commentProfileInfo">
+              <img src={x.CommentorProfilePic} alt="profile" />
+              <div>
+                <Link
+                  to="/userprofile"
+                  state={{ userId: x.AuthorID }}
+                >
+                  {x.CommentorName}
+                </Link>
+              </div>
+            </div>
+            <div>
+              {x.postText}
+            </div>
+          </div>
+        ))}
         {postComments && postComments.map((x) => (
           <div className="comment">
             <div className="commentProfileInfo">
               <img src={x.CommentorProfilePic} alt="profile" />
-              <div>{x.CommentorName}</div>
+              <div>
+                <Link
+                  to="/userprofile"
+                  state={{ userId: x.AuthorID }}
+                >
+                  {x.CommentorName}
+                </Link>
+              </div>
             </div>
             <div>
-              Text:
               {x.postText}
             </div>
           </div>
@@ -91,7 +135,6 @@ const Post = (props) => {
 
   const onClickComment = () => {
     setShowCreateComment(!showCreateComment);
-    console.log(postID);
   };
 
   return (
@@ -99,19 +142,18 @@ const Post = (props) => {
       <div className="post-user-info">
         <img src={profilePic} alt="profile" />
         <div>
-          AuthorID:
-          {' '}
-          {AuthorID}
+          <Link
+            to="/userprofile"
+            state={{ userId: AuthorID }}
+          >
+            {AuthorName}
+          </Link>
         </div>
       </div>
       <div className="postTitle">
-        postTitle:
-        {' '}
         {postTitle}
       </div>
       <div className="postText">
-        postText:
-        {' '}
         {postText}
       </div>
       <div className="postLikes">
@@ -136,6 +178,7 @@ Post.propTypes = {
   postTitle: PropTypes.string.isRequired,
   postLikes: PropTypes.number.isRequired,
   profilePic: PropTypes.string.isRequired,
+  AuthorName: PropTypes.string.isRequired,
   postComments: PropTypes.arrayOf(PropTypes.shape({
     id: PropTypes.number.isRequired,
     postText: PropTypes.string.isRequired,

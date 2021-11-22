@@ -1,6 +1,11 @@
 /* Imports */
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400&display=swap');
 
+html,
+body {
+  background-color: #f4f4f4;
+}
+
 /*CSS for Discover Page*/
 .discoverPage {
   background-color: #f4f4f4;
@@ -111,4 +116,19 @@
   font-size: 40px;
   border-radius: 25px;
   color: white;
+}
+
+.DiscoverPageError {
+  text-align: center;
+}
+
+.DiscoverPageError img {
+  height: 450px;
+  padding: 100px 0px;
+}
+
+.DiscoverPageError div {
+  font-size: 24px;
+  color: #adadad;
+  font-family: 'Open Sans', sans-serif;
 }

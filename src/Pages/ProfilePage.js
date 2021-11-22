@@ -134,6 +134,7 @@ const ProfilePage = () => {
       }).catch((error) => console.log(error));
   }
 
+  // log out the user and send them back to the landing page
   const logout = async () => {
     await fetch('/logout')
       .then((response) => response.json())
