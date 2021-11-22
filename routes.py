@@ -196,7 +196,7 @@ def authorized():
     else:
         return "User email not available or not verified by Google.", 400
     # Create a user in our database with the information provided by the Google response json
-    newUser = user(username=users_name, email=users_email, profile_pic=picture)
+    newUser = user(email=users_email, profile_pic=picture)
 
     # Doesn't exist? Add it to the database.
     previousUser = True
@@ -320,9 +320,15 @@ def post():
 @app.route("/createAccount", methods=["POST"])
 @login_required
 def createAccount():
+    wantedUsername = flask.request.args.get("username")
     zipcode = flask.request.args.get("zipcode")
-    print("Printing zip code")
-    print(zipcode)
+    # print("Printing zip code")
+    # print(zipcode)
+    userExists = user.query.filter_by(username=wantedUsername).all()
+    if userExists: 
+        print("existing username try again")
+        return flask.jsonify("Username is alreadt taken. Please try again with another username")
+    current_user.username = wantedUsername
     current_user.zipCode = zipcode
     db.session.commit()
     yelpID = flask.request.args.get("yelpID")
@@ -388,9 +394,9 @@ def createComment():
     return flask.jsonify(status)
 
 
-@app.route("/search", methods=["POST"])
+@app.route("/searchRestaurant", methods=["POST"])
 @login_required
-def search_post():
+def search_restaurant():
     rest_name = flask.request.get("resturant_name")
     result_limit = 3
     yelp_results = query_resturants(rest_name, current_user.zipCode, result_limit)
@@ -565,8 +571,6 @@ def getRestaurantData():
             )
 
 app.route("/getPostsByUser", methods=["GET"])
-
-
 def getPostsByUser():
     posts = user_post.query.filter_by(user_id=current_user.username).all()
     postsData = []
