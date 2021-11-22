@@ -5,7 +5,7 @@ import React, {
 } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Navigation from '../Components/Navigation';
-// import PropTypes from 'prop-types';
+import Post from '../Components/Post';
 
 // this line will become const ProfilePage = (props) => { once there are props
 const ProfilePage = () => {
@@ -20,38 +20,6 @@ const ProfilePage = () => {
   const [zipcode, setZipcode] = useState('');
 
   const navigate = useNavigate();
-
-  /* const dummyFriendsListData = [
-    {
-      name: 'friend 1',
-      user_id: 'id1',
-    },
-    {
-      name: 'friend 2',
-      user_id: 'id2',
-    },
-    {
-      name: 'friend 3',
-      user_id: 'id3',
-    },
-  ];
-
-  const FavoriteRestaurantDummyData = [
-    {
-      RestaurantName: 'name',
-      RestaurantID: 'id',
-    },
-    {
-      RestaurantName: 'name2',
-      RestaurantID: 'id2',
-    },
-    {
-      RestaurantName: 'name3',
-      RestaurantID: 'id3',
-    },
-  ]; */
-  // deconstruct props
-  // const [props] = props;
 
   async function getUserProfileInformation() {
     await fetch('/getUserProfile')
@@ -255,6 +223,14 @@ const ProfilePage = () => {
     return (
       <div id="YourPostsSubcategory">
         <div>Your Posts Rendered</div>
+        {userPosts && userPosts.map((x) => (
+          <Post
+            AuthorID={x.AuthorID}
+            postText={x.postText}
+            postTitle={x.postTitle}
+            postLikes={x.postLikes}
+          />
+        ))}
       </div>
     );
   }
@@ -285,11 +261,6 @@ const ProfilePage = () => {
       </div>
     </>
   );
-};
-
-// TODO: PropTypes
-ProfilePage.propTypes = {
-
 };
 
 export default ProfilePage;
