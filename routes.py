@@ -298,7 +298,7 @@ def map():
 def logout():
     logout_user()
     flask.session.pop('google_token', None)
-    return flask.redirect(flask.url_for('login'))
+    return flask.redirect(flask.url_for("index.html"))
 
 
 @app.route("/post", methods=["POST", "GET"])
@@ -314,7 +314,7 @@ def post():
         post_list = []
         for posts in user_posts:
             post_list.append(posts.postText)
-        return flask.jsonify({"data": post_list})
+    return flask.jsonify({"data": post_list})
 
 
 @app.route("/createAccount", methods=["POST"])
@@ -327,7 +327,7 @@ def createAccount():
     userExists = user.query.filter_by(username=wantedUsername).all()
     if userExists: 
         print("existing username try again")
-        return flask.jsonify("Username is alreadt taken. Please try again with another username")
+        return flask.jsonify({"message" : "Username is alreadt taken. Please try again with another username"})
     current_user.username = wantedUsername
     current_user.zipCode = zipcode
     db.session.commit()
@@ -695,5 +695,5 @@ def main():
 
 if __name__ == "__main__":
     app.run(
-        host=os.getenv("IP", "0.0.0.0"), port=int(os.getenv("PORT", 5000)), debug=True
+        host=os.getenv("IP", "127.0.0.1"), port=int(os.getenv("PORT", 5000)), debug=True
     )
