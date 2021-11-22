@@ -300,13 +300,8 @@ def map():
 @login_required
 def logout():
     logout_user()
-<<<<<<< HEAD
-    flask.session.pop('google_token', None)
-    return flask.redirect(flask.url_for("index.html"))
-=======
     flask.session.pop("google_token", None)
     return {"status": 200}
->>>>>>> bbcdac206406a5bc27adf02e3995bcb1c911986d
 
 
 @app.route("/post", methods=["POST", "GET"])
@@ -569,29 +564,11 @@ def getRestaurantData():
     restaurant_id = current_user.yelpRestaurantID
     store_data = query_one_resturant(restaurant_id)
     if not store_data:
-<<<<<<< HEAD
-        return flask.jsonify(
-            {
-                "status": 400,
-                "message": "Could not find data for this restaurant.",
-            }
-        )
-    return flask.jsonify(
-                {
-                    "status": 200,
-                    "message": "Retrieved restaurant data.",
-                    "data" : store_data
-                }
-            )
-
-app.route("/getPostsByUser", methods=["GET"])
-=======
         return {"status": 400, "message": "Could not find data for this restaurant."}
     return {"status": 200, "message": "Retrieved restaurant data.", "data": store_data}
 
 
 @app.route("/getPostsByUser", methods=["GET"])
->>>>>>> bbcdac206406a5bc27adf02e3995bcb1c911986d
 def getPostsByUser():
     posts = user_post.query.filter_by(user_id=current_user.username).all()
     postsData = []
@@ -722,10 +699,5 @@ def main():
 
 if __name__ == "__main__":
     app.run(
-<<<<<<< HEAD
         host=os.getenv("IP", "127.0.0.1"), port=int(os.getenv("PORT", 5000)), debug=True
     )
-=======
-        host=os.getenv("IP", "0.0.0.0"), port=int(os.getenv("PORT", 5000)), debug=True
-    )
->>>>>>> bbcdac206406a5bc27adf02e3995bcb1c911986d
