@@ -698,7 +698,6 @@ def getUserProfilePic():
 @app.route("/getDiscoverPage")
 def getDiscoverPage():
     # things to send to discover page
-    status = 200
     noContent = True
     noFriends = False
     message = ""
@@ -706,8 +705,6 @@ def getDiscoverPage():
     UserFriends = current_user.friends
     UserFriendsList = []
     for x in range(len(UserFriends)):
-        # get the friend from the user
-        f = user.query.filter_by(id=UserFriends[x].FriendID).first()
         UserFriendsList.append(
             {
                 "friendID": UserFriends[x].FriendID,
@@ -736,10 +733,17 @@ def getDiscoverPage():
 
     # if there are no posts, send a message
     if len(DiscoverPagePosts) == 0:
+        if not noFriends:
+            message = (
+                "There are currently no posts in your feed. Why not make the first?"
+            )
+
         return {
             "status": 200,
             "noContent": True,
-            "message": "There are currently no posts in your feed. Why not make the first?",
+            "noFriends": noFriends,
+            "message": message,
+            "posts": [],
         }
 
     # sort the posts by most newly created to the least newly created
@@ -801,5 +805,5 @@ def main():
 
 if __name__ == "__main__":
     app.run(
-        host=os.getenv("IP", "127.0.0.1"), port=int(os.getenv("PORT", 5000)), debug=True
+        host=os.getenv("IP", "0.0.0."), port=int(os.getenv("PORT", 5000)), debug=True
     )

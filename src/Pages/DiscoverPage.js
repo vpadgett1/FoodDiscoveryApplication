@@ -61,11 +61,13 @@ const DiscoverPage = () => {
     await fetch('/getDiscoverPage')
       .then((response) => response.json())
       .then((result) => {
-        console.log(result);
         if (result.status && result.status === 200) {
+          // if there is no content, display the error
           if (result.noContent && result.noContent === true) {
             setNoContentError(true);
+            setNoFriends(result.noFriends);
             setErrorMessage(result.message);
+          // if there is content, display it
           } else {
             setPosts([...result.posts]);
             if (result.noFriends) {
@@ -115,6 +117,11 @@ const DiscoverPage = () => {
             };
             setPosts([p, ...posts]);
             setShowCreateNewPost(false);
+
+            // if originally displaying noContent, change that
+            if (noContentError) {
+              setNoContentError(false);
+            }
           }
         }).catch((error) => console.log(error));
     } else {
