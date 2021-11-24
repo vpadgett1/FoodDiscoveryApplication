@@ -65,37 +65,27 @@ def profile():
         "profilePic": current_user.profile_pic,
         "zipcode": current_user.zipCode,
         "yelpRestaurantID": current_user.yelpRestaurantID,
+        "id": current_user.id,
     }
     UserFriends = current_user.friends
     UserFriendsList = []
     for x in range(len(UserFriends)):
-        UserFriendsList.append({"user_id": UserFriends[x].FriendID})
+        # Also get the profile picture and the name of the friend
+        friend = user.query.filter_by(id=UserFriends[x].FriendID).first()
+        UserFriendsList.append(
+            {
+                "user_id": UserFriends[x].FriendID,
+                "name": friend.username,
+                "profile_pic": friend.profile_pic,
+            }
+        )
 
     UserFavoriteRestaurants = current_user.favs
     UserFavRestaurantsList = []
     for x in range(len(UserFavoriteRestaurants)):
         UserFavRestaurantsList.append(UserFavoriteRestaurants[x].Restaurant)
 
-    UserPosts = current_user.posts
-    UserPostsList = []
-    for x in range(len(UserPosts)):
-        postComments = post_comments.query.filter_by(post_id=UserPosts[x].id).all()
-        postCommentsList = []
-        for y in range(len(postComments)):
-            commentData = {
-                "AuthorID": postComments[y].AuthorID,
-                "postText": postComments[y].postText,
-            }
-            postCommentsList.append(commentData)
-        PostDATA = {
-            "AuthorID": UserPosts[x].AuthorID,
-            "postText": UserPosts[x].postText,
-            "postTitle": UserPosts[x].postTitle,
-            "postLikes": UserPosts[x].postLikes,
-            "RestaurantName": UserPosts[x].RestaurantName,
-            "comments": postCommentsList,
-        }
-        UserPostsList.append(PostDATA)
+    UserPostsList = getPosts(current_user.id)
 
     return {
         "UserDATA": UserDATA,
@@ -238,6 +228,11 @@ def discover():
 
 @app.route("/merchant")
 def merchant():
+    return flask.render_template("index.html")
+
+
+@app.route("/restaurantprofile")
+def restaurantprofile():
     return flask.render_template("index.html")
 
 
@@ -631,26 +626,7 @@ def getDetailedUserInfo():
     for x in range(len(UserFavoriteRestaurants)):
         UserFavRestaurantsList.append(UserFavoriteRestaurants[x].Restaurant)
 
-    UserPosts = otherUser.posts
-    UserPostsList = []
-    for x in range(len(UserPosts)):
-        postComments = post_comments.query.filter_by(post_id=UserPosts[x].id).all()
-        postCommentsList = []
-        for y in range(len(postComments)):
-            commentData = {
-                "AuthorID": postComments[y].AuthorID,
-                "postText": postComments[y].postText,
-            }
-            postCommentsList.append(commentData)
-        PostDATA = {
-            "AuthorID": UserPosts[x].AuthorID,
-            "postText": UserPosts[x].postText,
-            "postTitle": UserPosts[x].postTitle,
-            "postLikes": UserPosts[x].postLikes,
-            "RestaurantName": UserPosts[x].RestaurantName,
-            "comments": postCommentsList,
-        }
-        UserPostsList.append(PostDATA)
+    UserPostsList = getPosts(userID)
 
     return {
         "UserDATA": UserDATA,
