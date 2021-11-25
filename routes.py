@@ -367,7 +367,7 @@ def deleteAccount():
     return {"status": status}
 
 
-@app.route("/createPost")
+@app.route("/createPost", methods=["POST"])
 @login_required
 def createPost():
     AuthorID = flask.request.args.get("AuthorID")
@@ -389,6 +389,38 @@ def createPost():
     if user_post.query.filter_by(postTitle=postTitle, AuthorID=AuthorID).first():
         status = "success"
     return {"status": status}
+
+
+@app.route("/searchPost", methods=["POST"])
+@login_required
+def searchPost():
+    tag = flask.request.args.get("postTitle")
+    search = "%{}%".format(tag)
+    Posts = user_post.query.filter(user_post.postTitle.like(search)).all()
+    postsData = []
+    for post in Posts:
+        postComments = post_comments.query.filter_by(post_id=post.id)
+        postCommentsList = []
+        for comment in postComments:
+            commentData = {
+                "CommentAuthorProfilePic": user.query.filter(comment.AuthorID)
+                .first()
+                .profile_pic,
+                "AuthorID": comment.AuthorID,
+                "postText": comment.postText,
+            }
+            postCommentsList.append(commentData)
+        singlepostData = {
+            "AuthorID": post.AuthorID,
+            "postText": post.postText,
+            "postTitle": post.postTitle,
+            "postLikes": post.postLikes,
+            "RestaurantName": post.RestaurantName,
+            "comments": postCommentsList,
+            "PostAuthorProfilePic": user.query.filter(post.user_id).first().profile_pic,
+        }
+        postsData.append(singlepostData)
+    return flask.jsonify(postsData)
 
 
 @app.route("/createComment", methods=["POST"])
