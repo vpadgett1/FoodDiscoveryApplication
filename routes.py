@@ -29,7 +29,7 @@ load_dotenv(find_dotenv())
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
 # OAuth 2 client setup
-#client = oauthlib.WebApplicationClient(os.environ.get("GOOGLE_CLIENT_ID", None))
+# client = oauthlib.WebApplicationClient(os.environ.get("GOOGLE_CLIENT_ID", None))
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
 login_manager = LoginManager()
@@ -79,7 +79,7 @@ def profile():
     UserPosts = current_user.posts
     UserPostsList = []
     for x in range(len(UserPosts)):
-        postComments = post_comments.query.filter_by(post_id=UserPosts[x].id)
+        postComments = post_comments.query.filter_by(post_id=UserPosts[x].id).all()
         postCommentsList = []
         for y in range(len(postComments)):
             commentData = {
@@ -154,41 +154,40 @@ def zipcode():
 app.register_blueprint(bp)
 
 google = oauth.remote_app(
-    'google',
-    consumer_key=app.config.get('GOOGLE_CLIENT_ID'),
-    consumer_secret=app.config.get('GOOGLE_CLIENT_SECRET'),
-    request_token_params={
-        'scope': 'email'
-    },
-    base_url='https://www.googleapis.com/oauth2/v1/',
+    "google",
+    consumer_key=app.config.get("GOOGLE_CLIENT_ID"),
+    consumer_secret=app.config.get("GOOGLE_CLIENT_SECRET"),
+    request_token_params={"scope": "email"},
+    base_url="https://www.googleapis.com/oauth2/v1/",
     request_token_url=None,
-    access_token_method='POST',
-    access_token_url='https://accounts.google.com/o/oauth2/token',
-    authorize_url='https://accounts.google.com/o/oauth2/auth',
+    access_token_method="POST",
+    access_token_url="https://accounts.google.com/o/oauth2/token",
+    authorize_url="https://accounts.google.com/o/oauth2/auth",
 )
 
 
-@app.route('/login', methods=["POST"])
+@app.route("/login", methods=["POST"])
 def login_post():
-    return google.authorize(callback=flask.url_for('authorized', _external=True))
+    return google.authorize(callback=flask.url_for("authorized", _external=True))
+
 
 @google.tokengetter
 def get_google_oauth_token():
-    return flask.session.get('google_token')
+    return flask.session.get("google_token")
 
 
-@app.route('/login/authorized')
+@app.route("/login/authorized")
 def authorized():
     resp = google.authorized_response()
     if resp is None:
-        return 'Access denied: reason=%s error=%s' % (
-            flask.request.args['error_reason'],
-            flask.request.args['error_description']
+        return "Access denied: reason=%s error=%s" % (
+            flask.request.args["error_reason"],
+            flask.request.args["error_description"],
         )
-    flask.session['google_token'] = (resp['access_token'], '')
-    me = google.get('userinfo')
+    flask.session["google_token"] = (resp["access_token"], "")
+    me = google.get("userinfo")
     print(me.data)
-    #userinfo_response = requests.get(uri, headers=headers, data=body)
+    # userinfo_response = requests.get(uri, headers=headers, data=body)
     if me.data["verified_email"]:
         users_email = me.data["email"]
         picture = me.data["picture"]
@@ -200,7 +199,7 @@ def authorized():
 
     # Doesn't exist? Add it to the database.
     previousUser = True
-    if not user.query.filter_by(username=users_name).first():
+    if not user.query.filter_by(email=users_email).first():
         db.session.add(newUser)
         db.session.commit()
         previousUser = False
@@ -208,10 +207,14 @@ def authorized():
         # ))
 
     # Begin user session by logging the user in
-    login_user(user.query.filter_by(username=users_name).first())
+    login_user(user.query.filter_by(email=users_email).first())
 
     # if user already exists, send straight to their home page
     if previousUser:
+        # check if user finished onboarding
+        print(current_user.zipCode)
+        if current_user.zipCode == None:
+            return flask.redirect(flask.url_for("onboarding"))
         # if merchant user, send to merchant homepage
         # otherwise, regular
         if current_user.yelpRestaurantID:
@@ -297,8 +300,8 @@ def map():
 @login_required
 def logout():
     logout_user()
-    flask.session.pop('google_token', None)
-    return flask.redirect(flask.url_for('login'))
+    flask.session.pop("google_token", None)
+    return {"status": 200}
 
 
 @app.route("/post", methods=["POST", "GET"])
@@ -321,8 +324,10 @@ def post():
 @login_required
 def createAccount():
     zipcode = flask.request.args.get("zipcode")
+    userName = flask.request.args.get("userName")
     print("Printing zip code")
     print(zipcode)
+    current_user.username = userName
     current_user.zipCode = zipcode
     db.session.commit()
     yelpID = flask.request.args.get("yelpID")
@@ -346,13 +351,29 @@ def createAccount():
     return {"status": status}
 
 
-@app.route("/createPost", methods=["POST"])
+@app.route("/deleteAccount", methods=["POST"])
+@login_required
+def deleteAccount():
+    userID = flask.request.args.get("userID")
+    print("Printing UserID")
+    print(userID)
+    delUser = user.query.filter_by(user.id == userID).first()
+    db.session.delete(delUser)
+    db.session.commit()
+
+    status = "success"
+    if user.query.filter_by(user.id == userID).first():
+        status = "failed"
+    return {"status": status}
+
+
+@app.route("/createPost")
 @login_required
 def createPost():
-    AuthorID = flask.request.get("AuthorID")
-    postText = flask.request.get("postText")
-    postTitle = flask.request.get("postTitle")
-    RestaurantName = flask.request.get("RestaurantName")
+    AuthorID = flask.request.args.get("AuthorID")
+    postText = flask.request.args.get("postText")
+    postTitle = flask.request.args.get("postTitle")
+    RestaurantName = flask.request.args.get("RestaurantName")
     newUserPost = user_post(
         AuthorID=AuthorID,
         postText=postText,
@@ -367,7 +388,7 @@ def createPost():
     status = "failed"
     if user_post.query.filter_by(postTitle=postTitle, AuthorID=AuthorID).first():
         status = "success"
-    return flask.jsonify(status)
+    return {"status": status}
 
 
 @app.route("/createComment", methods=["POST"])
@@ -550,27 +571,16 @@ def deleteFavoriteRestaurant():
         )
 
 
-app.route("/getRestaurantData", methods=["GET"])
-
-
+@app.route("/getRestaurantData")
 def getRestaurantData():
     restaurant_id = current_user.yelpRestaurantID
     store_data = query_one_resturant(restaurant_id)
     if not store_data:
-        return flask.jsonify(
-            {
-                "status": 400,
-                "message": "Could not find data for this restaurant.",
-            }
-        )
-    return flask.jsonify(
-        {"status": 200, "message": "Retrieved restaurant data.", "data": store_data}
-    )
+        return {"status": 400, "message": "Could not find data for this restaurant."}
+    return {"status": 200, "message": "Retrieved restaurant data.", "data": store_data}
 
 
-app.route("/getPostsByUser", methods=["GET"])
-
-
+@app.route("/getPostsByUser", methods=["GET"])
 def getPostsByUser():
     posts = user_post.query.filter_by(user_id=current_user.username).all()
     postsData = []
@@ -682,6 +692,12 @@ def isFriends():
     return {"status": 200, "isFriends": True}
 
 
+@app.route("/getUserID")
+@login_required
+def getUserID():
+    return {"userID": current_user.id}
+
+
 @app.route("/")
 def main():
     if current_user.is_authenticated:
@@ -696,8 +712,4 @@ def main():
 if __name__ == "__main__":
     app.run(
         host=os.getenv("IP", "0.0.0.0"), port=int(os.getenv("PORT", 5000)), debug=True
-<<<<<<< HEAD
     )
-=======
-    )
->>>>>>> 491561649ac360f6108f46001a849b9401b07856

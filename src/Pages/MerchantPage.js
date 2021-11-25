@@ -4,20 +4,54 @@ import React, {
   useEffect,
 } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Post from '../Components/Post';
 // import PropTypes from 'prop-types';
 
-// this line will become const MerchantPage = (props) => { once there are props
+// SPRINT 2: MERCHANT CAN SEE POSTS ABOUT THEM
 const MerchantPage = () => {
   // set state
   const [currentSub, setCurrentSub] = useState('General');
+  const [restaurantName, setRestaurantName] = useState('');
+  const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
+  const [yelpRestaurantID, setYelpRestaurantID] = useState('');
+  const [restaurantPosts, setRestaurantPosts] = useState([]);
+  const [userID, setUserID] = useState([]);
 
   const navigate = useNavigate();
-  // deconstruct props
-  // const [props] = props;
 
-  // TODO: fetch data from backend
+  async function getMerchantData() {
+    await fetch('/getRestaurantData')
+      .then((response) => response.json())
+      .then((result) => {
+        console.log(result);
+        if (result.status && result.status === 200) {
+          setRestaurantName(result.data.names);
+        }
+      }).catch((error) => console.log(error));
+
+    await fetch('/getUserProfile')
+      .then((response) => response.json())
+      .then((result) => {
+        console.log(result);
+        setEmail(result.UserDATA.email);
+        setName(result.UserDATA.name);
+        setYelpRestaurantID(result.UserDATA.yelpRestaurantID);
+        if (result.UserPostsList) {
+          setRestaurantPosts([...result.UserPostsList]);
+        }
+      }).catch((error) => console.log(error));
+
+    await fetch('/getUserID')
+      .then((response) => response.json())
+      .then((result) => {
+        console.log(result);
+        setUserID(result.userID);
+      }).catch((error) => console.log(error));
+  }
+
   useEffect(() => {
-
+    getMerchantData();
   }, []);
 
   function selectSubcategory(choice) {
@@ -61,8 +95,25 @@ const MerchantPage = () => {
     return (
       <>
         <div>General</div>
-        <div>Restaurant Name: </div>
-        <div>Restaurant Yelp ID:</div>
+        <div>
+          Restaurant Name:
+          {restaurantName}
+        </div>
+        <div>
+          Email
+          {' '}
+          {email}
+        </div>
+        <div>
+          User name:
+          {' '}
+          {name}
+        </div>
+        <div>
+          Restaurant Yelp ID:
+          {' '}
+          {yelpRestaurantID}
+        </div>
       </>
     );
   }
@@ -76,11 +127,20 @@ const MerchantPage = () => {
       <>
         <div>Your Posts</div>
         <button type="button" onClick={onClickCreateNewPost}>New Post</button>
+        {restaurantPosts && restaurantPosts.map((x) => (
+          <Post
+            AuthorID={x.AuthorID}
+            postText={x.postText}
+            postTitle={x.postTitle}
+            postLikes={x.postLikes}
+          />
+        ))}
       </>
     );
   }
 
   function renderCostumerPosts() {
+    console.log(restaurantPosts);
     return (
       <>
         <div>Costumer Posts</div>
@@ -90,7 +150,16 @@ const MerchantPage = () => {
 
   const createNewPost = (event) => {
     event.preventDefault();
-    setCurrentSub('YourPosts');
+    // get data from forms
+    const title = document.getElementById('inputTitle').value;
+    const body = document.getElementById('inputBody').value;
+
+    fetch(`/createPost?AuthorID=${userID}&RestaurantName=${restaurantName}&postText=${body}&postTitle=${title}`)
+      .then((response) => response.json())
+      .then((result) => {
+        console.log(result);
+        setCurrentSub('YourPosts');
+      }).catch((error) => console.log(error));
   };
 
   const backButtonPress = () => {
@@ -103,8 +172,8 @@ const MerchantPage = () => {
         <button type="button" onClick={backButtonPress}>Back</button>
         <div>Create Post</div>
         <form onSubmit={createNewPost}>
-          <input type="text" placeholder="Enter Title" />
-          <input type="text" placeholder="Enter Body" />
+          <input type="text" id="inputTitle" placeholder="Enter Title" />
+          <input type="text" id="inputBody" placeholder="Enter Body" />
           <button type="submit">Publish</button>
         </form>
       </>

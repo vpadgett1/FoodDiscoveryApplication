@@ -81,21 +81,6 @@ const UserPage = () => {
   }
 
   useEffect(() => {
-    // get user data from the backend
-    /* const FavoriteRestaurantDummyData = [
-      {
-        RestaurantName: 'name',
-        RestaurantID: 'id',
-      },
-      {
-        RestaurantName: 'name2',
-        RestaurantID: 'id2',
-      },
-      {
-        RestaurantName: 'name3',
-        RestaurantID: 'id3',
-      },
-    ]; */
     getDetailedUserInfo();
     // check if the current user is friends with the user
     // setUserFavoriteRestaurants([...FavoriteRestaurantDummyData]);
