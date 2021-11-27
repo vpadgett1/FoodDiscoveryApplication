@@ -1,4 +1,5 @@
 import '../App.css';
+import '../styling/UserPage.css';
 import React, {
   useState,
   useEffect,
@@ -7,6 +8,7 @@ import { Link, useLocation } from 'react-router-dom';
 // import PropTypes from 'prop-types';
 import Navigation from '../Components/Navigation';
 import CatPfp from '../assets/CatProfilePic.png';
+import Post from '../Components/Post';
 
 // this line will become const UserPage = (props) => { once there are props
 const UserPage = () => {
@@ -21,6 +23,10 @@ const UserPage = () => {
   const [otherUserID, setUserID] = useState('');
   const [name, setName] = useState('');
   const [profilePic, setProfilePic] = useState('');
+  const [posts, setPosts] = useState([]);
+  const [currentUserID, setCurrentUserID] = useState('');
+  const [userName, setUserName] = useState('');
+  const [userProfilePic, setUserProfilePic] = useState('');
 
   function test() {
     if (otherUserID === '') {
@@ -29,7 +35,6 @@ const UserPage = () => {
         const { userId } = location.state ? location.state : '';
 
         if (location && userId) {
-          console.log(userId);
           setUserID(userId);
         } else {
           console.log('error');
@@ -71,6 +76,10 @@ const UserPage = () => {
         setProfilePic(userInfo.UserDATA.profilePic);
       }
 
+      if (userInfo.UserPostsList) {
+        setPosts([...userInfo.UserPostsList]);
+      }
+
       if (userInfo.UserFavRestaurantsList) {
         setUserFavoriteRestaurants([...userInfo.UserFavRestaurantsList]);
       }
@@ -80,20 +89,63 @@ const UserPage = () => {
     }
   }
 
+  async function getCurrentUserInfo() {
+    // get the user ID
+    await fetch('/getUserID')
+      .then((response) => response.json())
+      .then((result) => {
+        setCurrentUserID(result.userID);
+      }).catch((error) => console.log(error));
+
+    // get the user name
+    await fetch('/getUserName')
+      .then((response) => response.json())
+      .then((result) => {
+        setUserName(result.username);
+      }).catch((error) => console.log(error));
+
+    // get the user profile pic
+    await fetch('/getUserProfilePic')
+      .then((response) => response.json())
+      .then((result) => {
+        setUserProfilePic(result.profile_pic);
+      }).catch((error) => console.log(error));
+  }
+
   useEffect(() => {
     getDetailedUserInfo();
+    getCurrentUserInfo();
     // check if the current user is friends with the user
     // setUserFavoriteRestaurants([...FavoriteRestaurantDummyData]);
   }, [otherUserID]);
 
   function renderUserPosts() {
-    return <div id="userPosts">User Posts</div>;
+    return (
+      <>
+        <div className="rightSideTitle">User Posts</div>
+        {posts && posts.map((x) => (
+          <Post
+            postID={x.id}
+            AuthorID={x.AuthorID}
+            postText={x.postText}
+            postTitle={x.postTitle}
+            postLikes={x.postLikes}
+            profilePic={x.profilePic}
+            postComments={x.post_comments}
+            currentUserID={currentUserID}
+            currentUserProfilePic={userProfilePic}
+            currentUserName={userName}
+            AuthorName={x.AuthorName}
+          />
+        ))}
+      </>
+    );
   }
 
   function renderUserFavoriteRestaurants() {
     return (
       <>
-        <div id="userFavRestaurants">User Favorite Restaurants</div>
+        <div className="rightSideTitle">User Favorite Restaurants</div>
         {UserFavoriteRestaurants.map((x) => (
           <div key={x.RestaurantID}>
             <Link
@@ -157,18 +209,19 @@ const UserPage = () => {
   return (
     <div id="userPage">
       <Navigation />
-      <div className="leftSideUserProfile">
-        <div className="basicInfo" id="basicInfo">
-          <img id="profilepic" src={profilePic === '' ? CatPfp : profilePic} alt="profile img" />
-          <div id="userID" className="userName">{name === '' ? 'Loading' : name}</div>
+      <div className="userPage">
+        <div className="leftSideUserProfile">
+          <div className="basicInfo" id="basicInfo">
+            <img id="profilepic" src={profilePic === '' ? CatPfp : profilePic} alt="profile img" />
+            <div id="userID" className="userName">{name === '' ? 'Loading' : name}</div>
+          </div>
+          <button type="button" id="addFriendButton" onClick={onClickAddFriendButton}>{isFriend ? 'Remove Friend' : 'Add Friend'}</button>
         </div>
-        <button type="button" id="addFriendButton" onClick={onClickAddFriendButton}>{isFriend ? 'Remove Friend' : 'Add Friend'}</button>
+        <div className="rightSideUserProfile">
+          {renderUserFavoriteRestaurants()}
+          {renderUserPosts()}
+        </div>
       </div>
-      <div className="rightSideUserProfile">
-        {renderUserFavoriteRestaurants()}
-        {renderUserPosts()}
-      </div>
-
     </div>
   );
 };

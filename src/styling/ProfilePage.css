@@ -1,0 +1,187 @@
+/* Imports */
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;700&display=swap');
+
+.mainPageBody {
+  display: inline-flex;
+  width: 100%;
+  height: calc(100% - 45px);
+  font-family: 'Open Sans', sans-serif;
+}
+
+#profilePageLeftSide {
+  width: 40%;
+  height: 100%;
+  display: block;
+}
+
+#profilePageLeftSide button {
+  width: 100%;
+  border: none;
+  background-color: #f4f4f4;
+  font-size: 18px;
+  padding: 12px;
+  border-bottom: #cbb9a3;
+  border-bottom-width: 1px;
+  border-bottom-style: solid;
+  font-family: 'Open Sans', sans-serif;
+}
+
+#profilePageLeftSide button:hover {
+  background-color: #ffe7ca;
+  cursor: pointer;
+}
+
+#YourPostsSubcategory,
+#FavRestaurantSubcategory,
+#FriendsListSubcategory,
+#GeneralSubcategory {
+  width: 60%;
+  border-left: #ff9921;
+  border-left-width: 5px;
+  border-left-style: solid;
+  height: 100%;
+  overflow: scroll;
+  font-family: 'Open Sans', sans-serif;
+}
+
+.selectedSubcategory {
+  font-weight: 700;
+}
+
+#GeneralSubcategory {
+  text-align: center;
+}
+
+#GeneralSubcategory img {
+  margin: 50px;
+  height: 150px;
+  border-radius: 75px;
+}
+
+#GeneralSubcategory .generalRow {
+  border-bottom: #ff9921 1px solid;
+  font-size: 18px;
+  padding: 3px 12px;
+}
+
+#GeneralSubcategory .generalRow .left {
+  text-align: left;
+  display: inline-block;
+  width: 50%;
+}
+
+#GeneralSubcategory .generalRow .right {
+  text-align: right;
+  width: 50%;
+  display: inline-block;
+}
+
+.friendsListTitle {
+  font-weight: 700;
+  font-size: 18px;
+  border-bottom: #ff9921 2px solid;
+  padding: 6px;
+}
+
+.addFriendSearch {
+  font-size: 18px;
+  display: inline-block;
+  width: 100%;
+  border-bottom: #ff9921 1px solid;
+  padding: 6px;
+}
+
+.addFriendSearch div {
+  width: calc(50% - 12px);
+  display: inline-block;
+}
+
+.addFriendSearch div input {
+  width: calc(100% - 50px);
+  background-color: white;
+  border: none;
+  font-size: 16px;
+  line-height: 18px;
+  border-radius: 8px;
+  padding: 6px 6px;
+}
+
+.addFriendSearch div input::placeholder {
+  color: #cbb9a3;
+}
+
+.addFriendSearch div button {
+  background: #f5f4f4;
+  border: none;
+}
+
+.addFriendSearch div button:hover {
+  cursor: pointer;
+}
+
+.addFriendSearch div button img {
+  height: 18px;
+  filter: invert(66%) sepia(76%) saturate(1420%) hue-rotate(340deg) brightness(99%) contrast(105%);
+}
+
+.addFriendSearch div button img:hover {
+  cursor: pointer;
+  filter: invert(80%) sepia(27%) saturate(244%) hue-rotate(345deg) brightness(109%) contrast(101%);
+}
+
+.friendsListFriend {
+  font-size: 18px;
+  width: calc(100% - 12px);
+  border-bottom: 1px solid #ff9921;
+  padding: 6px;
+}
+
+.friendsListFriend .friendName {
+  display: inline-flex;
+  text-align: left;
+  margin: auto;
+}
+
+.friendsListFriend .friendName img {
+  height: 50px;
+  border-radius: 25px;
+  display: inline-block;
+  margin-left: 12px;
+}
+
+.friendsListFriend .friendName a {
+  color: #000;
+  line-height: 50px;
+  text-decoration: none;
+  margin: auto;
+  height: 50px;
+  padding-left: 12px;
+}
+
+.friendsListFriend .friendName a:hover {
+  color: #ff9921;
+  cursor: pointer;
+}
+
+.friendsListFriend .friendButton {
+  float: right;
+  height: 50px;
+  margin: auto;
+  display: flex;
+}
+
+.friendsListFriend .friendButton button {
+  font-size: 16px;
+  border: 3px solid #ff9921;
+  border-radius: 18px;
+  padding: 3px 24px;
+  color: #ff9921;
+  margin: auto;
+  font-family: 'Open Sans', sans-serif;
+}
+
+.friendsListFriend .friendButton button:hover {
+  color: #ffe7ca;
+  cursor: pointer;
+  background-color: #ff9921;
+}
