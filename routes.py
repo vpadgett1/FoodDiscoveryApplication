@@ -255,7 +255,7 @@ def map():
         # }
         # restaurant_search_response = requests.get(business_search_url, headers = newheaders, params = search_params)
         restaurant_results = query_resturants("restaurant", zip_code, search_limit)
-        print(restaurant_results)
+        # print(restaurant_results)
 
         name = []
         img_url = []
@@ -263,7 +263,10 @@ def map():
         is_closed = []
         url = []
         coord = []
-        id = []
+        address = []
+        opening = []
+        closing = []
+        ids = []
         for x in range(len(restaurant_results["names"])):
             rest_info = {
                 "name": restaurant_results["names"][x],
@@ -277,21 +280,30 @@ def map():
                     "title"
                 ],
                 "image": restaurant_results["pictures"][x],
+                "ids": restaurant_results["ids"][x],
             }
             name.append(rest_info["name"])
             img_url.append(rest_info["image"])
             rating.append(rest_info["rating"])
             coord.append(rest_info["coordinates"])
-
+            address.append(rest_info["location"])
+            opening.append(rest_info["opening"])
+            closing.append(rest_info["closing"])
+            ids.append(rest_info["ids"])
         DATA = {
             "names": name,
             "img_urls": img_url,
             "ratings": rating,
             "coords": coord,
+            "address": address,
+            "opening": opening,
+            "closing": closing,
+            "ids": ids,
         }
+        # print(restaurant_results)
 
         return flask.jsonify({"data": DATA})
-
+        
     else:
         return flask.render_template("index.html")
 
@@ -693,5 +705,5 @@ def main():
 
 if __name__ == "__main__":
     app.run(
-        host=os.getenv("IP", "0.0.0.0"), port=int(os.getenv("PORT", 5000)), debug=True
+        host=os.getenv("IP", "127.0.0.1"), port=int(os.getenv("PORT", 5000)), debug=True
     )

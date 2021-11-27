@@ -225,6 +225,7 @@ def query_resturants(term, location, limit):
     resturant_type_categories = []
     pictures = []
     coordinates = []
+    ids = []
     if not businesses:
         print(u"No businesses for {0} in {1} found.".format(term, location))
         return
@@ -236,9 +237,9 @@ def query_resturants(term, location, limit):
         # '   for the top result "{1}" ...'.format(len(businesses), business_id)
         # )
         response = get_business(API_KEY, business_id)
-
-        # print(response)
-
+        # print("yelp resp")
+        # print(response["id"])
+        ids.append(business_id)
         names.append(response["name"])
         locations.append(response["location"])
         openhours = response["hours"]
@@ -262,7 +263,9 @@ def query_resturants(term, location, limit):
         "resturant_type_categories": resturant_type_categories,
         "pictures": pictures,
         "coordinates": coordinates,
+        "ids": ids,
     }
+    
     # data = json.dumps(DATA)
     # print(DATA)
     return DATA
