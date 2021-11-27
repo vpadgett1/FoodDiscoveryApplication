@@ -22,6 +22,7 @@ import requests
 from flask_oauthlib.client import OAuth, OAuthException
 from googleauth import get_google_provider_cfg
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import update
 from dotenv import load_dotenv, find_dotenv
 from yelpInfo import query_resturants, query_one_resturant, query_api
 
@@ -395,6 +396,33 @@ def createComment():
     if post_comments.query.filter_by(AuthorID=AuthorID, post_id=post_id).first():
         status = "success"
     return flask.jsonify(status)
+
+@app.route("/likeAPost", methods = ["POST"])
+@login_required
+def likeAPost():
+    postId = 
+    userId = 
+    postInfo = user_post.query.filter_by(post_id=postId, user_id= userId).first()
+    specificPostLikes = postInfo.postLikes
+    specificPostLikes += 1
+    updateLikes = user_post.update().where(user_post.c.user_id == userId and user_post.c.post_id == postId).values(postLikes=specificPostLikes)
+    db.execute(updateLikes)
+    likeCount = postInfo.postLikes
+    return flask.jsonify({"likes" : likeCount, "message" : "like success", "status" : 200})
+
+
+@app.route("/unlikeAPost", methods = ["POST"])
+@login_required
+def unlikeAPost():
+    postId = 
+    userId = 
+    postInfo = user_post.query.filter_by(post_id=postId, user_id= userId).first()
+    specificPostLikes = postInfo.postLikes
+    specificPostLikes -= 1
+    updateLikes = user_post.update().where(user_post.c.user_id == userId and user_post.c.post_id == postId).values(postLikes=specificPostLikes)
+    db.execute(updateLikes)
+    likeCount = postInfo.postLikes
+    return flask.jsonify({"likes" : likeCount, "message" : " unlike success", "status" : 200})
 
 
 @app.route("/searchRestaurant", methods=["POST"])
