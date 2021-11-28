@@ -20,6 +20,7 @@ from flask_login import (
 import os
 import json
 import requests
+import base64
 from flask_oauthlib.client import OAuth, OAuthException
 from googleauth import get_google_provider_cfg
 from flask_sqlalchemy import SQLAlchemy
@@ -58,10 +59,10 @@ def timeConvert(miliTime):
         hours -= 12
     return ("%d:%02d" + setting) % (hours, minutes)
 
-with store_context(store):
-    with open('image_to_attach.jpg') as f:
-        entity.picture.from_file(f)
+def render_picture(data):
 
+    render_pic = base64.b64encode(data).decode('ascii') 
+    return render_pic
 
 bp = flask.Blueprint("bp", __name__, template_folder="./build")
 
@@ -201,7 +202,7 @@ def authorized():
     if me.data["verified_email"]:
         users_email = me.data["email"]
         picture = me.data["picture"]
-        users_name = me.data["id"]
+        #users_name = me.data["id"]
     else:
         return "User email not available or not verified by Google.", 400
     # Create a user in our database with the information provided by the Google response json
@@ -372,12 +373,17 @@ def createPost():
     postText = flask.request.args.get("postText")
     postTitle = flask.request.args.get("postTitle")
     RestaurantName = flask.request.args.get("RestaurantName")
+    image = flask.request.files['inputFile']
+    data_of_image = image.read()
+    render_file = render_picture(data_of_image)
     newUserPost = user_post(
         AuthorID=AuthorID,
         postText=postText,
         postTitle=postTitle,
         RestaurantName=RestaurantName,
         postLikes=0,
+        image_data = data_of_image,
+        rendered_data = render_file,
         user_id=current_user.id,
     )
     db.session.add(newUserPost)
