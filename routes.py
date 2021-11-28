@@ -240,6 +240,10 @@ def discover():
 def merchant():
     return flask.render_template("index.html")
 
+@app.route("/restaurantprofile")
+def restaurantprofile():
+    return flask.render_template("index.html")
+
 
 @app.route("/map", methods=["GET", "POST"])
 def map():

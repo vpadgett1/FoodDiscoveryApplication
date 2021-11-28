@@ -7,6 +7,7 @@ import {
   GoogleMap, withScriptjs, withGoogleMap, Marker, InfoWindow,
 } from 'react-google-maps';
 // import { Link } from 'react-router-dom';
+// import ReactDOMServer from 'react-dom/server';
 import PropTypes from 'prop-types';
 
 import Navigation from '../Components/Navigation';
@@ -51,6 +52,7 @@ const MapPage = () => {
       setRestaurantId(data.data.ids);
     });
   }
+
   // deconstruct props
   // const [props] = props;
 
@@ -110,6 +112,17 @@ function Map(props) {
     restaurantCoords, restaurantNames, restaurantImages, restaurantRatings, restaurantAddress,
     restaurantOpening, restaurantClosing, restaurantId,
   } = props;
+
+  // function renderMarkerContent(id, restname) {
+  //   return ReactDOMServer.renderToString(
+  // <Link to="/restaurantprofile" state={{ restaurantID: id }}>{restname}</Link>);
+  // }
+  function setID(id) {
+    sessionStorage.setItem('restaurantID', id);
+  }
+  function clearID() {
+    sessionStorage.clear();
+  }
   if (!restaurantCoords) {
     return (<><h1>Enter zip</h1></>);
   }
@@ -157,11 +170,15 @@ function Map(props) {
               setSelectedRestaurantClosing(null);
               setSelectedRestaurantOpening(null);
               setSelectedRestaurantId(null);
+              clearID();
             }}
           >
             {/* {console.log(selectedRestaurantId)} */}
             <div>
-              <a href="/restaurantprofile" dataID={{ restaurantID: selectedRestaurantId }}><h2>{selectedRestaurantName}</h2></a>
+              {/* {renderMarkerContent(selectedRestaurantId, selectedRestaurantName)} */}
+              <a href="/restaurantprofile" onClick={setID(selectedRestaurantId)}><h2>{selectedRestaurantName}</h2></a>
+              {/* <Link to="/restaurantprofile" state={{ restaurantID: selectedRestaurantId }}>
+              <h2>{selectedRestaurantName}</h2></Link> */}
               <img style={{ width: '80%', height: '60%' }} alt="restaurantimage" src={selectedRestaurantImage} />
               <p>
                 Rating:
@@ -176,10 +193,6 @@ function Map(props) {
                 {selectedRestaurantOpening}
                 -
                 {selectedRestaurantClosing}
-              </p>
-              <p>
-                id:
-                {selectedRestaurantId}
               </p>
             </div>
           </InfoWindow>
@@ -227,11 +240,15 @@ function Map(props) {
               setSelectedRestaurantClosing(null);
               setSelectedRestaurantOpening(null);
               setSelectedRestaurantId(null);
+              clearID();
             }}
           >
             {/* {console.log(selectedRestaurantId)}   */}
             <div>
-              <a href="/restaurantprofile" dataID={{ restaurantID: selectedRestaurantId }}><h2>{selectedRestaurantName}</h2></a>
+              {/* {renderMarkerContent(selectedRestaurantId, selectedRestaurantName)} */}
+              <a href="/restaurantprofile" id="sendrestID" restaurantID={selectedRestaurantId}><h2>{selectedRestaurantName}</h2></a>
+              {/* <Link to="/restaurantprofile" state={{ restaurantID: selectedRestaurantId }}>
+              <h2>{selectedRestaurantName}</h2></Link> */}
               <img style={{ width: '80%', height: '60%' }} alt="restaurantimage" src={selectedRestaurantImage} />
               <p>
                 Rating:
@@ -246,10 +263,6 @@ function Map(props) {
                 {selectedRestaurantOpening}
                 -
                 {selectedRestaurantClosing}
-              </p>
-              <p>
-                id:
-                {selectedRestaurantId}
               </p>
             </div>
           </InfoWindow>

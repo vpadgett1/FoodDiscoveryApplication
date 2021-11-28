@@ -5,7 +5,8 @@ import React, {
   useEffect, useState,
   // useState,
 } from 'react';
-import { useLocation } from 'react-router-dom';
+// import $ from 'jquery';s
+// import { useLocation } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import Navigation from '../Components/Navigation';
 import TempRestaurantBackground from '../assets/TempRestaurantBackgroundImg.png';
@@ -37,7 +38,7 @@ const RestaurantPage = () => {
       .then((response) => response.json())
       .then((data) => {
         console.log(data);
-      }).catch((error) => console.log(error)); */
+      }).catch((error) => console.log(error));
 
   // get posts made by the restaurant
   /* await fetch('\\getPostsByRestaurant')
@@ -95,19 +96,23 @@ const RestaurantPage = () => {
     // SPRINT 2 : style of button should change as well
   };
 
-  function test() {
-    const location = useLocation();
-    const { restaurantID } = location.state;
+  // function test() {
+  //   const location = useLocation();
+  //   const { restaurantID } = location.state;
 
-    if (location && restaurantID) {
-      console.log(restaurantID);
-    } else {
-      console.log('error');
-    }
+  //   if (location && restaurantID) {
+  //     console.log(restaurantID);
+  //   } else {
+  //     console.log('error');
+  //   }
+  // }
+
+  // test();
+
+  function getID() {
+    console.log(sessionStorage.getItem('restaurantID'));
   }
-
-  test();
-
+  getID();
   // TODO: Render component
   return (
     <>
