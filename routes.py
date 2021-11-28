@@ -3,6 +3,7 @@
 # pylint: disable=W1508
 # pylint: disable=R0903
 # pylint: disable=W0603
+from collections import UserString
 from typing import NewType
 
 from requests.api import post
@@ -25,6 +26,10 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import update
 from dotenv import load_dotenv, find_dotenv
 from yelpInfo import query_resturants, query_one_resturant, query_api
+from sqlalchemy_imageattach.entity import entity
+from sqlalchemy_imageattach.context import store_context
+import sqlalchemy_imageattach.stores.fs
+from sqlalchemy_imageattach.store import Store
 
 load_dotenv(find_dotenv())
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
@@ -52,6 +57,10 @@ def timeConvert(miliTime):
         setting = "PM"
         hours -= 12
     return ("%d:%02d" + setting) % (hours, minutes)
+
+with store_context(store):
+    with open('image_to_attach.jpg') as f:
+        entity.picture.from_file(f)
 
 
 bp = flask.Blueprint("bp", __name__, template_folder="./build")
@@ -400,12 +409,12 @@ def createComment():
 @app.route("/likeAPost", methods = ["POST"])
 @login_required
 def likeAPost():
-    postId = 
-    userId = 
-    postInfo = user_post.query.filter_by(post_id=postId, user_id= userId).first()
+    postId = flask.request.args.get("PostID")
+    authorId = flask.request.args.get("AuthorID")
+    postInfo = user_post.query.filter_by(post_id=postId, AuthorID= authorId).first()
     specificPostLikes = postInfo.postLikes
     specificPostLikes += 1
-    updateLikes = user_post.update().where(user_post.c.user_id == userId and user_post.c.post_id == postId).values(postLikes=specificPostLikes)
+    updateLikes = user_post.update().where(user_post.c.AuthorID == authorId and user_post.c.post_id == postId).values(postLikes=specificPostLikes)
     db.execute(updateLikes)
     likeCount = postInfo.postLikes
     return flask.jsonify({"likes" : likeCount, "message" : "like success", "status" : 200})
@@ -414,12 +423,12 @@ def likeAPost():
 @app.route("/unlikeAPost", methods = ["POST"])
 @login_required
 def unlikeAPost():
-    postId = 
-    userId = 
-    postInfo = user_post.query.filter_by(post_id=postId, user_id= userId).first()
+    postId = flask.request.args.get("PostID")
+    authorId = flask.request.args.get("AuthorID")
+    postInfo = user_post.query.filter_by(post_id=postId, AuthorID= authorId).first()
     specificPostLikes = postInfo.postLikes
     specificPostLikes -= 1
-    updateLikes = user_post.update().where(user_post.c.user_id == userId and user_post.c.post_id == postId).values(postLikes=specificPostLikes)
+    updateLikes = user_post.update().where(user_post.c.AuthorID == authorId and user_post.c.post_id == postId).values(postLikes=specificPostLikes)
     db.execute(updateLikes)
     likeCount = postInfo.postLikes
     return flask.jsonify({"likes" : likeCount, "message" : " unlike success", "status" : 200})
@@ -446,6 +455,20 @@ def search_restaurant():
         resturant_data.append(rest_info)
     # return flask.render_template("", resturant_data = resturant_data)
     return flask.jsonify(resturant_data)
+
+@app.route("/searchUsername", methods=["POST"])
+@login_required
+def search_username():
+    user_name = flask.request.get("username")
+    usersWithUsername = []
+    user_data = user.query.filter_by(username=user_name).all()
+    for x in user_data:
+        user_info = {
+            "username": user_data.username
+        }
+        usersWithUsername.append(user_info)
+    # return flask.render_template("", resturant_data = resturant_data)
+    return flask.jsonify(usersWithUsername)
 
 
 @app.route("/addFollower")

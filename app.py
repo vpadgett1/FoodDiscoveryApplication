@@ -8,6 +8,7 @@ import os
 from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv, find_dotenv
 from flask_oauthlib.client import OAuth, OAuthException
+from sqlalchemy_imageattach.stores.fs import HttpExposedFileSystemStore
 
 load_dotenv(find_dotenv())
 
@@ -23,5 +24,8 @@ app.config['GOOGLE_CLIENT_SECRET'] = os.getenv("GOOGLE_CLIENT_SECRET")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.secret_key = os.environ.get("SECRET_KEY")
 oauth = OAuth(app)
+
+fs_store = HttpExposedFileSystemStore('userimages', 'images/')
+app.wsgi_app = fs_store.wsgi_middleware(app.wsgi_app)
 
 db = SQLAlchemy(app)
