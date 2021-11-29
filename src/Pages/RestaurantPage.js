@@ -9,37 +9,60 @@ import React, {
 // import { useLocation } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import Navigation from '../Components/Navigation';
-import TempRestaurantBackground from '../assets/TempRestaurantBackgroundImg.png';
+// import TempRestaurantBackground from '../assets/TempRestaurantBackgroundImg.png';
 import FiveStars from '../assets/yelp_stars/regular_5.png';
 import TempMap from '../assets/TempMap.png';
-import Sandwiches from '../assets/Sandwiches.png';
+// import Sandwiches from '../assets/Sandwiches.png';
 // import Post from '../Components/Post';
 
 // this line will become const RestaurantPage = (props) => { once there are props
 const RestaurantPage = () => {
   // set state
-  /* const [restaurantName, setRestaurantName] = useState('');
-  const [restaurantRating, setRestaurantRating] = useState('');
-  const [categories, setCategories] = useState([]);
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [hours, setHours] = useState({});
-  const [location, setLocation] = useState({});
-  const [images, setImages] = useState([]);
-  const [postsAboutRestaurant, setPostsAboutRestaurant] = useState([]);
-  const [postsByRestaurant, setPostsByRestaurant] = useState([]); */
+  const [restaurantName, setRestaurantName] = useState(null);
+  const [restaurantRating, setRestaurantRating] = useState(null);
+  const [restaurantRatingCount, setRestaurantRatingCount] = useState(null);
+  const [restaurantUrl, setRestaurantUrl] = useState(null);
+  const [categories, setCategories] = useState(null);
+  const [phoneNumber, setPhoneNumber] = useState(null);
+  const [openingHours, setOpeningHours] = useState(null);
+  const [closingHours, setClosingHours] = useState(null);
+  const [address, setAddress] = useState(null);
+  const [images, setImages] = useState(null);
+  const [mainImage, setMainImage] = useState(null);
+  // const [postsAboutRestaurant, setPostsAboutRestaurant] = useState([]);
+  // const [postsByRestaurant, setPostsByRestaurant] = useState([]);
   const [followingRestaurant, setFollowingRestaurant] = useState(false);
   // const [restaurantID] = useState('nothing');
 
   // deconstruct props
-
-  // async function loadPage() {
+  const restID = sessionStorage.getItem('restaurantID');
+  // console.log(restID);
+  function loadPage() {
   // get yelp data
-  /* await fetch('\\getYelpData')
-      .then((response) => response.json())
-      .then((data) => {
-        console.log(data);
-      }).catch((error) => console.log(error));
+    fetch('/restaurantprofile', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ restID }),
+    }).then((response) => response.json()).then((data) => {
+      // console.log(data.data.opening[0]);
+      console.log(data.data);
+      setRestaurantName(data.data.name);
+      setRestaurantRating(data.data.ratings);
+      setRestaurantRatingCount(data.data.rating_count);
+      setRestaurantUrl(data.data.url);
+      setCategories(data.data.categories);
+      setPhoneNumber(data.data.phone);
+      setOpeningHours(data.data.opening[0]);
+      setClosingHours(data.data.closing[0]);
+      setAddress(data.data.address);
+      setImages(data.data.photos[0]);
+      setMainImage(data.data.img_urls);
+    });
+  }
 
+  // loadPage();
   // get posts made by the restaurant
   /* await fetch('\\getPostsByRestaurant')
       .then((response) => response.json())
@@ -61,7 +84,7 @@ const RestaurantPage = () => {
 
   // TODO: fetch data from backend
   useEffect(() => {
-    // loadPage();
+    loadPage();
   }, []);
 
   function renderPostsByRestaurant() {
@@ -109,42 +132,63 @@ const RestaurantPage = () => {
 
   // test();
 
-  function getID() {
-    console.log(sessionStorage.getItem('restaurantID'));
-  }
-  getID();
+  // function getID() {
+  //   console.log(sessionStorage.getItem('restaurantID'));
+  // }
+  // getID();
   // TODO: Render component
+  if (!openingHours || !closingHours || !images) {
+    return (<><h1>Loading...</h1></>);
+  }
   return (
     <>
       <Navigation />
-      <img src={TempRestaurantBackground} alt="cover" />
+      <img src={mainImage} alt="cover" />
       <div className="restaurantInfo1">
-        <div className="restaurantTitle">Name of Restaurant</div>
+        <div className="restaurantTitle">{restaurantName}</div>
+        <div className="website">
+          <a href={restaurantUrl}>
+            Yelp Website
+          </a>
+        </div>
         <div className="starsAndDollars">
           <img src={FiveStars} alt="yelp stars" />
+          <p>
+            ratings:
+            {restaurantRating}
+            (
+            {restaurantRatingCount}
+            )
+          </p>
         </div>
-        <div className="categories">Categories: bla bla bla</div>
-        <div className="phoneNumber">###-###-####</div>
+        <div className="categories">{categories}</div>
+        <div className="phoneNumber">{phoneNumber}</div>
         <button type="button" className="followRestaurantButton" id="followRestaurantButton" onClick={onClickFollowButton}>Follow Restaurant</button>
       </div>
       <div className="restaurantInfo2">
         <div className="hours">
           <div className="hoursTitle">Hours and Location</div>
-          <Hours day="Sunday" openingHour="11:00" closingHour="17:00" />
-          <Hours day="Monday" openingHour="11:00" closingHour="17:00" />
-          <Hours day="Tuesday" openingHour="11:00" closingHour="17:00" />
-          <Hours day="Wednesday" openingHour="11:00" closingHour="17:00" />
-          <Hours day="Thursday" openingHour="11:00" closingHour="17:00" />
-          <Hours day="Friday" openingHour="11:00" closingHour="17:00" />
-          <Hours day="Saturday" openingHour="11:00" closingHour="17:00" />
+          <Hours day="Sunday" openingHour={openingHours.Sunday} closingHour={closingHours.Sunday} />
+          <Hours day="Monday" openingHour={openingHours.Monday} closingHour={closingHours.Monday} />
+          <Hours day="Tuesday" openingHour={openingHours.Tuesday} closingHour={closingHours.Tuesday} />
+          <Hours day="Wednesday" openingHour={openingHours.Wednesday} closingHour={closingHours.Wednesday} />
+          <Hours day="Thursday" openingHour={openingHours.Thursday} closingHour={closingHours.Thursday} />
+          <Hours day="Friday" openingHour={openingHours.Friday} closingHour={closingHours.Friday} />
+          <Hours day="Saturday" openingHour={openingHours.Saturday} closingHour={closingHours.Saturday} />
         </div>
         <div className="location">
+          <p>
+            Address:
+            {address}
+          </p>
           <img src={TempMap} alt="map" />
         </div>
       </div>
       <div className="subTitle">Images</div>
       <div className="restaurantImages">
-        <img src={Sandwiches} alt="restaurant food" />
+        {images.map((pictures, index) => (
+          <img width="80%" height="70%" key={index} src={pictures} alt="restaurant food" />
+        ))}
       </div>
       <div className="subTitle">Posts by the Restaurant</div>
       {renderPostsByRestaurant()}

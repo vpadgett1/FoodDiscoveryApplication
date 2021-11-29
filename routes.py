@@ -23,7 +23,7 @@ from flask_oauthlib.client import OAuth, OAuthException
 from googleauth import get_google_provider_cfg
 from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv, find_dotenv
-from yelpInfo import query_resturants, query_one_resturant, query_api
+from yelpInfo import query_resturants, query_one_resturant, query_api, get_business
 
 load_dotenv(find_dotenv())
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
@@ -36,6 +36,7 @@ login_manager = LoginManager()
 login_manager.login_view = "login"
 login_manager.init_app(app)
 
+YELP_API_KEY = os.environ["YELP_API_KEY"]
 
 @login_manager.user_loader
 def load_user(user_name):
@@ -103,52 +104,6 @@ def profile():
         "UserFavRestaurantsList": UserFavRestaurantsList,
         "UserPostsList": UserPostsList,
     }
-
-
-@bp.route("/zipcode", methods=["GET", "POST"])
-def zipcode():
-    if flask.request.method == "POST":
-        yelp_api_key = os.getenv("YELP_APIKEY")
-        business_search_url = "https://api.yelp.com/v3/businesses/search"
-        newheaders = {"Authorization": "bearer %s" % yelp_api_key}
-        zip_code = current_user.zipcode
-        search_params = {"term": "restaurants", "location": zip_code, "limit": 25}
-        restaurant_search_response = requests.get(
-            business_search_url, headers=newheaders, params=search_params
-        )
-        restaurant_search_response_data = restaurant_search_response.json()
-        businesses = restaurant_search_response_data["businesses"]
-
-        name = []
-        img_url = []
-        rating = []
-        is_closed = []
-        url = []
-        coord = []
-        id = []
-
-        for business in businesses:
-            name.append(business["name"])
-            img_url.append(business["image_url"])
-            rating.append(business["rating"])
-            is_closed.append(business["is_closed"])
-            url.append(business["url"])
-            coord.append(business["coordinates"])
-            id.append(business["id"])
-
-        DATA = {
-            "names": name,
-            "img_urls": img_url,
-            "ratings": rating,
-            "is_closeds": is_closed,
-            "urls": url,
-            "coords": coord,
-            "ids": id,
-        }
-
-        return flask.jsonify({"data": DATA})
-    else:
-        return flask.render_template("index.html")
 
 
 app.register_blueprint(bp)
@@ -240,9 +195,88 @@ def discover():
 def merchant():
     return flask.render_template("index.html")
 
-@app.route("/restaurantprofile")
+@app.route("/restaurantprofile", methods=["GET", "POST"])
 def restaurantprofile():
-    return flask.render_template("index.html")
+
+    if flask.request.method == "POST":
+        
+        restaurant_id = flask.request.json.get("restID")
+        business_results = get_business(YELP_API_KEY, restaurant_id)
+        # print(business_results)
+
+        name = []
+        img_url = []
+        rating = []
+        rating_count = []
+        is_closed = []
+        url = []
+        address = []
+        opening = []
+        closing = []
+        phone_number = []
+        categories = []
+        photos = []
+
+        for x in range(len(business_results["name"])):
+            rest_info = {
+                "name": business_results["name"],
+                "location": business_results["location"]["display_address"],
+                "rating_count": business_results["review_count"],
+                "phone_number": business_results["display_phone"],
+                "rating": business_results["rating"],
+                "categories": business_results["categories"][0]["title"],
+                "image": business_results["image_url"],
+                "photos": business_results["photos"],
+                "url":business_results["url"],
+            }
+        for y in range(len(business_results["hours"][0]["open"])):
+            open_hours_info = {
+                "Sunday":timeConvert(business_results["hours"][0]["open"][y]["start"]),
+                "Monday":timeConvert(business_results["hours"][0]["open"][y]["start"]),
+                "Tuesday":timeConvert(business_results["hours"][0]["open"][y]["start"]),
+                "Wednesday":timeConvert(business_results["hours"][0]["open"][y]["start"]),
+                "Thursday":timeConvert(business_results["hours"][0]["open"][y]["start"]),
+                "Friday":timeConvert(business_results["hours"][0]["open"][y]["start"]),
+                "Saturday":timeConvert(business_results["hours"][0]["open"][y]["start"]),
+                }
+        for z in range(len(business_results["hours"][0]["open"])):
+            close_hours_info = {
+                "Sunday":timeConvert(business_results["hours"][0]["open"][z]["end"]),
+                "Monday":timeConvert(business_results["hours"][0]["open"][z]["end"]),
+                "Tuesday":timeConvert(business_results["hours"][0]["open"][z]["end"]),
+                "Wednesday":timeConvert(business_results["hours"][0]["open"][z]["end"]),
+                "Thursday":timeConvert(business_results["hours"][0]["open"][z]["end"]),
+                "Friday":timeConvert(business_results["hours"][0]["open"][z]["end"]),
+                "Saturday":timeConvert(business_results["hours"][0]["open"][z]["end"]),
+                }
+        opening.append(open_hours_info)
+        closing.append(close_hours_info)
+        name.append(rest_info["name"])
+        img_url.append(rest_info["image"])
+        rating.append(rest_info["rating"])
+        rating_count.append(rest_info["rating_count"])
+        address.append(rest_info["location"])
+        categories.append(rest_info["categories"])
+        photos.append(rest_info["photos"])
+        phone_number.append(rest_info["phone_number"])
+        url.append(rest_info["url"])
+        DATA = {
+            "name": name,
+            "img_urls": img_url,
+            "ratings": rating,
+            "rating_count": rating_count,
+            "address": address,
+            "opening": opening,
+            "closing": closing,
+            "url": url,
+            "phone":phone_number,
+            "categories":categories,
+            "photos":photos,
+        }
+
+        return flask.jsonify({"data":DATA})
+    else:
+        return flask.render_template("index.html")
 
 
 @app.route("/map", methods=["GET", "POST"])
