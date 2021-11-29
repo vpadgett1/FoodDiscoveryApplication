@@ -5,8 +5,8 @@
 # pylint: disable=W0603
 from app import db
 from flask_login import UserMixin
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy_imageattach.entity import Image, image_attachment
+#from sqlalchemy.ext.declarative import declarative_base
+#from sqlalchemy_imageattach.entity import Image, image_attachment
 
 class user(UserMixin, db.Model):
     id = db.Column(

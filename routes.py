@@ -26,10 +26,10 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import update
 from dotenv import load_dotenv, find_dotenv
 from yelpInfo import query_resturants, query_one_resturant, query_api
-from sqlalchemy_imageattach.entity import entity
-from sqlalchemy_imageattach.context import store_context
-import sqlalchemy_imageattach.stores.fs
-from sqlalchemy_imageattach.store import Store
+#from sqlalchemy_imageattach.entity import entity
+#from sqlalchemy_imageattach.context import store_context
+#import sqlalchemy_imageattach.stores.fs
+#from sqlalchemy_imageattach.store import Store
 from datetime import datetime
 from base64 import b64encode
 from io import BytesIO
@@ -373,8 +373,8 @@ def createPost():
     image = flask.request.files['inputFile']
     data_of_image = image.read()
     render_file = render_picture(data_of_image)
-    Image = flask.request.args.get("image")
-    print(Image)
+    #Image = flask.request.args.get("image")
+    print(image)
     newUserPost = user_post(
         AuthorID=AuthorID,
         postText=postText,
