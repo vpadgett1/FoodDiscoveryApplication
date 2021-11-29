@@ -370,9 +370,11 @@ def createPost():
     postText = flask.request.args.get("postText")
     postTitle = flask.request.args.get("postTitle")
     RestaurantName = flask.request.args.get("RestaurantName")
-    image = flask.request.files['inputFile']
-    data_of_image = image.read()
-    render_file = render_picture(data_of_image)
+    #image = flask.request.files.get('image')
+    image = flask.request.files.get("inputFile")
+    if image: 
+        data_of_image = image.read()
+        render_file = render_picture(data_of_image)
     #Image = flask.request.args.get("image")
     print(image)
     newUserPost = user_post(
