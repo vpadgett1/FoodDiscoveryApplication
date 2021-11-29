@@ -30,6 +30,8 @@ const DiscoverPage = () => {
 
   const [showMessage, setShowMessage] = useState(false);
 
+  // const [inputImage, setInputImage] = useState('');
+
   const MAX_LENGTH_TITLE = 50;
   const MAX_LENGTH_BODY = 300;
   const MAX_LENGTH_RESTAURANT_NAME = 50;
@@ -94,8 +96,9 @@ const DiscoverPage = () => {
       const title = document.getElementById('inputTitle').value;
       const body = document.getElementById('inputBody').value;
       const restName = document.getElementById('restaurantName').value;
+      const file = document.getElementById('newPostImageInput').files[0];
 
-      fetch(`/createPost?AuthorID=${userID}&RestaurantName=${restName}&postText=${body}&postTitle=${title}`)
+      fetch(`/createPost?AuthorID=${userID}&RestaurantName=${restName}&postText=${body}&postTitle=${title}&image=${file}`)
         .then((response) => response.json())
         .then((result) => {
           if (result.status && result.status === 200) {
@@ -123,7 +126,8 @@ const DiscoverPage = () => {
               setNoContentError(false);
             }
           }
-        }).catch((error) => console.log(error));
+        })
+        .catch((error) => console.log(error));
     } else {
       console.log('cannot post');
     }
@@ -239,6 +243,11 @@ const DiscoverPage = () => {
     canTheUserPost();
   };
 
+  const onChangeImageInput = () => {
+    const file = document.getElementById('newPostImageInput').files[0];
+    console.log(file);
+  };
+
   const cancelCreateNewPost = () => {
     // set all character lengths back to 0
     setTitleCharLength(0);
@@ -288,6 +297,9 @@ const DiscoverPage = () => {
                   /
                   {MAX_LENGTH_RESTAURANT_NAME}
                 </div>
+              </div>
+              <div className="inputImage">
+                <input type="file" name="inputFile" id="newPostImageInput" accept="image/png, image/jpeg" onChange={onChangeImageInput} />
               </div>
               <button type="submit" className={canPost ? 'canPost' : ''}>Publish</button>
               <button type="button" onClick={onCancelCreateNewPost} id="CancelCreateNewPost">Cancel</button>

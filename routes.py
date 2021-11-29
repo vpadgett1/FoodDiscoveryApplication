@@ -351,6 +351,8 @@ def createPost():
     postText = flask.request.args.get("postText")
     postTitle = flask.request.args.get("postTitle")
     RestaurantName = flask.request.args.get("RestaurantName")
+    Image = flask.request.args.get("image")
+    print(Image)
     newUserPost = user_post(
         AuthorID=AuthorID,
         postText=postText,
@@ -781,5 +783,5 @@ def main():
 
 if __name__ == "__main__":
     app.run(
-        host=os.getenv("IP", "0.0.0.0"), port=int(os.getenv("PORT", 5000)), debug=True
+        host=os.getenv("IP", "127.0.0.1"), port=int(os.getenv("PORT", 5000)), debug=True
     )
