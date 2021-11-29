@@ -78,37 +78,27 @@ def profile():
         "profilePic": current_user.profile_pic,
         "zipcode": current_user.zipCode,
         "yelpRestaurantID": current_user.yelpRestaurantID,
+        "id": current_user.id,
     }
     UserFriends = current_user.friends
     UserFriendsList = []
     for x in range(len(UserFriends)):
-        UserFriendsList.append({"user_id": UserFriends[x].FriendID})
+        # Also get the profile picture and the name of the friend
+        friend = user.query.filter_by(id=UserFriends[x].FriendID).first()
+        UserFriendsList.append(
+            {
+                "user_id": UserFriends[x].FriendID,
+                "name": friend.username,
+                "profile_pic": friend.profile_pic,
+            }
+        )
 
     UserFavoriteRestaurants = current_user.favs
     UserFavRestaurantsList = []
     for x in range(len(UserFavoriteRestaurants)):
         UserFavRestaurantsList.append(UserFavoriteRestaurants[x].Restaurant)
 
-    UserPosts = current_user.posts
-    UserPostsList = []
-    for x in range(len(UserPosts)):
-        postComments = post_comments.query.filter_by(post_id=UserPosts[x].id).all()
-        postCommentsList = []
-        for y in range(len(postComments)):
-            commentData = {
-                "AuthorID": postComments[y].AuthorID,
-                "postText": postComments[y].postText,
-            }
-            postCommentsList.append(commentData)
-        PostDATA = {
-            "AuthorID": UserPosts[x].AuthorID,
-            "postText": UserPosts[x].postText,
-            "postTitle": UserPosts[x].postTitle,
-            "postLikes": UserPosts[x].postLikes,
-            "RestaurantName": UserPosts[x].RestaurantName,
-            "comments": postCommentsList,
-        }
-        UserPostsList.append(PostDATA)
+    UserPostsList = getPosts(current_user.id)
 
     return {
         "UserDATA": UserDATA,
@@ -254,6 +244,11 @@ def merchant():
     return flask.render_template("index.html")
 
 
+@app.route("/restaurantprofile")
+def restaurantprofile():
+    return flask.render_template("index.html")
+
+
 @app.route("/map", methods=["GET", "POST"])
 def map():
 
@@ -378,6 +373,8 @@ def createPost():
     image = flask.request.files['inputFile']
     data_of_image = image.read()
     render_file = render_picture(data_of_image)
+    Image = flask.request.args.get("image")
+    print(Image)
     newUserPost = user_post(
         AuthorID=AuthorID,
         postText=postText,
@@ -391,18 +388,21 @@ def createPost():
     db.session.add(newUserPost)
     db.session.commit()
 
-    status = "failed"
-    if user_post.query.filter_by(postTitle=postTitle, AuthorID=AuthorID).first():
-        status = "success"
-    return {"status": status}
+    status = 400
+    postID = 0
+    post = user_post.query.filter_by(postTitle=postTitle, AuthorID=AuthorID).first()
+    if post:
+        status = 200
+        postID = post.id
+    return {"status": status, "postID": postID}
 
 
-@app.route("/createComment", methods=["POST"])
+@app.route("/createComment")
 @login_required
 def createComment():
-    AuthorID = flask.request.get("AuthorID")
-    postText = flask.request.get("postText")
-    post_id = flask.request.get("post_id")
+    AuthorID = flask.request.args.get("AuthorID")
+    postText = flask.request.args.get("postText")
+    post_id = flask.request.args.get("post_id")
     newUserComment = post_comments(
         AuthorID=AuthorID, postText=postText, post_id=post_id
     )
@@ -693,26 +693,7 @@ def getDetailedUserInfo():
     for x in range(len(UserFavoriteRestaurants)):
         UserFavRestaurantsList.append(UserFavoriteRestaurants[x].Restaurant)
 
-    UserPosts = otherUser.posts
-    UserPostsList = []
-    for x in range(len(UserPosts)):
-        postComments = post_comments.query.filter_by(post_id=UserPosts[x].id)
-        postCommentsList = []
-        for y in range(len(postComments)):
-            commentData = {
-                "AuthorID": postComments[y].AuthorID,
-                "postText": postComments[y].postText,
-            }
-            postCommentsList.append(commentData)
-        PostDATA = {
-            "AuthorID": UserPosts[x].AuthorID,
-            "postText": UserPosts[x].postText,
-            "postTitle": UserPosts[x].postTitle,
-            "postLikes": UserPosts[x].postLikes,
-            "RestaurantName": UserPosts[x].RestaurantName,
-            "comments": postCommentsList,
-        }
-        UserPostsList.append(PostDATA)
+    UserPostsList = getPosts(userID)
 
     return {
         "UserDATA": UserDATA,
@@ -743,6 +724,18 @@ def isFriends():
 @login_required
 def getUserID():
     return {"userID": current_user.id}
+
+
+@app.route("/getUserName")
+@login_required
+def getUserName():
+    return {"username": current_user.username}
+
+
+@app.route("/getUserProfilePic")
+@login_required
+def getUserProfilePic():
+    return {"profile_pic": current_user.profile_pic}
 
 
 @app.route("/getDiscoverPage")
@@ -856,5 +849,5 @@ def main():
 
 if __name__ == "__main__":
     app.run(
-        host=os.getenv("IP", "0.0.0.0"), port=int(os.getenv("PORT", 5000)), debug=True
+        host=os.getenv("IP", "127.0.0.1"), port=int(os.getenv("PORT", 5000)), debug=True
     )

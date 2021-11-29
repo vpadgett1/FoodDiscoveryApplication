@@ -1,0 +1,233 @@
+/* Imports */
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;700&display=swap');
+
+.merchantPage {
+  width: calc(100% - 12px);
+  height: calc(100% - 12px);
+}
+
+.topBarMerchant {
+  background-color: white;
+  color: #ff9921;
+  border-bottom: #ff9921 4px solid;
+  font-size: 28px;
+  font-weight: 700;
+  font-family: 'Open Sans', sans-serif;
+  width: calc(100% - 12px);
+  padding: 6px 12px;
+}
+
+.merchantBody {
+  display: inline-flex;
+  width: 100%;
+  height: calc(100% - 45px);
+  font-family: 'Open Sans', sans-serif;
+}
+
+.merchantLeftSide {
+  width: 40%;
+  height: 100%;
+  display: block;
+}
+
+.merchantLeftSide button {
+  width: 100%;
+  border: none;
+  background-color: #f4f4f4;
+  font-size: 18px;
+  padding: 12px;
+  border-bottom: #ff9921;
+  border-bottom-width: 1px;
+  border-bottom-style: solid;
+  font-family: 'Open Sans', sans-serif;
+}
+
+.merchantLeftSide button:hover {
+  background-color: #ffe7ca;
+  cursor: pointer;
+}
+
+.merchantRightSide {
+  width: 60%;
+  border-left: #adadad;
+  border-left-width: 3px;
+  border-left-style: solid;
+  height: 100%;
+  overflow: scroll;
+  font-family: 'Open Sans', sans-serif;
+}
+
+.GeneralTitle {
+  font-size: 28px;
+  font-weight: 700;
+  padding: 6px 12px;
+  width: calc(100% - 24px);
+  border-bottom: 2px #ff9921 solid;
+}
+
+.GeneralSubcategory {
+  font-size: 20px;
+  padding: 6px 12px;
+  width: calc(100% - 24px);
+  border-bottom: 2px #ff9921 solid;
+}
+
+.GeneralSubcategory .left {
+  display: inline-block;
+}
+
+.GeneralSubcategory .right {
+  float: right;
+}
+
+.merchantYourPosts {
+  font-size: 28px;
+  font-weight: 700;
+  padding: 6px 12px;
+  width: calc(100% - 24px);
+  border-bottom: 2px #ff9921 solid;
+}
+
+.merchantYourPosts div {
+  display: inline-block;
+}
+
+.merchantYourPosts button {
+  float: right;
+  background-color: #ff9921;
+  border: none;
+  font-size: 20px;
+  line-height: 28px;
+  padding: 3px 32px;
+  border-radius: 16px;
+  color: white;
+  margin-top: 2px;
+  font-family: 'Open Sans', sans-serif;
+}
+
+.createNewPostMerchantTop {
+  display: flex;
+  border-bottom: #ff9921 2px solid;
+}
+
+.createNewPostMerchantTop div {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 6px 0px;
+}
+
+.createNewPostMerchantTop button {
+  padding: 0;
+  background-color: white;
+  border: none;
+  border-radius: 20px;
+  margin: 6px 12px;
+}
+
+.createNewPostMerchantTop button img {
+  height: 40px;
+  width: 40px;
+  filter: invert(70%) sepia(93%) saturate(2095%) hue-rotate(342deg) brightness(101%) contrast(101%);
+}
+
+.merchantRightSide form {
+  width: 80%;
+  margin: auto;
+  margin-top: 24px;
+}
+
+.inputTitleMerchantDiv {
+  width: calc(100% - 26px);
+  border: none;
+  padding: 6px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  background-color: white;
+  display: inline-flex;
+}
+
+#inputTitleMerchant {
+  font-size: 18px;
+  font-weight: 400;
+  width: 90%;
+  border: none;
+}
+
+#inputTitleMerchant::placeholder {
+  color: #cbb9a3;
+}
+
+.inputTitleMerchantCharCount {
+  font-size: 12px;
+  width: 5%;
+}
+
+.inputBodyMerchant {
+  width: calc(100% - 26px);
+  border: none;
+  padding: 6px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  background-color: white;
+}
+
+#inputBodyMerchant {
+  font-size: 18px;
+  font-weight: 400;
+  width: 100%;
+  border: none;
+  height: 150px;
+}
+
+#inputBodyMerchant::placeholder {
+  color: #cbb9a3;
+}
+
+.inputBodyMerchantCharCount {
+  font-size: 12px;
+  text-align: end;
+  width: 100%;
+}
+
+.createPostMerchantButton {
+  width: 100%;
+  text-align: end;
+}
+
+.inputBodyMerchant button {
+  border: none;
+  font-size: 20px;
+  padding: 5px 32px;
+  border-radius: 24px;
+  font-family: 'Open Sans', sans-serif;
+}
+
+.canPost {
+  background-color: #ff9921;
+  color: white;
+}
+
+.cannotPost {
+  background-color: #ff9921;
+  color: #cbb9a3;
+}
+
+.inputBodyMerchant button:hover {
+  background-color: #ffe7ca;
+  cursor: pointer;
+}
+
+.inputBodyMerchant button:hover {
+  background-color: #ffe7ca;
+  cursor: pointer;
+}
+
+.createNewPostMerchantTop button img:hover {
+  filter: invert(92%) sepia(20%) saturate(586%) hue-rotate(318deg) brightness(101%) contrast(101%);
+  cursor: pointer;
+}
+
+.merchantYourPosts button:hover {
+  background-color: #ffe7ca;
+  cursor: pointer;
+}

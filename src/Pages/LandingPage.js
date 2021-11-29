@@ -1,32 +1,27 @@
 import '../App.css';
+import '../styling/LandingPage.css';
 import React, {
-// useState,
-// useEffect,
 } from 'react';
-// import PropTypes from 'prop-types';
+import LandingPageImg from '../assets/GuyAndGirlEating.png';
 
-// this line will become const LandingPage = (props) => { once there are props
-const LandingPage = () =>
-//   const login = async () => {
-//     await fetch('/login')
-//       .then((response) => response.json())
-//       .then((result) => {
-//         console.log(result);
-//         // const uri = result.url;
-//         // if (uri !== '') {
-//         //   window.location.assign(uri);
-//         // }
-//       })
-//       .catch((response) => console.log(response));
-//   };
-
-  // eslint-disable-next-line implicit-arrow-linebreak
-  (
-    <>
-      <form method="POST" action="/login">
-        <input type="submit" name="Login" id="Login" />
-      </form>
-      <div>Landing Page</div>
-    </>
-  );
+const LandingPage = () => (
+  <div className="landingPage">
+    <div className="landingPageBar">
+      <div className="FoodMe">FoodMe</div>
+      <div className="LoginButton">
+        <form method="POST" action="/login">
+          <input type="submit" name="Login" id="Login" value="Log In" />
+        </form>
+      </div>
+    </div>
+    <div className="landingPageBody">
+      <div className="leftSide">
+        <div>Discover delicious food near you</div>
+      </div>
+      <div className="rightSide">
+        <img src={LandingPageImg} alt="guy and girl eating food" />
+      </div>
+    </div>
+  </div>
+);
 export default LandingPage;
