@@ -138,21 +138,16 @@ const Post = (props) => {
   };
 
   const onClickLikePost = () => {
-    const data = new FormData();
-    data.append('PostID', postID);
-    data.append('AuthorID', AuthorID);
     if (liked) { // unlike a post
-      fetch('/unlikeAPost', {
+      fetch(`/unlikeAPost?PostID=${postID}&AuthorID=${AuthorID}`, {
         method: 'POST',
-        body: data,
       })
         .then((response) => response.json())
         .then(() => setNumLiked(numLiked - 1))
         .catch((error) => console.log(error));
     } else { // like a post
-      fetch('/likeAPost', {
+      fetch(`/likeAPost?PostID=${postID}&AuthorID=${AuthorID}`, {
         method: 'POST',
-        body: data,
       })
         .then((response) => response.json())
         .then(() => setNumLiked(numLiked - 1))
@@ -163,7 +158,6 @@ const Post = (props) => {
 
   const renderImage = () => {
     if (ImageData !== '') {
-      console.log(`printing image data: ${ImageData}`);
       return (<img className="postImage" src={`data:image/png;base64, ${ImageData}`} alt="post" />);
     }
     return (<></>);
@@ -188,6 +182,7 @@ const Post = (props) => {
       <div className="postText">
         {postText}
       </div>
+      {renderImage()}
       <div className="postLikes">
         <button type="button" onClick={onClickLikePost}>
           <img src={Heart} alt="heart" className={liked ? 'clicked' : 'unclicked'} />
@@ -197,7 +192,6 @@ const Post = (props) => {
           <img src={Comment} alt="add comment" className={showCreateComment ? 'clicked' : 'unclicked'} />
         </button>
       </div>
-      {renderImage()}
       <div className="postDivider" />
       {renderCreateComment()}
       {renderComments()}

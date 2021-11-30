@@ -121,19 +121,13 @@ const ProfilePage = () => {
     await fetch(`/getUserInfoByEmail?email=${searchFriendField}`)
       .then((response) => response.json())
       .then((data) => {
-        console.log(data);
-        // create friend
-        const addFriend = {
-          user_id: data.id,
-        };
-
         // add friend in database
-        fetch(`/addFollower?follower_id=${addFriend.user_id}`)
+        fetch(`/addFollower?follower_id=${data.id}`)
           .then((response) => response.json())
           .then((result) => {
             // update state
             if (result.status === 200) {
-              setFriendsList([...friendsList, addFriend]);
+              setFriendsList([...friendsList, result.friendData]);
             }
           }).catch((error) => console.log(error));
       }).catch((error) => console.log(error));
