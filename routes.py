@@ -400,11 +400,11 @@ def createPost():
     # Image = flask.request.args.get("image")
     # print(image)
     newUserPost = user_post(
-        AuthorID=AuthorID,
-        postText=postText,
-        postTitle=postTitle,
-        RestaurantName=RestaurantName,
-        postLikes=0,
+        author_id=AuthorID,
+        post_text=postText,
+        post_title=postTitle,
+        restaurant_name=RestaurantName,
+        post_likes=0,
         image_data=data_of_image,
         rendered_data=render_file,
         user_id=current_user.id,
@@ -414,7 +414,7 @@ def createPost():
 
     status = 400
     postID = 0
-    post = user_post.query.filter_by(postTitle=postTitle, AuthorID=AuthorID).first()
+    post = user_post.query.filter_by(post_title=postTitle, author_id=AuthorID).first()
     if post:
         status = 200
         postID = post.id
@@ -811,7 +811,7 @@ def getDiscoverPage():
     noFriends = False
     message = ""
     # Get all the friends of this user
-    UserFriends = current_user.friends
+    UserFriends = friends.query.filter_by(user_id=current_user.id).all()
     UserFriendsList = []
     for x in range(len(UserFriends)):
         UserFriendsList.append(
