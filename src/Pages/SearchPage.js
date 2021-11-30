@@ -1,26 +1,32 @@
 /* eslint-disable no-unused-vars */
 import '../App.css';
+import '../styling/SearchPage.css';
 import React, {
   useState,
   useEffect,
 } from 'react';
 import Navigation from '../Components/Navigation';
 // import PropTypes from 'prop-types';
+import SearchBar from '../Components/SearchBar';
+import RestaurantList from '../Components/RestaurantList';
 
-const SearchPage = () => {
+const SearchPage = (props) => {
   // set state
   const [input, setInput] = useState('');
-  const [RestListDefault, setRestListDefault] = useState();
-  const [RestList, setRestList] = useState();
+  const [RestaurantListDefault, setRestaurantListDefault] = useState();
+  const [RestaurantList, setRestaurantList] = useState();
 
-  const fetchData = async () => await fetch('')
+  const fetchData = async () => {
+    return await fetch('')
     .then((response) => response.json())
-    .then(data => { setRestList(data)
-      setRestListDefault(data)
-
+    .then((data) => {
+      setRestaurantList(data);
+      setRestaurantListDefault(data);
     });
-  }
   const updateInput = async (input) => {
+    const filtered = restaurantListDefault.filter((restaurant) => restaurant.name.toLowerCase().includes(input.toLowerCase()));
+    setInput(input);
+    setRestaurantList(filtered);
     // want to filter through for restaurant name
     // const filtered =
     // return
@@ -44,15 +50,14 @@ const SearchPage = () => {
           input={input}
           onChange={updateInput}
         />
-        <restList RestList = {restList}/>
+        <RestaurantList restaurantList={restaurantList} />
       </div>
     </>
   );
+
+  // // TODO: PropTypes
+  // SearchPage.propTypes = {
+
+  // };
 };
-
-// TODO: PropTypes
-SearchPage.propTypes = {
-
-};
-
 export default SearchPage;
