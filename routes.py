@@ -366,9 +366,11 @@ def createAccount():
     return {"status": status}
 
 
-@app.route("/createPost", methods=["POST"])
+@app.route("/createPost", methods=["POST", "GET"])
 @login_required
 def createPost():
+    if flask.request.method == "GET":
+        return {"status": 200}
     AuthorID = flask.request.args.get("AuthorID")
     postText = flask.request.args.get("postText")
     postTitle = flask.request.args.get("postTitle")
@@ -865,5 +867,5 @@ def main():
 
 if __name__ == "__main__":
     app.run(
-        host=os.getenv("IP", "0.0.0.0"), port=int(os.getenv("PORT", 5000)), debug=True
+        host=os.getenv("IP", "127.0.0.1"), port=int(os.getenv("PORT", 5000)), debug=True
     )
