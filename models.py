@@ -6,6 +6,7 @@
 from app import db
 from flask_login import UserMixin
 from sqlalchemy.sql import func
+
 # from sqlalchemy.ext.declarative import declarative_base
 # from sqlalchemy_imageattach.entity import Image, image_attachment
 
@@ -42,12 +43,24 @@ class favorite_restraunts(UserMixin, db.Model):
     yelp_restraunt_id = db.Column(db.String(120))
     user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"))
 
+    user = db.relationship(
+        "user",
+        backref=db.backref("favorite_restraunts", cascade="all, delete-orphan"),
+        lazy="joined",
+    )
+
 
 class friends(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     friend_name = db.Column(db.String(120))
     friend_id = db.Column(db.String(120))
     user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"))
+
+    user = db.relationship(
+        "user",
+        backref=db.backref("friends", cascade="all, delete-orphan"),
+        lazy="joined",
+    )
 
 
 class user_post(UserMixin, db.Model):
@@ -63,11 +76,24 @@ class user_post(UserMixin, db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"))
     post_comments = db.relationship("post_comments", backref="user", lazy=True)
 
+    user = db.relationship(
+        "user",
+        backref=db.backref("post_comments", cascade="all, delete-orphan"),
+        lazy="joined",
+    )
+
+
 class post_comments(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     author_id = db.Column(db.String(100), nullable=False)
     post_text = db.Column(db.String(300), nullable=False)
     post_id = db.Column(db.Integer, db.ForeignKey("user_post.id", ondelete="CASCADE"))
+
+    user = db.relationship(
+        "user",
+        backref=db.backref("post_comments", cascade="all, delete-orphan"),
+        lazy="joined",
+    )
 
 
 db.create_all()
