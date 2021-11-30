@@ -1,6 +1,6 @@
 import '../App.css';
 import React, {
-  // useState,
+   useState,
   useEffect,
 } from 'react';
 import Navigation from '../Components/Navigation';
@@ -8,13 +8,28 @@ import Navigation from '../Components/Navigation';
 
 const SearchPage = () => {
   // set state
-  // const [state, setState] = useState(value);
+  const [input, setInput] = useState('');
+  
+  const fetchData = async () => {
+    return await fetch('')
+    .then(response => response.json())
+    .then(data => {
+
+    });
+    
+  }
+
+  const updateInput = async (input) => {
+    //want to filter
+    //const filtered = 
+    //return 
+  }
 
   // deconstruct props
   // const [props] = props;
 
   // TODO: fetch data from backend
-  useEffect(() => {
+  useEffect(() => {fetchData()
 
   }, []);
 
@@ -24,7 +39,9 @@ const SearchPage = () => {
       <Navigation />
       <div>This is the search page</div>
       <div>
-        <SearchBar/>
+        <SearchBar
+        input={input}
+        onChange = {updateInput} />
       </div>
     </>
   );
