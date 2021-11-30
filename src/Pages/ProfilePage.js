@@ -259,6 +259,7 @@ const ProfilePage = () => {
             currentUserProfilePic={profilePic}
             currentUserName={name}
             AuthorName={x.AuthorName}
+            ImageData={x.post_picture}
           />
         ))}
       </div>
