@@ -655,7 +655,7 @@ def deleteFavoriteRestaurant():
     if extraVal:
         removeFollower = friends.query.filter(
             (favorite_restraunts.user_id == current_user.username)
-            & (favorite_restraunts.restaurant_name == extraVal.yelp_restaurant_id)
+            & (favorite_restraunts.yelp_restaurant_id == extraVal.yelp_restaurant_id)
         ).first()
         db.session.delete(removeFollower)
         try:
@@ -811,7 +811,7 @@ def getDiscoverPage():
     noFriends = False
     message = ""
     # Get all the friends of this user
-    UserFriends = current_user.friends
+    UserFriends = friends.query.filter_by(user_id=current_user.id).all()
     UserFriendsList = []
     for x in range(len(UserFriends)):
         UserFriendsList.append(
