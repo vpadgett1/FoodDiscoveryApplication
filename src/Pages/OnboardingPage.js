@@ -35,9 +35,10 @@ const OnboardingPage = () => {
   const createRegularUserAccount = async () => {
     // get input
     const zipcode = document.getElementById('zipCodeInput').value;
+    const username = document.getElementById('regularUserName').value;
 
     // send to database, wait until db responds before continueing
-    await fetch(`/createAccount?zipcode=${zipcode}`, {
+    await fetch(`/createAccount?zipcode=${zipcode}&username=${username}`, {
       method: 'POST',
     })
       .then((response) => response.json())
@@ -57,6 +58,8 @@ const OnboardingPage = () => {
       <>
         <div>Please enter your zip code</div>
         <input type="text" placeholder="Zip Code" id="zipCodeInput" />
+        <div>Please enter a username</div>
+        <input type="text" placeholder="Username" id="regularUserName" />
         <button type="button" onClick={createRegularUserAccount}>Continue</button>
       </>
     );
@@ -66,9 +69,10 @@ const OnboardingPage = () => {
     // get input
     const yelpID = document.getElementById('yelpRestaurantID').value;
     const zipcode = document.getElementById('zipCodeInput').value;
+    const username = document.getElementById('merchantUserName').value;
 
     // send to database, wait until db responds before continueing
-    await fetch(`/createAccount?zipcode=${zipcode}&yelpID=${yelpID}`, {
+    await fetch(`/createAccount?zipcode=${zipcode}&yelpID=${yelpID}&username=${username}`, {
       method: 'POST',
     })
       .then((response) => response.json())
@@ -90,6 +94,8 @@ const OnboardingPage = () => {
         <input type="text" placeholder="Zip Code" id="zipCodeInput" />
         <div>Please enter your yelp restaurant id</div>
         <input type="text" placeholder="Zip Code" id="yelpRestaurantID" />
+        <div>Please enter a username</div>
+        <input type="text" placeholder="Username" id="merchantUserName" />
         <button type="button" onClick={createMerchantUserAccount}>Continue</button>
       </>
     );

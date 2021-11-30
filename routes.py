@@ -238,23 +238,29 @@ def onboarding():
 
 
 @app.route("/discover")
+@login_required
 def discover():
-    return flask.render_template("index.html")
+    if current_user.is_authenticated:
+        return flask.render_template("index.html")
+    else:
+        return flask.render_template(flask.url_for("/"))
 
 
 @app.route("/merchant")
+@login_required
 def merchant():
     return flask.render_template("index.html")
 
 
 @app.route("/restaurantprofile")
+@login_required
 def restaurantprofile():
     return flask.render_template("index.html")
 
 
 @app.route("/map", methods=["GET", "POST"])
+@login_required
 def map():
-
     if flask.request.method == "POST":
 
         zip_code = flask.request.json.get("zipcode")
@@ -339,9 +345,13 @@ def createAccount():
     # print("Printing zip code")
     # print(zipcode)
     userExists = user.query.filter_by(username=wantedUsername).all()
-    # if userExists:
-    #     print("existing username try again")
-    #     return flask.jsonify({"message" : "Username is alreadt taken. Please try again with another username"})
+    if userExists:
+        print("existing username try again")
+        return flask.jsonify(
+            {
+                "message": "Username is alreadt taken. Please try again with another username"
+            }
+        )
     current_user.username = wantedUsername
     current_user.zip_code = zipcode
     db.session.commit()
@@ -369,24 +379,27 @@ def createAccount():
 @app.route("/deleteAccount", methods=["POST"])
 @login_required
 def deleteAccount():
-    userID = flask.request.args.get("userID")
+    userID = current_user.id
     print("Printing UserID")
     print(userID)
-    delUser = user.query.filter_by(user.id == userID).first()
+    delUser = user.query.filter_by(id=userID).first()
     db.session.delete(delUser)
     db.session.commit()
 
-    status = "success"
-    if user.query.filter_by(user.id == userID).first():
-        status = "failed"
+    status = 200
+    if user.query.filter_by(id=userID).first():
+        status = 400
+
+    # log user out after deleting account
+    logout_user()
+    flask.session.pop("google_token", None)
+
     return {"status": status}
 
 
-@app.route("/createPost", methods=["POST", "GET"])
+@app.route("/createPost", methods=["POST"])
 @login_required
 def createPost():
-    # if flask.request.method == "GET":
-    #     return {"status": 200}
     AuthorID = flask.request.args.get("AuthorID")
     postText = flask.request.args.get("postText")
     postTitle = flask.request.args.get("postTitle")
@@ -476,7 +489,10 @@ def createComment():
 def likeAPost():
     postId = flask.request.args.get("PostID")
     authorId = flask.request.args.get("AuthorID")
-    postInfo = user_post.query.filter_by(post_id=postId, author_id=authorId).first()
+    print("printing outputs")
+    print(postId)
+    print(authorId)
+    postInfo = user_post.query.filter_by(id=postId, author_id=authorId).first()
     specificPostLikes = postInfo.post_likes
     specificPostLikes += 1
     updateLikes = (
@@ -494,7 +510,10 @@ def likeAPost():
 def unlikeAPost():
     postId = flask.request.args.get("PostID")
     authorId = flask.request.args.get("AuthorID")
-    postInfo = user_post.query.filter_by(post_id=postId, author_id=authorId).first()
+    print("printing outputs")
+    print(postId)
+    print(authorId)
+    postInfo = user_post.query.filter_by(id=postId, author_id=authorId).first()
     specificPostLikes = postInfo.post_likes
     specificPostLikes -= 1
     updateLikes = (
@@ -559,9 +578,17 @@ def addFollower():
         db.session.add(friend_request)
         try:
             db.session.commit()
+            # get the name of the user and their profile pic
+            friendData = user.query.filter_by(id=follower_id).first()
+            getFriendData = {
+                "user_id": friendData.id,
+                "name": friendData.username,
+                "profile_pic": friendData.profile_pic,
+            }
             return {
                 "status": 200,
                 "message": "You have successfully followed this person.",
+                "friendData": getFriendData,
             }
         except Exception as e:
             db.session.rollback()
