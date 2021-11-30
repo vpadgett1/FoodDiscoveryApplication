@@ -23,6 +23,7 @@ const SearchPage = (props) => {
       setRestaurantList(data);
       setRestaurantListDefault(data);
     });
+
   const updateInput = async (input) => {
     const filtered = restaurantListDefault.filter((restaurant) => restaurant.name.toLowerCase().includes(input.toLowerCase()));
     setInput(input);
@@ -31,6 +32,14 @@ const SearchPage = (props) => {
     // const filtered =
     // return
   };
+
+  async function getRestaurants(){
+    await fetch ('/searchRestaurant')
+    .then((response)=> response.json())
+    .then((result) => {
+      setRestaurantData(result.RestaurantList);
+      }).catch((error) => console.log(error));
+  }
 
   // deconstruct props
   // const [props] = props;
