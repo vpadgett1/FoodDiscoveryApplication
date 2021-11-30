@@ -189,7 +189,7 @@ def authorized():
         )
     flask.session["google_token"] = (resp["access_token"], "")
     me = google.get("userinfo")
-    print(me.data)
+    #print(me.data)
     # userinfo_response = requests.get(uri, headers=headers, data=body)
     if me.data["verified_email"]:
         users_email = me.data["email"]
@@ -255,7 +255,7 @@ def map():
     if flask.request.method == "POST":
 
         zip_code = flask.request.json.get("zipcode")
-        print(zip_code)
+        #print(zip_code)
         search_limit = 13
         # search_params = {'term':'restaurants',
         #                 'location':zip_code,
@@ -263,7 +263,7 @@ def map():
         # }
         # restaurant_search_response = requests.get(business_search_url, headers = newheaders, params = search_params)
         restaurant_results = query_resturants("restaurant", zip_code, search_limit)
-        print(restaurant_results)
+        #print(restaurant_results)
 
         name = []
         img_url = []
@@ -336,9 +336,9 @@ def createAccount():
     # print("Printing zip code")
     # print(zipcode)
     userExists = user.query.filter_by(username=wantedUsername).all()
-    if userExists: 
-        print("existing username try again")
-        return flask.jsonify({"message" : "Username is alreadt taken. Please try again with another username"})
+    # if userExists: 
+    #     print("existing username try again")
+    #     return flask.jsonify({"message" : "Username is alreadt taken. Please try again with another username"})
     current_user.username = wantedUsername
     current_user.zipCode = zipcode
     db.session.commit()
@@ -376,7 +376,7 @@ def createPost():
         data_of_image = image.read()
         render_file = render_picture(data_of_image)
     #Image = flask.request.args.get("image")
-    print(image)
+    #print(image)
     newUserPost = user_post(
         AuthorID=AuthorID,
         postText=postText,
