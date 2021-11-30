@@ -193,6 +193,12 @@
   cursor: pointer;
 }
 
+.postImage {
+  width: 80%;
+  padding-left: 10%;
+  padding-bottom: 24px;
+}
+
 /* CSS For Pop Up Messages */
 .popUpBackground {
   height: 100%;

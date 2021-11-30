@@ -30,6 +30,8 @@ const DiscoverPage = () => {
 
   const [showMessage, setShowMessage] = useState(false);
 
+  // const [inputImage, setInputImage] = useState('');
+
   const MAX_LENGTH_TITLE = 50;
   const MAX_LENGTH_BODY = 300;
   const MAX_LENGTH_RESTAURANT_NAME = 50;
@@ -62,6 +64,7 @@ const DiscoverPage = () => {
       .then((response) => response.json())
       .then((result) => {
         if (result.status && result.status === 200) {
+          console.log(result);
           // if there is no content, display the error
           if (result.noContent && result.noContent === true) {
             setNoContentError(true);
@@ -94,12 +97,19 @@ const DiscoverPage = () => {
       const title = document.getElementById('inputTitle').value;
       const body = document.getElementById('inputBody').value;
       const restName = document.getElementById('restaurantName').value;
+      const file = document.getElementById('newPostImageInput').files[0];
 
-      fetch(`/createPost?AuthorID=${userID}&RestaurantName=${restName}&postText=${body}&postTitle=${title}`)
+      const data = new FormData();
+      data.append('image', file);
+
+      fetch(`/createPost?AuthorID=${userID}&RestaurantName=${restName}&postText=${body}&postTitle=${title}`, {
+        method: 'POST',
+        body: data,
+      })
         .then((response) => response.json())
         .then((result) => {
           if (result.status && result.status === 200) {
-            const { postID } = result;
+            const { postID, renderFile } = result;
             // we want to add this newly created post to the top of the page
             // so the user knows their post is rendered
             const p = {
@@ -114,6 +124,7 @@ const DiscoverPage = () => {
               currentUserProfilePic: userProfilePic,
               currentUserName: userName,
               AuthorName: userName,
+              post_picture: renderFile,
             };
             setPosts([p, ...posts]);
             setShowCreateNewPost(false);
@@ -123,7 +134,8 @@ const DiscoverPage = () => {
               setNoContentError(false);
             }
           }
-        }).catch((error) => console.log(error));
+        })
+        .catch((error) => console.log(error));
     } else {
       console.log('cannot post');
     }
@@ -155,6 +167,7 @@ const DiscoverPage = () => {
               currentUserProfilePic={userProfilePic}
               currentUserName={userName}
               AuthorName={x.AuthorName}
+              ImageData={x.post_picture}
             />
           ))}
           <div className="DiscoverPageError">
@@ -180,6 +193,7 @@ const DiscoverPage = () => {
             currentUserProfilePic={userProfilePic}
             currentUserName={userName}
             AuthorName={x.AuthorName}
+            ImageData={x.post_picture}
           />
         ))}
       </div>
@@ -239,6 +253,11 @@ const DiscoverPage = () => {
     canTheUserPost();
   };
 
+  const onChangeImageInput = () => {
+    const file = document.getElementById('newPostImageInput').files[0];
+    console.log(file);
+  };
+
   const cancelCreateNewPost = () => {
     // set all character lengths back to 0
     setTitleCharLength(0);
@@ -288,6 +307,9 @@ const DiscoverPage = () => {
                   /
                   {MAX_LENGTH_RESTAURANT_NAME}
                 </div>
+              </div>
+              <div className="inputImage">
+                <input type="file" name="inputFile" id="newPostImageInput" accept="image/png, image/jpeg" onChange={onChangeImageInput} />
               </div>
               <button type="submit" className={canPost ? 'canPost' : ''}>Publish</button>
               <button type="button" onClick={onCancelCreateNewPost} id="CancelCreateNewPost">Cancel</button>
