@@ -192,7 +192,7 @@ def authorized():
         )
     flask.session["google_token"] = (resp["access_token"], "")
     me = google.get("userinfo")
-    #print(me.data)
+    # print(me.data)
     # userinfo_response = requests.get(uri, headers=headers, data=body)
     if me.data["verified_email"]:
         users_email = me.data["email"]
@@ -258,7 +258,7 @@ def map():
     if flask.request.method == "POST":
 
         zip_code = flask.request.json.get("zipcode")
-        #print(zip_code)
+        # print(zip_code)
         search_limit = 13
         # search_params = {'term':'restaurants',
         #                 'location':zip_code,
@@ -266,7 +266,7 @@ def map():
         # }
         # restaurant_search_response = requests.get(business_search_url, headers = newheaders, params = search_params)
         restaurant_results = query_resturants("restaurant", zip_code, search_limit)
-        #print(restaurant_results)
+        # print(restaurant_results)
 
         name = []
         img_url = []
@@ -339,7 +339,7 @@ def createAccount():
     # print("Printing zip code")
     # print(zipcode)
     userExists = user.query.filter_by(username=wantedUsername).all()
-    # if userExists: 
+    # if userExists:
     #     print("existing username try again")
     #     return flask.jsonify({"message" : "Username is alreadt taken. Please try again with another username"})
     current_user.username = wantedUsername
@@ -366,6 +366,22 @@ def createAccount():
     return {"status": status}
 
 
+@app.route("/deleteAccount", methods=["POST"])
+@login_required
+def deleteAccount():
+    userID = flask.request.args.get("userID")
+    print("Printing UserID")
+    print(userID)
+    delUser = user.query.filter_by(user.id == userID).first()
+    db.session.delete(delUser)
+    db.session.commit()
+
+    status = "success"
+    if user.query.filter_by(user.id == userID).first():
+        status = "failed"
+    return {"status": status}
+
+
 @app.route("/createPost", methods=["POST", "GET"])
 @login_required
 def createPost():
@@ -381,8 +397,8 @@ def createPost():
     if image:
         data_of_image = image.read()
         render_file = render_picture(data_of_image)
-    #Image = flask.request.args.get("image")
-    #print(image)
+    # Image = flask.request.args.get("image")
+    # print(image)
     newUserPost = user_post(
         AuthorID=AuthorID,
         postText=postText,
@@ -405,7 +421,39 @@ def createPost():
     return {"status": status, "postID": postID, "renderFile": render_file}
 
 
-@app.route("/createComment")
+@app.route("/searchPost", methods=["POST"])
+@login_required
+def searchPost():
+    tag = flask.request.args.get("postTitle")
+    search = "%{}%".format(tag)
+    Posts = user_post.query.filter(user_post.postTitle.like(search)).all()
+    postsData = []
+    for post in Posts:
+        postComments = post_comments.query.filter_by(post_id=post.id)
+        postCommentsList = []
+        for comment in postComments:
+            commentData = {
+                "CommentAuthorProfilePic": user.query.filter(comment.AuthorID)
+                .first()
+                .profile_pic,
+                "AuthorID": comment.AuthorID,
+                "postText": comment.postText,
+            }
+            postCommentsList.append(commentData)
+        singlepostData = {
+            "AuthorID": post.AuthorID,
+            "postText": post.postText,
+            "postTitle": post.postTitle,
+            "postLikes": post.postLikes,
+            "RestaurantName": post.RestaurantName,
+            "comments": postCommentsList,
+            "PostAuthorProfilePic": user.query.filter(post.user_id).first().profile_pic,
+        }
+        postsData.append(singlepostData)
+    return flask.jsonify(postsData)
+
+
+@app.route("/createComment", methods=["POST"])
 @login_required
 def createComment():
     AuthorID = flask.request.args.get("AuthorID")
