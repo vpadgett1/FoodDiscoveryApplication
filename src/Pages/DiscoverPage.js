@@ -64,6 +64,7 @@ const DiscoverPage = () => {
       .then((response) => response.json())
       .then((result) => {
         if (result.status && result.status === 200) {
+          console.log(result);
           // if there is no content, display the error
           if (result.noContent && result.noContent === true) {
             setNoContentError(true);
@@ -98,11 +99,17 @@ const DiscoverPage = () => {
       const restName = document.getElementById('restaurantName').value;
       const file = document.getElementById('newPostImageInput').files[0];
 
-      fetch(`/createPost?AuthorID=${userID}&RestaurantName=${restName}&postText=${body}&postTitle=${title}&image=${file}`)
+      const data = new FormData();
+      data.append('image', file);
+
+      fetch(`/createPost?AuthorID=${userID}&RestaurantName=${restName}&postText=${body}&postTitle=${title}`, {
+        method: 'POST',
+        body: data,
+      })
         .then((response) => response.json())
         .then((result) => {
           if (result.status && result.status === 200) {
-            const { postID } = result;
+            const { postID, renderFile } = result;
             // we want to add this newly created post to the top of the page
             // so the user knows their post is rendered
             const p = {
@@ -117,6 +124,7 @@ const DiscoverPage = () => {
               currentUserProfilePic: userProfilePic,
               currentUserName: userName,
               AuthorName: userName,
+              ImageData: renderFile,
             };
             setPosts([p, ...posts]);
             setShowCreateNewPost(false);
@@ -159,6 +167,7 @@ const DiscoverPage = () => {
               currentUserProfilePic={userProfilePic}
               currentUserName={userName}
               AuthorName={x.AuthorName}
+              ImageData={x.post_picture}
             />
           ))}
           <div className="DiscoverPageError">
@@ -184,6 +193,7 @@ const DiscoverPage = () => {
             currentUserProfilePic={userProfilePic}
             currentUserName={userName}
             AuthorName={x.AuthorName}
+            ImageData={x.post_picture}
           />
         ))}
       </div>

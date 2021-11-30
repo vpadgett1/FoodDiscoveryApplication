@@ -32,6 +32,7 @@ const Post = (props) => {
     currentUserProfilePic,
     currentUserName,
     AuthorName,
+    ImageData,
   } = props;
 
   const postComment = (event) => {
@@ -137,6 +138,14 @@ const Post = (props) => {
     setShowCreateComment(!showCreateComment);
   };
 
+  const renderImage = () => {
+    if (ImageData !== '') {
+      console.log(`printing image data: ${ImageData}`);
+      return (<img className="postImage" src={`data:image/png;base64, ${ImageData}`} alt="post" />);
+    }
+    return (<></>);
+  };
+
   return (
     <div className="post">
       <div className="post-user-info">
@@ -161,6 +170,7 @@ const Post = (props) => {
         <div>{postLikes}</div>
         <button type="button" onClick={onClickComment}><img src={Comment} alt="add comment" className={showCreateComment ? 'clicked' : 'unclicked'} /></button>
       </div>
+      {renderImage()}
       <div className="postDivider" />
       {renderCreateComment()}
       {renderComments()}
@@ -185,6 +195,7 @@ Post.propTypes = {
     RestaurantName: PropTypes.string.isRequired,
     postID: PropTypes.number.isRequired,
   })).isRequired,
+  ImageData: PropTypes.string.isRequired,
 };
 
 export default Post;

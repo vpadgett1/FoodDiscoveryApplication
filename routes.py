@@ -26,10 +26,11 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import update
 from dotenv import load_dotenv, find_dotenv
 from yelpInfo import query_resturants, query_one_resturant, query_api
-#from sqlalchemy_imageattach.entity import entity
-#from sqlalchemy_imageattach.context import store_context
-#import sqlalchemy_imageattach.stores.fs
-#from sqlalchemy_imageattach.store import Store
+
+# from sqlalchemy_imageattach.entity import entity
+# from sqlalchemy_imageattach.context import store_context
+# import sqlalchemy_imageattach.stores.fs
+# from sqlalchemy_imageattach.store import Store
 from datetime import datetime
 from base64 import b64encode
 from io import BytesIO
@@ -61,10 +62,12 @@ def timeConvert(miliTime):
         hours -= 12
     return ("%d:%02d" + setting) % (hours, minutes)
 
+
 def render_picture(data):
 
-    render_pic = base64.b64encode(data).decode('ascii') 
+    render_pic = base64.b64encode(data).decode("ascii")
     return render_pic
+
 
 bp = flask.Blueprint("bp", __name__, template_folder="./build")
 
@@ -194,7 +197,7 @@ def authorized():
     if me.data["verified_email"]:
         users_email = me.data["email"]
         picture = me.data["picture"]
-        #users_name = me.data["id"]
+        # users_name = me.data["id"]
     else:
         return "User email not available or not verified by Google.", 400
     # Create a user in our database with the information provided by the Google response json
@@ -363,16 +366,17 @@ def createAccount():
     return {"status": status}
 
 
-@app.route("/createPost")
+@app.route("/createPost", methods=["POST"])
 @login_required
 def createPost():
     AuthorID = flask.request.args.get("AuthorID")
     postText = flask.request.args.get("postText")
     postTitle = flask.request.args.get("postTitle")
     RestaurantName = flask.request.args.get("RestaurantName")
-    #image = flask.request.files.get('image')
-    image = flask.request.files.get("inputFile")
-    if image: 
+    image = flask.request.files.get("image")
+    render_file = ""
+    data_of_image = b""
+    if image:
         data_of_image = image.read()
         render_file = render_picture(data_of_image)
     #Image = flask.request.args.get("image")
@@ -383,8 +387,8 @@ def createPost():
         postTitle=postTitle,
         RestaurantName=RestaurantName,
         postLikes=0,
-        image_data = data_of_image,
-        rendered_data = render_file,
+        image_data=data_of_image,
+        rendered_data=render_file,
         user_id=current_user.id,
     )
     db.session.add(newUserPost)
@@ -396,7 +400,7 @@ def createPost():
     if post:
         status = 200
         postID = post.id
-    return {"status": status, "postID": postID}
+    return {"status": status, "postID": postID, "renderFile": render_file}
 
 
 @app.route("/createComment")
@@ -416,32 +420,43 @@ def createComment():
         status = "success"
     return flask.jsonify(status)
 
-@app.route("/likeAPost", methods = ["POST"])
+
+@app.route("/likeAPost", methods=["POST"])
 @login_required
 def likeAPost():
     postId = flask.request.args.get("PostID")
     authorId = flask.request.args.get("AuthorID")
-    postInfo = user_post.query.filter_by(post_id=postId, AuthorID= authorId).first()
+    postInfo = user_post.query.filter_by(post_id=postId, AuthorID=authorId).first()
     specificPostLikes = postInfo.postLikes
     specificPostLikes += 1
-    updateLikes = user_post.update().where(user_post.c.AuthorID == authorId and user_post.c.post_id == postId).values(postLikes=specificPostLikes)
+    updateLikes = (
+        user_post.update()
+        .where(user_post.c.AuthorID == authorId and user_post.c.post_id == postId)
+        .values(postLikes=specificPostLikes)
+    )
     db.execute(updateLikes)
     likeCount = postInfo.postLikes
-    return flask.jsonify({"likes" : likeCount, "message" : "like success", "status" : 200})
+    return flask.jsonify({"likes": likeCount, "message": "like success", "status": 200})
 
 
-@app.route("/unlikeAPost", methods = ["POST"])
+@app.route("/unlikeAPost", methods=["POST"])
 @login_required
 def unlikeAPost():
     postId = flask.request.args.get("PostID")
     authorId = flask.request.args.get("AuthorID")
-    postInfo = user_post.query.filter_by(post_id=postId, AuthorID= authorId).first()
+    postInfo = user_post.query.filter_by(post_id=postId, AuthorID=authorId).first()
     specificPostLikes = postInfo.postLikes
     specificPostLikes -= 1
-    updateLikes = user_post.update().where(user_post.c.AuthorID == authorId and user_post.c.post_id == postId).values(postLikes=specificPostLikes)
+    updateLikes = (
+        user_post.update()
+        .where(user_post.c.AuthorID == authorId and user_post.c.post_id == postId)
+        .values(postLikes=specificPostLikes)
+    )
     db.execute(updateLikes)
     likeCount = postInfo.postLikes
-    return flask.jsonify({"likes" : likeCount, "message" : " unlike success", "status" : 200})
+    return flask.jsonify(
+        {"likes": likeCount, "message": " unlike success", "status": 200}
+    )
 
 
 @app.route("/searchRestaurant", methods=["POST"])
@@ -466,6 +481,7 @@ def search_restaurant():
     # return flask.render_template("", resturant_data = resturant_data)
     return flask.jsonify(resturant_data)
 
+
 @app.route("/searchUsername", methods=["POST"])
 @login_required
 def search_username():
@@ -473,9 +489,7 @@ def search_username():
     usersWithUsername = []
     user_data = user.query.filter_by(username=user_name).all()
     for x in user_data:
-        user_info = {
-            "username": user_data.username
-        }
+        user_info = {"username": user_data.username}
         usersWithUsername.append(user_info)
     # return flask.render_template("", resturant_data = resturant_data)
     return flask.jsonify(usersWithUsername)
@@ -829,7 +843,7 @@ def getPosts(userID):
                 "postLikes": query_posts[x].postLikes,
                 "RestaurantName": query_posts[x].RestaurantName,
                 "user_id": query_posts[x].user_id,
-                "post_picture": query_posts[x].rendered_data, 
+                "post_picture": query_posts[x].rendered_data,
                 "post_comments": postCommentsList,
                 "profilePic": author.profile_pic,
                 "AuthorName": author.username,
@@ -851,5 +865,5 @@ def main():
 
 if __name__ == "__main__":
     app.run(
-        host=os.getenv("IP", "127.0.0.1"), port=int(os.getenv("PORT", 5000)), debug=True
+        host=os.getenv("IP", "0.0.0.0"), port=int(os.getenv("PORT", 5000)), debug=True
     )
