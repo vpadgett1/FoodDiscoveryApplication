@@ -453,7 +453,7 @@ def searchPost():
     return flask.jsonify(postsData)
 
 
-@app.route("/createComment", methods=["POST"])
+@app.route("/createComment", methods=["POST", "GET"])
 @login_required
 def createComment():
     AuthorID = flask.request.args.get("AuthorID")
@@ -552,10 +552,10 @@ def addFollower():
     follower_id = flask.request.args.get("follower_id")
     # query to verify they are not already following
     following_check = friends.query.filter_by(
-        user_id=current_user.id, FriendID=follower_id
+        user_id=current_user.id, friend_id=follower_id
     ).all()
     if not following_check:
-        friend_request = friends(user_id=current_user.id, FriendID=follower_id)
+        friend_request = friends(user_id=current_user.id, friend_id=follower_id)
         db.session.add(friend_request)
         try:
             db.session.commit()
@@ -916,5 +916,5 @@ def main():
 
 if __name__ == "__main__":
     app.run(
-        host=os.getenv("IP", "0.0.0.0"), port=int(os.getenv("PORT", 5000)), debug=True
+        host=os.getenv("IP", "127.0.0.1"), port=int(os.getenv("PORT", 5000)), debug=True
     )
