@@ -339,9 +339,13 @@ def createAccount():
     # print("Printing zip code")
     # print(zipcode)
     userExists = user.query.filter_by(username=wantedUsername).all()
-    # if userExists:
-    #     print("existing username try again")
-    #     return flask.jsonify({"message" : "Username is alreadt taken. Please try again with another username"})
+    if userExists:
+        print("existing username try again")
+        return flask.jsonify(
+            {
+                "message": "Username is alreadt taken. Please try again with another username"
+            }
+        )
     current_user.username = wantedUsername
     current_user.zipCode = zipcode
     db.session.commit()
@@ -369,16 +373,21 @@ def createAccount():
 @app.route("/deleteAccount", methods=["POST"])
 @login_required
 def deleteAccount():
-    userID = flask.request.args.get("userID")
+    userID = current_user.id
     print("Printing UserID")
     print(userID)
-    delUser = user.query.filter_by(user.id == userID).first()
+    delUser = user.query.filter_by(id=userID).first()
     db.session.delete(delUser)
     db.session.commit()
 
-    status = "success"
-    if user.query.filter_by(user.id == userID).first():
-        status = "failed"
+    status = 200
+    if user.query.filter_by(id=userID).first():
+        status = 400
+
+    # log user out after deleting account
+    logout_user()
+    flask.session.pop("google_token", None)
+
     return {"status": status}
 
 
@@ -913,5 +922,5 @@ def main():
 
 if __name__ == "__main__":
     app.run(
-        host=os.getenv("IP", "0.0.0.0"), port=int(os.getenv("PORT", 5000)), debug=True
+        host=os.getenv("IP", "127.0.0.1"), port=int(os.getenv("PORT", 5000)), debug=True
     )

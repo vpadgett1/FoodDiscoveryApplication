@@ -149,6 +149,17 @@ const ProfilePage = () => {
       }).catch((error) => console.log(error));
   };
 
+  const deleteAccount = async () => {
+    await fetch('/deleteAccount', {
+      method: 'POST',
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+        navigate('/', { replace: true });
+      }).catch((error) => console.log(error));
+  };
+
   function renderLeftSide() {
     return (
       <div id="profilePageLeftSide">
@@ -157,6 +168,7 @@ const ProfilePage = () => {
         <button type="button" onClick={() => changeDisplay('FavoriteRestaurants')} id="FavRestaurantButton" className={currentDisplay === 'FavoriteRestaurants' ? 'selectedSubcategory' : ''}>Favorite Restaurants</button>
         <button type="button" onClick={() => changeDisplay('YourPosts')} id="YourPostsButton" className={currentDisplay === 'YourPosts' ? 'selectedSubcategory' : ''}>Your Posts</button>
         <button type="button" onClick={logout} id="LogoutButton">Logout</button>
+        <button type="button" onClick={deleteAccount} id="DeleteButton">Delete Account</button>
       </div>
     );
   }
