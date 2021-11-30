@@ -57,11 +57,9 @@ class user_post(UserMixin, db.Model):
     postTitle = db.Column(db.String(50), nullable=False)
     postLikes = db.Column(db.Integer)
     RestaurantName = db.Column(db.String(120))
-    # image = image_attachment('post_picture')
-    # image = db.Column(db.bytea)
     image_data = db.Column(db.LargeBinary)  # Actual data, needed for Download
     rendered_data = db.Column(db.Text)  # Data to render the pic in browser
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"))
     post_comments = db.relationship("post_comments", backref="user", lazy=True)
 
 

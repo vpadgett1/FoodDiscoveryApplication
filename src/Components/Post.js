@@ -12,9 +12,8 @@ const Post = (props) => {
   // set state
   // const [state, setState] = useState(value);
   const [showCreateComment, setShowCreateComment] = useState(false);
-  const [liked,
-    // setLiked
-  ] = useState(false);
+  const [liked, setLiked] = useState(false);
+  const [numLiked, setNumLiked] = useState(0);
 
   const [additionalComments, setAdditionalComments] = useState([]);
 
@@ -138,6 +137,30 @@ const Post = (props) => {
     setShowCreateComment(!showCreateComment);
   };
 
+  const onClickLikePost = () => {
+    const data = new FormData();
+    data.append('PostID', postID);
+    data.append('AuthorID', AuthorID);
+    if (liked) { // unlike a post
+      fetch('/unlikeAPost', {
+        method: 'POST',
+        body: data,
+      })
+        .then((response) => response.json())
+        .then(() => setNumLiked(numLiked - 1))
+        .catch((error) => console.log(error));
+    } else { // like a post
+      fetch('/likeAPost', {
+        method: 'POST',
+        body: data,
+      })
+        .then((response) => response.json())
+        .then(() => setNumLiked(numLiked - 1))
+        .catch((error) => console.log(error));
+    }
+    setLiked(!liked);
+  };
+
   const renderImage = () => {
     if (ImageData !== '') {
       console.log(`printing image data: ${ImageData}`);
@@ -166,9 +189,13 @@ const Post = (props) => {
         {postText}
       </div>
       <div className="postLikes">
-        <img src={Heart} alt="heart" className={liked ? 'clicked' : 'unclicked'} />
-        <div>{postLikes}</div>
-        <button type="button" onClick={onClickComment}><img src={Comment} alt="add comment" className={showCreateComment ? 'clicked' : 'unclicked'} /></button>
+        <button type="button" onClick={onClickLikePost}>
+          <img src={Heart} alt="heart" className={liked ? 'clicked' : 'unclicked'} />
+        </button>
+        <div>{postLikes + numLiked}</div>
+        <button type="button" onClick={onClickComment}>
+          <img src={Comment} alt="add comment" className={showCreateComment ? 'clicked' : 'unclicked'} />
+        </button>
       </div>
       {renderImage()}
       <div className="postDivider" />
