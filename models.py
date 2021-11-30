@@ -20,15 +20,9 @@ class user(UserMixin, db.Model):
     profile_pic = db.Column(db.String(100))
     zip_code = db.Column(db.String(20))
     yelp_restaurant_id = db.Column(db.String(100))
-    favs = db.relationship(
-        "favorite_restraunts", backref="user", lazy=True, passive_deletes=True
-    )
-    friends = db.relationship(
-        "friends", backref="user", lazy=True, passive_deletes=True
-    )
-    posts = db.relationship(
-        "user_post", backref="user", lazy=True, passive_deletes=True
-    )
+    favs = db.relationship("favorite_restraunts", cascade="all, delete", backref="user")
+    friends = db.relationship("friends", cascade="all, delete", backref="user")
+    posts = db.relationship("user_post", cascade="all, delete", backref="user")
 
     def __repr__(self):
         return f"<User {self.username}>"
@@ -43,24 +37,12 @@ class favorite_restraunts(UserMixin, db.Model):
     yelp_restraunt_id = db.Column(db.String(120))
     user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"))
 
-    user = db.relationship(
-        "user",
-        backref=db.backref("favorite_restraunts", cascade="all, delete-orphan"),
-        lazy="joined",
-    )
-
 
 class friends(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     friend_name = db.Column(db.String(120))
     friend_id = db.Column(db.String(120))
     user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"))
-
-    user = db.relationship(
-        "user",
-        backref=db.backref("friends", cascade="all, delete-orphan"),
-        lazy="joined",
-    )
 
 
 class user_post(UserMixin, db.Model):
@@ -74,12 +56,8 @@ class user_post(UserMixin, db.Model):
     rendered_data = db.Column(db.Text)  # Data to render the pic in browser
     date_created = db.Column(db.DateTime(timezone=True), server_default=func.now())
     user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"))
-    post_comments = db.relationship("post_comments", backref="user", lazy=True)
-
-    user = db.relationship(
-        "user",
-        backref=db.backref("post_comments", cascade="all, delete-orphan"),
-        lazy="joined",
+    post_comments = db.relationship(
+        "post_comments", cascade="all, delete", backref="user_post", lazy=True
     )
 
 
@@ -88,12 +66,6 @@ class post_comments(UserMixin, db.Model):
     author_id = db.Column(db.String(100), nullable=False)
     post_text = db.Column(db.String(300), nullable=False)
     post_id = db.Column(db.Integer, db.ForeignKey("user_post.id", ondelete="CASCADE"))
-
-    user = db.relationship(
-        "user",
-        backref=db.backref("post_comments", cascade="all, delete-orphan"),
-        lazy="joined",
-    )
 
 
 db.create_all()
