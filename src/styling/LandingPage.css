@@ -1,0 +1,78 @@
+/* Imports */
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;700&display=swap');
+
+.landingPage {
+  width: 100%;
+  height: 100%;
+  font-family: 'Open Sans', sans-serif;
+  background-color: #f4f4f4;
+}
+
+.landingPageBar {
+  width: 100%;
+  display: inline-flex;
+  padding: 6px 12px;
+  background-color: #ff9921;
+  color: white;
+  font-weight: 700;
+  font-size: 28px;
+}
+
+.landingPageBar .FoodMe {
+  width: min-content;
+  margin: 0;
+}
+
+.LoginButton {
+  position: absolute;
+  right: 12px;
+  top: 1px;
+}
+
+.LoginButton form input {
+  font-size: 20px;
+  line-height: 35px;
+  height: 35px;
+  background-color: white;
+  border: none;
+  padding: 0px 16px;
+  color: #ff9921;
+  border-radius: 24px;
+  font-family: 'Open Sans', sans-serif;
+}
+
+.LoginButton form input:hover {
+  background-color: #ffe7ca;
+  color: white;
+  cursor: pointer;
+}
+
+.landingPageBody {
+  display: inline-flex;
+  height: calc(100% - 50px);
+  width: 100%;
+}
+
+.leftSide {
+  width: 40%;
+  display: flex;
+  height: 100%;
+}
+
+.leftSide div {
+  margin: auto;
+  font-size: 28px;
+  font-weight: 700;
+  width: 70%;
+}
+
+.rightSide {
+  width: 60%;
+  height: 100%;
+  display: flex;
+}
+
+.rightSide img {
+  width: 95%;
+  margin: auto;
+}

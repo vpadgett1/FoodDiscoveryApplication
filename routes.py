@@ -3,6 +3,7 @@
 # pylint: disable=W1508
 # pylint: disable=R0903
 # pylint: disable=W0603
+from collections import UserString
 from typing import NewType
 
 from requests.api import post
@@ -19,11 +20,20 @@ from flask_login import (
 import os
 import json
 import requests
+import base64
 from flask_oauthlib.client import OAuth, OAuthException
-from googleauth import get_google_provider_cfg
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import update
 from dotenv import load_dotenv, find_dotenv
 from yelpInfo import query_resturants, query_one_resturant, query_api
+
+# from sqlalchemy_imageattach.entity import entity
+# from sqlalchemy_imageattach.context import store_context
+# import sqlalchemy_imageattach.stores.fs
+# from sqlalchemy_imageattach.store import Store
+from datetime import datetime
+from base64 import b64encode
+from io import BytesIO
 
 load_dotenv(find_dotenv())
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
@@ -53,6 +63,12 @@ def timeConvert(miliTime):
     return ("%d:%02d" + setting) % (hours, minutes)
 
 
+def render_picture(data):
+
+    render_pic = base64.b64encode(data).decode("ascii")
+    return render_pic
+
+
 bp = flask.Blueprint("bp", __name__, template_folder="./build")
 
 
@@ -65,37 +81,27 @@ def profile():
         "profilePic": current_user.profile_pic,
         "zipcode": current_user.zipCode,
         "yelpRestaurantID": current_user.yelpRestaurantID,
+        "id": current_user.id,
     }
     UserFriends = current_user.friends
     UserFriendsList = []
     for x in range(len(UserFriends)):
-        UserFriendsList.append({"user_id": UserFriends[x].FriendID})
+        # Also get the profile picture and the name of the friend
+        friend = user.query.filter_by(id=UserFriends[x].FriendID).first()
+        UserFriendsList.append(
+            {
+                "user_id": UserFriends[x].FriendID,
+                "name": friend.username,
+                "profile_pic": friend.profile_pic,
+            }
+        )
 
     UserFavoriteRestaurants = current_user.favs
     UserFavRestaurantsList = []
     for x in range(len(UserFavoriteRestaurants)):
         UserFavRestaurantsList.append(UserFavoriteRestaurants[x].Restaurant)
 
-    UserPosts = current_user.posts
-    UserPostsList = []
-    for x in range(len(UserPosts)):
-        postComments = post_comments.query.filter_by(post_id=UserPosts[x].id).all()
-        postCommentsList = []
-        for y in range(len(postComments)):
-            commentData = {
-                "AuthorID": postComments[y].AuthorID,
-                "postText": postComments[y].postText,
-            }
-            postCommentsList.append(commentData)
-        PostDATA = {
-            "AuthorID": UserPosts[x].AuthorID,
-            "postText": UserPosts[x].postText,
-            "postTitle": UserPosts[x].postTitle,
-            "postLikes": UserPosts[x].postLikes,
-            "RestaurantName": UserPosts[x].RestaurantName,
-            "comments": postCommentsList,
-        }
-        UserPostsList.append(PostDATA)
+    UserPostsList = getPosts(current_user.id)
 
     return {
         "UserDATA": UserDATA,
@@ -186,16 +192,16 @@ def authorized():
         )
     flask.session["google_token"] = (resp["access_token"], "")
     me = google.get("userinfo")
-    print(me.data)
+    # print(me.data)
     # userinfo_response = requests.get(uri, headers=headers, data=body)
     if me.data["verified_email"]:
         users_email = me.data["email"]
         picture = me.data["picture"]
-        users_name = me.data["id"]
+        # users_name = me.data["id"]
     else:
         return "User email not available or not verified by Google.", 400
     # Create a user in our database with the information provided by the Google response json
-    newUser = user(username=users_name, email=users_email, profile_pic=picture)
+    newUser = user(email=users_email, profile_pic=picture)
 
     # Doesn't exist? Add it to the database.
     previousUser = True
@@ -241,13 +247,18 @@ def merchant():
     return flask.render_template("index.html")
 
 
+@app.route("/restaurantprofile")
+def restaurantprofile():
+    return flask.render_template("index.html")
+
+
 @app.route("/map", methods=["GET", "POST"])
 def map():
 
     if flask.request.method == "POST":
 
         zip_code = flask.request.json.get("zipcode")
-        print(zip_code)
+        # print(zip_code)
         search_limit = 13
         # search_params = {'term':'restaurants',
         #                 'location':zip_code,
@@ -255,7 +266,7 @@ def map():
         # }
         # restaurant_search_response = requests.get(business_search_url, headers = newheaders, params = search_params)
         restaurant_results = query_resturants("restaurant", zip_code, search_limit)
-        print(restaurant_results)
+        # print(restaurant_results)
 
         name = []
         img_url = []
@@ -317,17 +328,21 @@ def post():
         post_list = []
         for posts in user_posts:
             post_list.append(posts.postText)
-        return flask.jsonify({"data": post_list})
+    return flask.jsonify({"data": post_list})
 
 
 @app.route("/createAccount", methods=["POST"])
 @login_required
 def createAccount():
+    wantedUsername = flask.request.args.get("username")
     zipcode = flask.request.args.get("zipcode")
-    userName = flask.request.args.get("userName")
-    print("Printing zip code")
-    print(zipcode)
-    current_user.username = userName
+    # print("Printing zip code")
+    # print(zipcode)
+    userExists = user.query.filter_by(username=wantedUsername).all()
+    # if userExists:
+    #     print("existing username try again")
+    #     return flask.jsonify({"message" : "Username is alreadt taken. Please try again with another username"})
+    current_user.username = wantedUsername
     current_user.zipCode = zipcode
     db.session.commit()
     yelpID = flask.request.args.get("yelpID")
@@ -374,21 +389,34 @@ def createPost():
     postText = flask.request.args.get("postText")
     postTitle = flask.request.args.get("postTitle")
     RestaurantName = flask.request.args.get("RestaurantName")
+    image = flask.request.files.get("image")
+    render_file = ""
+    data_of_image = b""
+    if image:
+        data_of_image = image.read()
+        render_file = render_picture(data_of_image)
+    # Image = flask.request.args.get("image")
+    # print(image)
     newUserPost = user_post(
         AuthorID=AuthorID,
         postText=postText,
         postTitle=postTitle,
         RestaurantName=RestaurantName,
         postLikes=0,
+        image_data=data_of_image,
+        rendered_data=render_file,
         user_id=current_user.id,
     )
     db.session.add(newUserPost)
     db.session.commit()
 
-    status = "failed"
-    if user_post.query.filter_by(postTitle=postTitle, AuthorID=AuthorID).first():
-        status = "success"
-    return {"status": status}
+    status = 400
+    postID = 0
+    post = user_post.query.filter_by(postTitle=postTitle, AuthorID=AuthorID).first()
+    if post:
+        status = 200
+        postID = post.id
+    return {"status": status, "postID": postID, "renderFile": render_file}
 
 
 @app.route("/searchPost", methods=["POST"])
@@ -426,9 +454,9 @@ def searchPost():
 @app.route("/createComment", methods=["POST"])
 @login_required
 def createComment():
-    AuthorID = flask.request.get("AuthorID")
-    postText = flask.request.get("postText")
-    post_id = flask.request.get("post_id")
+    AuthorID = flask.request.args.get("AuthorID")
+    postText = flask.request.args.get("postText")
+    post_id = flask.request.args.get("post_id")
     newUserComment = post_comments(
         AuthorID=AuthorID, postText=postText, post_id=post_id
     )
@@ -441,9 +469,47 @@ def createComment():
     return flask.jsonify(status)
 
 
-@app.route("/search", methods=["POST"])
+@app.route("/likeAPost", methods=["POST"])
 @login_required
-def search_post():
+def likeAPost():
+    postId = flask.request.args.get("PostID")
+    authorId = flask.request.args.get("AuthorID")
+    postInfo = user_post.query.filter_by(post_id=postId, AuthorID=authorId).first()
+    specificPostLikes = postInfo.postLikes
+    specificPostLikes += 1
+    updateLikes = (
+        user_post.update()
+        .where(user_post.c.AuthorID == authorId and user_post.c.post_id == postId)
+        .values(postLikes=specificPostLikes)
+    )
+    db.execute(updateLikes)
+    likeCount = postInfo.postLikes
+    return flask.jsonify({"likes": likeCount, "message": "like success", "status": 200})
+
+
+@app.route("/unlikeAPost", methods=["POST"])
+@login_required
+def unlikeAPost():
+    postId = flask.request.args.get("PostID")
+    authorId = flask.request.args.get("AuthorID")
+    postInfo = user_post.query.filter_by(post_id=postId, AuthorID=authorId).first()
+    specificPostLikes = postInfo.postLikes
+    specificPostLikes -= 1
+    updateLikes = (
+        user_post.update()
+        .where(user_post.c.AuthorID == authorId and user_post.c.post_id == postId)
+        .values(postLikes=specificPostLikes)
+    )
+    db.execute(updateLikes)
+    likeCount = postInfo.postLikes
+    return flask.jsonify(
+        {"likes": likeCount, "message": " unlike success", "status": 200}
+    )
+
+
+@app.route("/searchRestaurant", methods=["POST"])
+@login_required
+def search_restaurant():
     rest_name = flask.request.get("resturant_name")
     result_limit = 3
     yelp_results = query_resturants(rest_name, current_user.zipCode, result_limit)
@@ -462,6 +528,19 @@ def search_post():
         resturant_data.append(rest_info)
     # return flask.render_template("", resturant_data = resturant_data)
     return flask.jsonify(resturant_data)
+
+
+@app.route("/searchUsername", methods=["POST"])
+@login_required
+def search_username():
+    user_name = flask.request.get("username")
+    usersWithUsername = []
+    user_data = user.query.filter_by(username=user_name).all()
+    for x in user_data:
+        user_info = {"username": user_data.username}
+        usersWithUsername.append(user_info)
+    # return flask.render_template("", resturant_data = resturant_data)
+    return flask.jsonify(usersWithUsername)
 
 
 @app.route("/addFollower")
@@ -678,26 +757,7 @@ def getDetailedUserInfo():
     for x in range(len(UserFavoriteRestaurants)):
         UserFavRestaurantsList.append(UserFavoriteRestaurants[x].Restaurant)
 
-    UserPosts = otherUser.posts
-    UserPostsList = []
-    for x in range(len(UserPosts)):
-        postComments = post_comments.query.filter_by(post_id=UserPosts[x].id)
-        postCommentsList = []
-        for y in range(len(postComments)):
-            commentData = {
-                "AuthorID": postComments[y].AuthorID,
-                "postText": postComments[y].postText,
-            }
-            postCommentsList.append(commentData)
-        PostDATA = {
-            "AuthorID": UserPosts[x].AuthorID,
-            "postText": UserPosts[x].postText,
-            "postTitle": UserPosts[x].postTitle,
-            "postLikes": UserPosts[x].postLikes,
-            "RestaurantName": UserPosts[x].RestaurantName,
-            "comments": postCommentsList,
-        }
-        UserPostsList.append(PostDATA)
+    UserPostsList = getPosts(userID)
 
     return {
         "UserDATA": UserDATA,
@@ -728,6 +788,116 @@ def isFriends():
 @login_required
 def getUserID():
     return {"userID": current_user.id}
+
+
+@app.route("/getUserName")
+@login_required
+def getUserName():
+    return {"username": current_user.username}
+
+
+@app.route("/getUserProfilePic")
+@login_required
+def getUserProfilePic():
+    return {"profile_pic": current_user.profile_pic}
+
+
+@app.route("/getDiscoverPage")
+def getDiscoverPage():
+    # things to send to discover page
+    noContent = True
+    noFriends = False
+    message = ""
+    # Get all the friends of this user
+    UserFriends = current_user.friends
+    UserFriendsList = []
+    for x in range(len(UserFriends)):
+        UserFriendsList.append(
+            {
+                "friendID": UserFriends[x].FriendID,
+            }
+        )
+
+    # if the user has no friends, send a message
+    if len(UserFriendsList) == 0:
+        message = "You have no friends or favorite restaurants. Go add some!"
+        noFriends = True
+
+    # Get all the posts from the friends of this user
+    DiscoverPagePosts = []
+    for friend in range(len(UserFriendsList)):
+        DiscoverPagePosts.extend(getPosts(UserFriendsList[friend]["friendID"]))
+
+    # get all the posts made by the current user
+    current_user_posts = getPosts(current_user.id)
+    if len(current_user_posts) != 0:
+        noContent = False
+        DiscoverPagePosts.extend(current_user_posts)
+
+    # Get all the restaurants of this user
+
+    # Get all the posts from restaurants this user follows
+
+    # if there are no posts, send a message
+    if len(DiscoverPagePosts) == 0:
+        if not noFriends:
+            message = (
+                "There are currently no posts in your feed. Why not make the first?"
+            )
+
+        return {
+            "status": 200,
+            "noContent": True,
+            "noFriends": noFriends,
+            "message": message,
+            "posts": [],
+        }
+
+    # sort the posts by most newly created to the least newly created
+
+    return {
+        "status": 200,
+        "noContent": noContent,
+        "noFriends": noFriends,
+        "message": message,
+        "posts": DiscoverPagePosts,
+    }
+
+
+def getPosts(userID):
+    posts = []
+    author = user.query.filter_by(id=userID).first()
+    query_posts = user_post.query.filter_by(user_id=userID).all()
+    for x in range(len(query_posts)):
+        postComments = post_comments.query.filter_by(post_id=query_posts[x].id).all()
+        postCommentsList = []
+        for y in range(len(postComments)):
+            # Get the user who posted this comment to get their
+            # profile pic and name
+            commentor = user.query.filter_by(id=postComments[y].AuthorID).first()
+            commentData = {
+                "AuthorID": postComments[y].AuthorID,
+                "postText": postComments[y].postText,
+                "CommentorProfilePic": commentor.profile_pic,
+                "CommentorName": commentor.username,
+            }
+            postCommentsList.append(commentData)
+        posts.append(
+            {
+                "id": query_posts[x].id,
+                "AuthorID": query_posts[x].AuthorID,
+                "postText": query_posts[x].postText,
+                "postTitle": query_posts[x].postTitle,
+                "postLikes": query_posts[x].postLikes,
+                "RestaurantName": query_posts[x].RestaurantName,
+                "user_id": query_posts[x].user_id,
+                "post_picture": query_posts[x].rendered_data,
+                "post_comments": postCommentsList,
+                "profilePic": author.profile_pic,
+                "AuthorName": author.username,
+            }
+        )
+    return posts
 
 
 @app.route("/")
