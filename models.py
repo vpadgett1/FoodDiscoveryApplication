@@ -5,7 +5,8 @@
 # pylint: disable=W0603
 from app import db
 from flask_login import UserMixin
-
+#from sqlalchemy.ext.declarative import declarative_base
+#from sqlalchemy_imageattach.entity import Image, image_attachment
 
 class user(UserMixin, db.Model):
     id = db.Column(
@@ -46,9 +47,16 @@ class user_post(UserMixin, db.Model):
     postTitle = db.Column(db.String(50), nullable=False)
     postLikes = db.Column(db.Integer)
     RestaurantName = db.Column(db.String(120))
+    # image = image_attachment('post_picture')
+    #image = db.Column(db.bytea)
+    image_data = db.Column(db.LargeBinary) #Actual data, needed for Download
+    rendered_data = db.Column(db.Text)#Data to render the pic in browser
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     post_comments = db.relationship("post_comments", backref="user", lazy=True)
 
+# class post_picture(UserMixin, db.Model, Image):
+#     user_id = db.Column(db.Integer, db.ForeignKey('user_post.id'), primary_key=True)
+#     user = db.relationship('user_post')
 
 class post_comments(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)

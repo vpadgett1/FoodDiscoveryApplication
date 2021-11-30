@@ -3,6 +3,7 @@
 # pylint: disable=W1508
 # pylint: disable=R0903
 # pylint: disable=W0603
+from collections import UserString
 from typing import NewType
 
 from requests.api import post
@@ -19,11 +20,20 @@ from flask_login import (
 import os
 import json
 import requests
+import base64
 from flask_oauthlib.client import OAuth, OAuthException
-from googleauth import get_google_provider_cfg
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import update
 from dotenv import load_dotenv, find_dotenv
 from yelpInfo import query_resturants, query_one_resturant, query_api
+
+# from sqlalchemy_imageattach.entity import entity
+# from sqlalchemy_imageattach.context import store_context
+# import sqlalchemy_imageattach.stores.fs
+# from sqlalchemy_imageattach.store import Store
+from datetime import datetime
+from base64 import b64encode
+from io import BytesIO
 
 load_dotenv(find_dotenv())
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
@@ -51,6 +61,12 @@ def timeConvert(miliTime):
         setting = "PM"
         hours -= 12
     return ("%d:%02d" + setting) % (hours, minutes)
+
+
+def render_picture(data):
+
+    render_pic = base64.b64encode(data).decode("ascii")
+    return render_pic
 
 
 bp = flask.Blueprint("bp", __name__, template_folder="./build")
@@ -176,16 +192,16 @@ def authorized():
         )
     flask.session["google_token"] = (resp["access_token"], "")
     me = google.get("userinfo")
-    print(me.data)
+    #print(me.data)
     # userinfo_response = requests.get(uri, headers=headers, data=body)
     if me.data["verified_email"]:
         users_email = me.data["email"]
         picture = me.data["picture"]
-        users_name = me.data["id"]
+        # users_name = me.data["id"]
     else:
         return "User email not available or not verified by Google.", 400
     # Create a user in our database with the information provided by the Google response json
-    newUser = user(username=users_name, email=users_email, profile_pic=picture)
+    newUser = user(email=users_email, profile_pic=picture)
 
     # Doesn't exist? Add it to the database.
     previousUser = True
@@ -242,7 +258,7 @@ def map():
     if flask.request.method == "POST":
 
         zip_code = flask.request.json.get("zipcode")
-        print(zip_code)
+        #print(zip_code)
         search_limit = 13
         # search_params = {'term':'restaurants',
         #                 'location':zip_code,
@@ -250,7 +266,7 @@ def map():
         # }
         # restaurant_search_response = requests.get(business_search_url, headers = newheaders, params = search_params)
         restaurant_results = query_resturants("restaurant", zip_code, search_limit)
-        print(restaurant_results)
+        #print(restaurant_results)
 
         name = []
         img_url = []
@@ -312,15 +328,21 @@ def post():
         post_list = []
         for posts in user_posts:
             post_list.append(posts.postText)
-        return flask.jsonify({"data": post_list})
+    return flask.jsonify({"data": post_list})
 
 
 @app.route("/createAccount", methods=["POST"])
 @login_required
 def createAccount():
+    wantedUsername = flask.request.args.get("username")
     zipcode = flask.request.args.get("zipcode")
-    print("Printing zip code")
-    print(zipcode)
+    # print("Printing zip code")
+    # print(zipcode)
+    userExists = user.query.filter_by(username=wantedUsername).all()
+    # if userExists: 
+    #     print("existing username try again")
+    #     return flask.jsonify({"message" : "Username is alreadt taken. Please try again with another username"})
+    current_user.username = wantedUsername
     current_user.zipCode = zipcode
     db.session.commit()
     yelpID = flask.request.args.get("yelpID")
@@ -344,19 +366,29 @@ def createAccount():
     return {"status": status}
 
 
-@app.route("/createPost")
+@app.route("/createPost", methods=["POST"])
 @login_required
 def createPost():
     AuthorID = flask.request.args.get("AuthorID")
     postText = flask.request.args.get("postText")
     postTitle = flask.request.args.get("postTitle")
     RestaurantName = flask.request.args.get("RestaurantName")
+    image = flask.request.files.get("image")
+    render_file = ""
+    data_of_image = b""
+    if image:
+        data_of_image = image.read()
+        render_file = render_picture(data_of_image)
+    #Image = flask.request.args.get("image")
+    #print(image)
     newUserPost = user_post(
         AuthorID=AuthorID,
         postText=postText,
         postTitle=postTitle,
         RestaurantName=RestaurantName,
         postLikes=0,
+        image_data=data_of_image,
+        rendered_data=render_file,
         user_id=current_user.id,
     )
     db.session.add(newUserPost)
@@ -368,7 +400,7 @@ def createPost():
     if post:
         status = 200
         postID = post.id
-    return {"status": status, "postID": postID}
+    return {"status": status, "postID": postID, "renderFile": render_file}
 
 
 @app.route("/createComment")
@@ -389,9 +421,47 @@ def createComment():
     return flask.jsonify(status)
 
 
-@app.route("/search", methods=["POST"])
+@app.route("/likeAPost", methods=["POST"])
 @login_required
-def search_post():
+def likeAPost():
+    postId = flask.request.args.get("PostID")
+    authorId = flask.request.args.get("AuthorID")
+    postInfo = user_post.query.filter_by(post_id=postId, AuthorID=authorId).first()
+    specificPostLikes = postInfo.postLikes
+    specificPostLikes += 1
+    updateLikes = (
+        user_post.update()
+        .where(user_post.c.AuthorID == authorId and user_post.c.post_id == postId)
+        .values(postLikes=specificPostLikes)
+    )
+    db.execute(updateLikes)
+    likeCount = postInfo.postLikes
+    return flask.jsonify({"likes": likeCount, "message": "like success", "status": 200})
+
+
+@app.route("/unlikeAPost", methods=["POST"])
+@login_required
+def unlikeAPost():
+    postId = flask.request.args.get("PostID")
+    authorId = flask.request.args.get("AuthorID")
+    postInfo = user_post.query.filter_by(post_id=postId, AuthorID=authorId).first()
+    specificPostLikes = postInfo.postLikes
+    specificPostLikes -= 1
+    updateLikes = (
+        user_post.update()
+        .where(user_post.c.AuthorID == authorId and user_post.c.post_id == postId)
+        .values(postLikes=specificPostLikes)
+    )
+    db.execute(updateLikes)
+    likeCount = postInfo.postLikes
+    return flask.jsonify(
+        {"likes": likeCount, "message": " unlike success", "status": 200}
+    )
+
+
+@app.route("/searchRestaurant", methods=["POST"])
+@login_required
+def search_restaurant():
     rest_name = flask.request.get("resturant_name")
     result_limit = 3
     yelp_results = query_resturants(rest_name, current_user.zipCode, result_limit)
@@ -410,6 +480,19 @@ def search_post():
         resturant_data.append(rest_info)
     # return flask.render_template("", resturant_data = resturant_data)
     return flask.jsonify(resturant_data)
+
+
+@app.route("/searchUsername", methods=["POST"])
+@login_required
+def search_username():
+    user_name = flask.request.get("username")
+    usersWithUsername = []
+    user_data = user.query.filter_by(username=user_name).all()
+    for x in user_data:
+        user_info = {"username": user_data.username}
+        usersWithUsername.append(user_info)
+    # return flask.render_template("", resturant_data = resturant_data)
+    return flask.jsonify(usersWithUsername)
 
 
 @app.route("/addFollower")
@@ -760,6 +843,7 @@ def getPosts(userID):
                 "postLikes": query_posts[x].postLikes,
                 "RestaurantName": query_posts[x].RestaurantName,
                 "user_id": query_posts[x].user_id,
+                "post_picture": query_posts[x].rendered_data,
                 "post_comments": postCommentsList,
                 "profilePic": author.profile_pic,
                 "AuthorName": author.username,
