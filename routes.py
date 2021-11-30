@@ -65,7 +65,7 @@ def profile():
         "email": current_user.email,
         "profilePic": current_user.profile_pic,
         "zipcode": current_user.zipCode,
-        "yelpRestaurantID": current_user.yelpRestaurantID,
+        "yelpRestaurantID": current_user.yelp_restaurant_id,
     }
     UserFriends = current_user.friends
     UserFriendsList = []
@@ -172,7 +172,7 @@ def authorized():
             return flask.redirect(flask.url_for("onboarding"))
         # if merchant user, send to merchant homepage
         # otherwise, regular
-        if current_user.yelpRestaurantID:
+        if current_user.yelp_restaurant_id:
             return flask.redirect(flask.url_for("merchant"))
         else:
             return flask.redirect(flask.url_for("discover"))
@@ -380,7 +380,7 @@ def createAccount():
     db.session.commit()
     yelpID = flask.request.args.get("yelpID")
     if yelpID:
-        current_user.yelpRestaurantID = yelpID
+        current_user.yelp_restaurant_id = yelpID
         db.session.commit()
 
     status = "failed"
@@ -529,14 +529,15 @@ def deleteFollower():
 @login_required
 def addFavoriteRestaurant():
     # recieved follower_id
-    yelp_restaurant_id = flask.request.json.get("yelp_restaurant_id")
+    yelp_restaurant_id = flask.request.json.get("restID")
+    print(yelp_restaurant_id)
     # query to verify they are not already following
     following_check = favorite_restraunts.query.filter_by(
-        user_id=current_user.username, RestaurantName=yelp_restaurant_id
+        user_id=current_user.id, yelp_restraunt_id=yelp_restaurant_id
     ).all()
     if not following_check:
         follow_request = favorite_restraunts(
-            user_id=current_user.username, RestaurantName=yelp_restaurant_id
+            user_id=current_user.id, yelp_restraunt_id=yelp_restaurant_id
         )
         db.session.add(follow_request)
         try:
@@ -568,13 +569,13 @@ def addFavoriteRestaurant():
 @app.route("/deleteFavoriteRestaurant", methods=["POST"])
 @login_required
 def deleteFavoriteRestaurant():
-    yelp_restaurant_id = flask.request.json.get("yelp_restaurant_id")
-    currentDB = favorite_restraunts.query.filter_by(user_id=current_user.username).all()
+    yelp_restaurant_id = flask.request.json.get("restID")
+    currentDB = favorite_restraunts.query.filter_by(user_id=current_user.id).all()
     extraVal = list((set(currentDB) - set(yelp_restaurant_id)))[0]
     if extraVal:
-        removeFollower = friends.query.filter(
-            (favorite_restraunts.user_id == current_user.username)
-            & (favorite_restraunts.RestaurantName == extraVal.yelp_restaurant_id)
+        removeFollower = favorite_restraunts.query.filter(
+            (favorite_restraunts.user_id == current_user.id)
+            & (favorite_restraunts.yelp_restraunt_id == extraVal.yelp_restraunt_id)
         ).first()
         db.session.delete(removeFollower)
         try:
@@ -605,7 +606,7 @@ def deleteFavoriteRestaurant():
 
 @app.route("/getRestaurantData")
 def getRestaurantData():
-    restaurant_id = current_user.yelpRestaurantID
+    restaurant_id = current_user.yelp_restaurant_id
     store_data = query_one_resturant(restaurant_id)
     if not store_data:
         return {"status": 400, "message": "Could not find data for this restaurant."}
@@ -733,7 +734,7 @@ def getUserID():
 @app.route("/")
 def main():
     if current_user.is_authenticated:
-        if current_user.yelpRestaurantID:
+        if current_user.yelp_restaurant_id:
             return flask.redirect(flask.url_for("merchant"))
         else:
             return flask.redirect(flask.url_for("discover"))

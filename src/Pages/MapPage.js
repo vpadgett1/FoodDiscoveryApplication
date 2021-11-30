@@ -83,7 +83,7 @@ const MapPage = () => {
             googleMapURL={`https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=geometry,drawing,places&key=${process.env.REACT_APP_GOOGLE_KEY}`}
             loadingElement={<div style={{ height: '100%', width: '100%', left: '20%' }} />}
             containerElement={<div style={{ height: '100%', width: '100%', left: '20%' }} />}
-            mapElement={<div style={{ height: '100%', width: '80%', left: '20%' }} />}
+            mapElement={<div style={{ height: '70%', width: '70%', left: '20%' }} />}
             restaurantNames={restaurantNames}
             restaurantImages={restaurantImages}
             restaurantRatings={restaurantRatings}

@@ -31,7 +31,7 @@ const RestaurantPage = () => {
   const [mainImage, setMainImage] = useState(null);
   // const [postsAboutRestaurant, setPostsAboutRestaurant] = useState([]);
   // const [postsByRestaurant, setPostsByRestaurant] = useState([]);
-  const [followingRestaurant, setFollowingRestaurant] = useState(false);
+  const [followingRestaurant, setFollowingRestaurant] = useState(null);
   // const [restaurantID] = useState('nothing');
 
   // deconstruct props
@@ -61,7 +61,40 @@ const RestaurantPage = () => {
       setMainImage(data.data.img_urls);
     });
   }
-
+  function addFollow() {
+    fetch('/addFavoriteRestaurant', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ restID }),
+    }).then((response) => response.json()).then((data) => {
+      console.log(data);
+      console.log(data.status);
+      // if (data.status === 200) {
+      //   setFollowingRestaurant(true);
+      // } else {
+      //   setFollowingRestaurant(false);
+      // }
+    });
+  }
+  function removeFollow() {
+    fetch('/deleteFavoriteRestaurant', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ restID }),
+    }).then((response) => response.json()).then((data) => {
+      console.log(data);
+      // if (data.status === 200) {
+      //   setFollowingRestaurant(false);
+      // } else {
+      //   setFollowingRestaurant(true);
+      // }
+      // console.log(data.status);
+    });
+  }
   // loadPage();
   // get posts made by the restaurant
   /* await fetch('\\getPostsByRestaurant')
@@ -107,12 +140,13 @@ const RestaurantPage = () => {
 
   const onClickFollowButton = () => {
     const followButton = document.getElementById('followRestaurantButton');
-
     if (!followingRestaurant) {
-      followButton.innerHTML = 'Following';
+      addFollow();
+      followButton.innerHTML = 'Unfollow';
       setFollowingRestaurant(true);
-    } else {
-      followButton.innerHTML = 'Follow Restaurant';
+    } else if (followingRestaurant) {
+      removeFollow();
+      followButton.innerHTML = 'Follow';
       setFollowingRestaurant(false);
     }
 
