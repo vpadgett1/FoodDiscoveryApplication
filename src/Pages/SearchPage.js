@@ -23,6 +23,9 @@ const SearchPage = () => {
     <>
       <Navigation />
       <div>This is the search page</div>
+      <div>
+        <SearchBar/>
+      </div>
     </>
   );
 };
