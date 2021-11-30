@@ -9,6 +9,7 @@ from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv, find_dotenv
 from flask_oauthlib.client import OAuth, OAuthException
 #from sqlalchemy_imageattach.stores.fs import HttpExposedFileSystemStore
+from werkzeug.utils import secure_filename
 
 load_dotenv(find_dotenv())
 
@@ -23,6 +24,8 @@ app.config['GOOGLE_CLIENT_ID'] = os.getenv("GOOGLE_CLIENT_ID")
 app.config['GOOGLE_CLIENT_SECRET'] = os.getenv("GOOGLE_CLIENT_SECRET")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.secret_key = os.environ.get("SECRET_KEY")
+UPLOAD_FOLDER = "uploads"
+BUCKET = "fooddiscoverapp"
 oauth = OAuth(app)
 
 #fs_store = HttpExposedFileSystemStore('userimages', 'images/')

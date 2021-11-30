@@ -7,7 +7,7 @@ from collections import UserString
 from typing import NewType
 
 from requests.api import post
-from app import app, db, oauth
+from app import app, db, oauth, UPLOAD_FOLDER, BUCKET
 from models import user, favorite_restraunts, friends, user_post, post_comments
 import flask
 from flask_login import (
@@ -33,6 +33,8 @@ from yelpInfo import query_resturants, query_one_resturant, query_api
 from datetime import datetime
 from base64 import b64encode
 from io import BytesIO
+#from s3_demo import list_files, download_file, upload_file
+import boto3
 
 load_dotenv(find_dotenv())
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
@@ -65,6 +67,37 @@ def render_picture(data):
 
     render_pic = base64.b64encode(data).decode('ascii') 
     return render_pic
+
+def upload_file(file_name, bucket):
+    """
+    Function to upload a file to an S3 bucket
+    """
+    object_name = file_name
+    s3_client = boto3.client('s3')
+    response = s3_client.upload_file(file_name, bucket, object_name)
+
+    return response
+
+def download_file(file_name, bucket):
+    """
+    Function to download a given file from an S3 bucket
+    """
+    s3 = boto3.resource('s3')
+    output = f"downloads/{file_name}"
+    s3.Bucket(bucket).download_file(file_name, output)
+
+    return output
+
+def list_files(bucket):
+    """
+    Function to list files in a given S3 bucket
+    """
+    s3 = boto3.client('s3')
+    contents = []
+    for item in s3.list_objects(Bucket=bucket)['Contents']:
+        contents.append(item)
+
+    return contents
 
 bp = flask.Blueprint("bp", __name__, template_folder="./build")
 
@@ -335,10 +368,10 @@ def createAccount():
     zipcode = flask.request.args.get("zipcode")
     # print("Printing zip code")
     # print(zipcode)
-    userExists = user.query.filter_by(username=wantedUsername).all()
-    if userExists: 
-        print("existing username try again")
-        return flask.jsonify({"message" : "Username is alreadt taken. Please try again with another username"})
+    # userExists = user.query.filter_by(username=wantedUsername).all()
+    # if userExists: 
+    #     print("existing username try again")
+    #     return flask.jsonify({"message" : "Username is already taken. Please try again with another username"})
     current_user.username = wantedUsername
     current_user.zipCode = zipcode
     db.session.commit()
@@ -363,7 +396,7 @@ def createAccount():
     return {"status": status}
 
 
-@app.route("/createPost")
+@app.route("/createPost", method=["POST"])
 @login_required
 def createPost():
     AuthorID = flask.request.args.get("AuthorID")
@@ -371,22 +404,17 @@ def createPost():
     postTitle = flask.request.args.get("postTitle")
     RestaurantName = flask.request.args.get("RestaurantName")
     #image = flask.request.files.get('image')
-    image = flask.request.files.get("inputFile")
-    if image: 
-        data_of_image = image.read()
-        render_file = render_picture(data_of_image)
-    #Image = flask.request.args.get("image")
-    print(image)
+    image_link = flask.request.args.get("image")
     newUserPost = user_post(
         AuthorID=AuthorID,
         postText=postText,
         postTitle=postTitle,
         RestaurantName=RestaurantName,
         postLikes=0,
-        image_data = data_of_image,
-        rendered_data = render_file,
+        rendered_data = image_link, 
         user_id=current_user.id,
     )
+    #Image = flask.request.args.get("image")
     db.session.add(newUserPost)
     db.session.commit()
 
@@ -398,6 +426,26 @@ def createPost():
         postID = post.id
     return {"status": status, "postID": postID}
 
+@app.route('/sign_s3/')
+def sign_s3():
+  S3_BUCKET = BUCKET
+  file_name = flask.request.args.get('file_name')
+  file_type = flask.request.args.get('file_type')
+  s3 = boto3.client('s3')
+  presigned_post = s3.generate_presigned_post(
+    Bucket = S3_BUCKET,
+    Key = file_name,
+    Fields = {"acl": "public-read", "Content-Type": file_type},
+    Conditions = [
+      {"acl": "public-read"},
+      {"Content-Type": file_type}
+    ],
+    ExpiresIn = 3600
+  )
+  return json.dumps({
+    'data': presigned_post,
+    'url': 'https://%s.s3.amazonaws.com/%s' % (S3_BUCKET, file_name)
+  })
 
 @app.route("/createComment")
 @login_required

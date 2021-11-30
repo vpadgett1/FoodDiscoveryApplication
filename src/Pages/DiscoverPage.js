@@ -1,3 +1,5 @@
+/* eslint-disable guard-for-in */
+/* eslint-disable no-restricted-syntax */
 import '../App.css';
 import '../styling/DiscoverPage.css';
 import React, {
@@ -88,6 +90,45 @@ const DiscoverPage = () => {
     getData();
   }, []);
 
+  function uploadFile(file, s3Data, url) {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', s3Data.url);
+
+    const postData = new FormData();
+    for (const key in s3Data.fields) {
+      postData.append(key, s3Data.fields[key]);
+    }
+    postData.append('file', file);
+
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState === 4) {
+        if (xhr.status === 200 || xhr.status === 204) {
+          console.log('preview').src = url;
+          console.log('avatar-url').value = url;
+        } else {
+          console.log('Could not upload file.');
+        }
+      }
+    };
+    xhr.send(postData);
+  }
+
+  function getSignedRequest(file) {
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', `/sign_s3?file_name=${file.name}&file_type=${file.type}`);
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState === 4) {
+        if (xhr.status === 200) {
+          const response = JSON.parse(xhr.responseText);
+          uploadFile(file, response.data, response.url);
+        } else {
+          console.log('Could not get signed URL.');
+        }
+      }
+    };
+    xhr.send();
+  }
+
   const createNewPost = (event) => {
     event.preventDefault();
 
@@ -97,11 +138,16 @@ const DiscoverPage = () => {
       const body = document.getElementById('inputBody').value;
       const restName = document.getElementById('restaurantName').value;
       const file = document.getElementById('newPostImageInput').files[0];
-
-      fetch(`/createPost?AuthorID=${userID}&RestaurantName=${restName}&postText=${body}&postTitle=${title}&image=${file}`)
+      // const data = new FormData();
+      // data.append('image', file);
+      // createPost?AuthorID=${userID}&RestaurantName=${restName}&postText=${body}&postTitle=${title
+      fetch(`/createPost?AuthorID=${userID}&RestaurantName=${restName}&postText=${body}&postTitle=${title}`, {
+        method: 'POST',
+      })
         .then((response) => response.json())
         .then((result) => {
           if (result.status && result.status === 200) {
+            document.getElementById('file_input').onchange = getSignedRequest(file);
             const { postID } = result;
             // we want to add this newly created post to the top of the page
             // so the user knows their post is rendered
@@ -112,6 +158,7 @@ const DiscoverPage = () => {
               postLikes: 0,
               id: postID,
               profilePic: userProfilePic,
+              rendered_data: ,
               post_comments: [],
               currentUserID: userID,
               currentUserProfilePic: userProfilePic,
