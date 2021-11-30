@@ -1,6 +1,7 @@
+/* eslint-disable no-unused-vars */
 import '../App.css';
 import React, {
-   useState,
+  useState,
   useEffect,
 } from 'react';
 import Navigation from '../Components/Navigation';
@@ -9,28 +10,28 @@ import Navigation from '../Components/Navigation';
 const SearchPage = () => {
   // set state
   const [input, setInput] = useState('');
-  
-  const fetchData = async () => {
-    return await fetch('')
-    .then(response => response.json())
-    .then(data => {
+  const [RestListDefault, setRestListDefault] = useState();
+  const [RestList, setRestList] = useState();
+
+  const fetchData = async () => await fetch('')
+    .then((response) => response.json())
+    .then(data => { setRestList(data)
+      setRestListDefault(data)
 
     });
-    
   }
-
   const updateInput = async (input) => {
-    //want to filter
-    //const filtered = 
-    //return 
-  }
+    // want to filter through for restaurant name
+    // const filtered =
+    // return
+  };
 
   // deconstruct props
   // const [props] = props;
 
   // TODO: fetch data from backend
-  useEffect(() => {fetchData()
-
+  useEffect(() => {
+    fetchData();
   }, []);
 
   // TODO: Render component
@@ -40,8 +41,10 @@ const SearchPage = () => {
       <div>This is the search page</div>
       <div>
         <SearchBar
-        input={input}
-        onChange = {updateInput} />
+          input={input}
+          onChange={updateInput}
+        />
+        <restList RestList = {restList}/>
       </div>
     </>
   );
