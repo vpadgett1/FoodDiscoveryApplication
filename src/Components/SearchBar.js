@@ -8,6 +8,7 @@ const SearchBar = ({ keyword, setKeyword }) => {
   };
   return (
     <input
+      type="text"
       style={BarStyling}
       key="random1"
       value={keyword}
@@ -16,3 +17,4 @@ const SearchBar = ({ keyword, setKeyword }) => {
     />
   );
 };
+export default SearchBar;
