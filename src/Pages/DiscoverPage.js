@@ -124,7 +124,7 @@ const DiscoverPage = () => {
               currentUserProfilePic: userProfilePic,
               currentUserName: userName,
               AuthorName: userName,
-              ImageData: renderFile,
+              post_picture: renderFile,
             };
             setPosts([p, ...posts]);
             setShowCreateNewPost(false);
