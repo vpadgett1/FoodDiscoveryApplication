@@ -79,18 +79,18 @@ def profile():
         "name": current_user.username,
         "email": current_user.email,
         "profilePic": current_user.profile_pic,
-        "zipcode": current_user.zipCode,
-        "yelpRestaurantID": current_user.yelpRestaurantID,
+        "zipcode": current_user.zip_code,
+        "yelpRestaurantID": current_user.yelp_restaurant_id,
         "id": current_user.id,
     }
     UserFriends = current_user.friends
     UserFriendsList = []
     for x in range(len(UserFriends)):
         # Also get the profile picture and the name of the friend
-        friend = user.query.filter_by(id=UserFriends[x].FriendID).first()
+        friend = user.query.filter_by(id=UserFriends[x].friend_id).first()
         UserFriendsList.append(
             {
-                "user_id": UserFriends[x].FriendID,
+                "user_id": UserFriends[x].friend_id,
                 "name": friend.username,
                 "profile_pic": friend.profile_pic,
             }
@@ -218,12 +218,12 @@ def authorized():
     # if user already exists, send straight to their home page
     if previousUser:
         # check if user finished onboarding
-        print(current_user.zipCode)
-        if current_user.zipCode == None:
+        print(current_user.zip_code)
+        if current_user.zip_code == None:
             return flask.redirect(flask.url_for("onboarding"))
         # if merchant user, send to merchant homepage
         # otherwise, regular
-        if current_user.yelpRestaurantID:
+        if current_user.yelp_restaurant_id:
             return flask.redirect(flask.url_for("merchant"))
         else:
             return flask.redirect(flask.url_for("discover"))
@@ -319,15 +319,15 @@ def logout():
 def post():
     if flask.request.method == "POST":
         postInput = flask.request.json.get("get_user_post")
-        post = user_post(postText=postInput)
+        post = user_post(post_text=postInput)
         db.session.add(post)
         db.session.commit()
 
     else:
-        user_posts = user_post.postText.query.all()
+        user_posts = user_post.post_text.query.all()
         post_list = []
         for posts in user_posts:
-            post_list.append(posts.postText)
+            post_list.append(posts.post_text)
     return flask.jsonify({"data": post_list})
 
 
@@ -343,11 +343,11 @@ def createAccount():
     #     print("existing username try again")
     #     return flask.jsonify({"message" : "Username is alreadt taken. Please try again with another username"})
     current_user.username = wantedUsername
-    current_user.zipCode = zipcode
+    current_user.zip_code = zipcode
     db.session.commit()
     yelpID = flask.request.args.get("yelpID")
     if yelpID:
-        current_user.yelpRestaurantID = yelpID
+        current_user.yelp_restaurant_id = yelpID
         db.session.commit()
 
     status = "failed"
@@ -359,7 +359,7 @@ def createAccount():
                 username=current_user.username, email=current_user.email
             )
             .first()
-            .zipCode
+            .zip_code
             == zipcode
         ):
             status = "success"
@@ -385,8 +385,8 @@ def deleteAccount():
 @app.route("/createPost", methods=["POST", "GET"])
 @login_required
 def createPost():
-    if flask.request.method == "GET":
-        return {"status": 200}
+    # if flask.request.method == "GET":
+    #     return {"status": 200}
     AuthorID = flask.request.args.get("AuthorID")
     postText = flask.request.args.get("postText")
     postTitle = flask.request.args.get("postTitle")
@@ -400,11 +400,11 @@ def createPost():
     # Image = flask.request.args.get("image")
     # print(image)
     newUserPost = user_post(
-        AuthorID=AuthorID,
-        postText=postText,
-        postTitle=postTitle,
-        RestaurantName=RestaurantName,
-        postLikes=0,
+        author_id=AuthorID,
+        post_text=postText,
+        post_title=postTitle,
+        post_likes=0,
+        restaurant_name=RestaurantName,
         image_data=data_of_image,
         rendered_data=render_file,
         user_id=current_user.id,
@@ -414,7 +414,7 @@ def createPost():
 
     status = 400
     postID = 0
-    post = user_post.query.filter_by(postTitle=postTitle, AuthorID=AuthorID).first()
+    post = user_post.query.filter_by(post_title=postTitle, author_id=AuthorID).first()
     if post:
         status = 200
         postID = post.id
@@ -426,26 +426,26 @@ def createPost():
 def searchPost():
     tag = flask.request.args.get("postTitle")
     search = "%{}%".format(tag)
-    Posts = user_post.query.filter(user_post.postTitle.like(search)).all()
+    Posts = user_post.query.filter(user_post.post_title.like(search)).all()
     postsData = []
     for post in Posts:
         postComments = post_comments.query.filter_by(post_id=post.id)
         postCommentsList = []
         for comment in postComments:
             commentData = {
-                "CommentAuthorProfilePic": user.query.filter(comment.AuthorID)
+                "CommentAuthorProfilePic": user.query.filter(comment.author_id)
                 .first()
                 .profile_pic,
-                "AuthorID": comment.AuthorID,
-                "postText": comment.postText,
+                "AuthorID": comment.author_id,
+                "postText": comment.post_text,
             }
             postCommentsList.append(commentData)
         singlepostData = {
-            "AuthorID": post.AuthorID,
-            "postText": post.postText,
-            "postTitle": post.postTitle,
-            "postLikes": post.postLikes,
-            "RestaurantName": post.RestaurantName,
+            "AuthorID": post.author_id,
+            "postText": post.post_text,
+            "postTitle": post.post_title,
+            "postLikes": post.post_likes,
+            "RestaurantName": post.restaurant_name,
             "comments": postCommentsList,
             "PostAuthorProfilePic": user.query.filter(post.user_id).first().profile_pic,
         }
@@ -460,13 +460,13 @@ def createComment():
     postText = flask.request.args.get("postText")
     post_id = flask.request.args.get("post_id")
     newUserComment = post_comments(
-        AuthorID=AuthorID, postText=postText, post_id=post_id
+        author_id=AuthorID, post_text=postText, post_id=post_id
     )
     db.session.add(newUserComment)
     db.session.commit()
 
     status = "failed"
-    if post_comments.query.filter_by(AuthorID=AuthorID, post_id=post_id).first():
+    if post_comments.query.filter_by(author_id=AuthorID, post_id=post_id).first():
         status = "success"
     return flask.jsonify(status)
 
@@ -476,16 +476,16 @@ def createComment():
 def likeAPost():
     postId = flask.request.args.get("PostID")
     authorId = flask.request.args.get("AuthorID")
-    postInfo = user_post.query.filter_by(post_id=postId, AuthorID=authorId).first()
-    specificPostLikes = postInfo.postLikes
+    postInfo = user_post.query.filter_by(post_id=postId, author_id=authorId).first()
+    specificPostLikes = postInfo.post_likes
     specificPostLikes += 1
     updateLikes = (
         user_post.update()
-        .where(user_post.c.AuthorID == authorId and user_post.c.post_id == postId)
-        .values(postLikes=specificPostLikes)
+        .where(user_post.c.author_id == authorId and user_post.c.post_id == postId)
+        .values(post_likes=specificPostLikes)
     )
     db.execute(updateLikes)
-    likeCount = postInfo.postLikes
+    likeCount = postInfo.post_likes
     return flask.jsonify({"likes": likeCount, "message": "like success", "status": 200})
 
 
@@ -494,16 +494,16 @@ def likeAPost():
 def unlikeAPost():
     postId = flask.request.args.get("PostID")
     authorId = flask.request.args.get("AuthorID")
-    postInfo = user_post.query.filter_by(post_id=postId, AuthorID=authorId).first()
-    specificPostLikes = postInfo.postLikes
+    postInfo = user_post.query.filter_by(post_id=postId, author_id=authorId).first()
+    specificPostLikes = postInfo.post_likes
     specificPostLikes -= 1
     updateLikes = (
         user_post.update()
-        .where(user_post.c.AuthorID == authorId and user_post.c.post_id == postId)
-        .values(postLikes=specificPostLikes)
+        .where(user_post.c.author_id == authorId and user_post.c.post_id == postId)
+        .values(post_likes=specificPostLikes)
     )
     db.execute(updateLikes)
-    likeCount = postInfo.postLikes
+    likeCount = postInfo.post_likes
     return flask.jsonify(
         {"likes": likeCount, "message": " unlike success", "status": 200}
     )
@@ -514,7 +514,7 @@ def unlikeAPost():
 def search_restaurant():
     rest_name = flask.request.get("resturant_name")
     result_limit = 3
-    yelp_results = query_resturants(rest_name, current_user.zipCode, result_limit)
+    yelp_results = query_resturants(rest_name, current_user.zip_code, result_limit)
     resturant_data = []
     for x in range(len(yelp_results["names"])):
         rest_info = {
@@ -583,7 +583,7 @@ def deleteFollower():
     if extraVal:
         removeFollower = friends.query.filter(
             (friends.user_id == current_user.id)
-            & (friends.FriendID == extraVal.FriendID)
+            & (friends.friend_id == extraVal.friend_id)
         ).first()
         db.session.delete(removeFollower)
         try:
@@ -613,11 +613,11 @@ def addFavoriteRestaurant():
     yelp_restaurant_id = flask.request.json.get("yelp_restaurant_id")
     # query to verify they are not already following
     following_check = favorite_restraunts.query.filter_by(
-        user_id=current_user.username, RestaurantName=yelp_restaurant_id
+        user_id=current_user.username, restaurant_name=yelp_restaurant_id
     ).all()
     if not following_check:
         follow_request = favorite_restraunts(
-            user_id=current_user.username, RestaurantName=yelp_restaurant_id
+            user_id=current_user.username, restaurant_name=yelp_restaurant_id
         )
         db.session.add(follow_request)
         try:
@@ -655,7 +655,7 @@ def deleteFavoriteRestaurant():
     if extraVal:
         removeFollower = friends.query.filter(
             (favorite_restraunts.user_id == current_user.username)
-            & (favorite_restraunts.RestaurantName == extraVal.yelp_restaurant_id)
+            & (favorite_restraunts.restaurant_name == extraVal.yelp_restaurant_id)
         ).first()
         db.session.delete(removeFollower)
         try:
@@ -686,7 +686,7 @@ def deleteFavoriteRestaurant():
 
 @app.route("/getRestaurantData")
 def getRestaurantData():
-    restaurant_id = current_user.yelpRestaurantID
+    restaurant_id = current_user.yelp_restaurant_id
     store_data = query_one_resturant(restaurant_id)
     if not store_data:
         return {"status": 400, "message": "Could not find data for this restaurant."}
@@ -702,16 +702,16 @@ def getPostsByUser():
         postCommentsList = []
         for comment in postComments:
             commentData = {
-                "AuthorID": comment.AuthorID,
-                "postText": comment.postText,
+                "AuthorID": comment.author_id,
+                "postText": comment.post_text,
             }
             postCommentsList.append(commentData)
         singlepostData = {
-            "AuthorID": posts.AuthorID,
-            "postText": posts.postText,
-            "postTitle": posts.postTitle,
-            "postLikes": posts.postLikes,
-            "RestaurantName": posts.RestaurantName,
+            "AuthorID": posts.author_id,
+            "postText": posts.post_text,
+            "postTitle": posts.post_title,
+            "postLikes": posts.post_likes,
+            "RestaurantName": posts.restaurant_name,
             "comments": postCommentsList,
         }
         postsData.append(singlepostData)
@@ -729,7 +729,7 @@ def getUserInfoByEmail():
         "name": otherUser.username,
         "email": otherUser.email,
         "profilePic": otherUser.profile_pic,
-        "zipcode": otherUser.zipCode,
+        "zipcode": otherUser.zip_code,
     }
 
     return UserDATA
@@ -746,13 +746,13 @@ def getDetailedUserInfo():
         "name": otherUser.username,
         "email": otherUser.email,
         "profilePic": otherUser.profile_pic,
-        "zipcode": otherUser.zipCode,
+        "zipcode": otherUser.zip_code,
     }
 
     UserFriends = otherUser.friends
     UserFriendsList = []
     for x in range(len(UserFriends)):
-        UserFriendsList.append(UserFriends[x].FriendID)
+        UserFriendsList.append(UserFriends[x].friend_id)
 
     UserFavoriteRestaurants = otherUser.favs
     UserFavRestaurantsList = []
@@ -816,7 +816,7 @@ def getDiscoverPage():
     for x in range(len(UserFriends)):
         UserFriendsList.append(
             {
-                "friendID": UserFriends[x].FriendID,
+                "friendID": UserFriends[x].friend_id,
             }
         )
 
@@ -870,16 +870,17 @@ def getPosts(userID):
     posts = []
     author = user.query.filter_by(id=userID).first()
     query_posts = user_post.query.filter_by(user_id=userID).all()
+    print(query_posts)
     for x in range(len(query_posts)):
         postComments = post_comments.query.filter_by(post_id=query_posts[x].id).all()
         postCommentsList = []
         for y in range(len(postComments)):
             # Get the user who posted this comment to get their
             # profile pic and name
-            commentor = user.query.filter_by(id=postComments[y].AuthorID).first()
+            commentor = user.query.filter_by(id=postComments[y].author_id).first()
             commentData = {
-                "AuthorID": postComments[y].AuthorID,
-                "postText": postComments[y].postText,
+                "AuthorID": postComments[y].author_id,
+                "postText": postComments[y].post_text,
                 "CommentorProfilePic": commentor.profile_pic,
                 "CommentorName": commentor.username,
             }
@@ -887,11 +888,11 @@ def getPosts(userID):
         posts.append(
             {
                 "id": query_posts[x].id,
-                "AuthorID": query_posts[x].AuthorID,
-                "postText": query_posts[x].postText,
-                "postTitle": query_posts[x].postTitle,
-                "postLikes": query_posts[x].postLikes,
-                "RestaurantName": query_posts[x].RestaurantName,
+                "AuthorID": query_posts[x].author_id,
+                "postText": query_posts[x].post_text,
+                "postTitle": query_posts[x].post_title,
+                "postLikes": query_posts[x].post_likes,
+                "RestaurantName": query_posts[x].restaurant_name,
                 "user_id": query_posts[x].user_id,
                 "post_picture": query_posts[x].rendered_data,
                 "post_comments": postCommentsList,
@@ -905,7 +906,7 @@ def getPosts(userID):
 @app.route("/")
 def main():
     if current_user.is_authenticated:
-        if current_user.yelpRestaurantID:
+        if current_user.yelp_restaurant_id:
             return flask.redirect(flask.url_for("merchant"))
         else:
             return flask.redirect(flask.url_for("discover"))
