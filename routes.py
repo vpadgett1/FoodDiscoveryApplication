@@ -347,11 +347,11 @@ def createAccount():
     userExists = user.query.filter_by(username=wantedUsername).all()
     if userExists:
         print("existing username try again")
-        return flask.jsonify(
-            {
-                "message": "Username is alreadt taken. Please try again with another username"
-            }
-        )
+        return {
+            "status": 200,
+            "newAccountCreated": False,
+            "message": "Username is already taken. Please try again with another username",
+        }
     current_user.username = wantedUsername
     current_user.zip_code = zipcode
     db.session.commit()
@@ -360,7 +360,9 @@ def createAccount():
         current_user.yelp_restaurant_id = yelpID
         db.session.commit()
 
-    status = "failed"
+    status = 400
+    newAccountCreated = False
+    message = "Failed account creation. Please refresh the page and try again."
     if user.query.filter_by(
         username=current_user.username, email=current_user.email
     ).first():
@@ -372,8 +374,14 @@ def createAccount():
             .zip_code
             == zipcode
         ):
-            status = "success"
-    return {"status": status}
+            status = 200
+            newAccountCreated = True
+            message = "success!"
+    return {
+        "status": status,
+        "newAccountCreated": newAccountCreated,
+        "message": message,
+    }
 
 
 @app.route("/deleteAccount", methods=["POST"])
@@ -961,13 +969,15 @@ def main():
     if current_user.is_authenticated:
         if current_user.yelp_restaurant_id:
             return flask.redirect(flask.url_for("merchant"))
-        else:
+        elif current_user.zip_code:
             return flask.redirect(flask.url_for("discover"))
+        else:
+            return flask.redirect(flask.url_for("onboarding"))
     else:
         return flask.render_template("index.html")
 
 
 if __name__ == "__main__":
     app.run(
-        host=os.getenv("IP", "0.0.0.0"), port=int(os.getenv("PORT", 5000)), debug=True
+        host=os.getenv("IP", "127.0.0.1"), port=int(os.getenv("PORT", 5000)), debug=True
     )

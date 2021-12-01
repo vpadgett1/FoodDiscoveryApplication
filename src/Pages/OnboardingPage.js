@@ -1,16 +1,20 @@
 import '../App.css';
+import '../styling/OnboardingPage.css';
 import React, {
   useState,
   useEffect,
 } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
+import SingleOptionPopUp from '../Components/SingleOptionPopUp';
 
 // YELP ID TO USE FOR TESTING: WavvLdfdP6g8aZTtbBQHTw
 // this line will become const OnboardingPage = (props) => { once there are props
 const OnboardingPage = () => {
   // set state
   const [selectedButton, setSelectedButton] = useState('none');
+  const [showMessage, setShowMessage] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
 
   const navigate = useNavigate();
   // deconstruct props
@@ -19,18 +23,6 @@ const OnboardingPage = () => {
   useEffect(() => {
     // TODO: Render component
   }, []);
-
-  // TODO: This method should post the user data for a new user
-  // after the user answers onboarding questions
-  // const createAccount => () {
-
-  // }
-
-  // TODO: This method should display an error if the user is
-  // unable to create an account
-  // const showErrors => () {
-
-  // }
 
   const createRegularUserAccount = async () => {
     // get input
@@ -43,11 +35,14 @@ const OnboardingPage = () => {
     })
       .then((response) => response.json())
       .then((result) => {
-        console.log(result);
-
         // go to next page
-        if (result.status === 'success') {
-          navigate('/discover');
+        if (result.status && result.status === 200) {
+          if (result.newAccountCreated) {
+            navigate('/discover');
+          } else { // show alert
+            setAlertMessage(result.message);
+            setShowMessage(true);
+          }
         }
       })
       .catch((response) => console.log(response));
@@ -60,7 +55,8 @@ const OnboardingPage = () => {
         <input type="text" placeholder="Zip Code" id="zipCodeInput" />
         <div>Please enter a username</div>
         <input type="text" placeholder="Username" id="regularUserName" />
-        <button type="button" onClick={createRegularUserAccount}>Continue</button>
+        <br />
+        <button type="button" onClick={createRegularUserAccount} className="continueButton">Continue</button>
       </>
     );
   }
@@ -77,11 +73,13 @@ const OnboardingPage = () => {
     })
       .then((response) => response.json())
       .then((result) => {
-        console.log(result);
-
-        // go to next page
-        if (result.status === 'success') {
-          navigate('/merchant');
+        if (result.status && result.status === 200) {
+          if (result.newAccountCreated) {
+            navigate('/merchant');
+          } else { // show alert
+            setAlertMessage(result.message);
+            setShowMessage(true);
+          }
         }
       })
       .catch((response) => console.log(response));
@@ -96,7 +94,8 @@ const OnboardingPage = () => {
         <input type="text" placeholder="Zip Code" id="yelpRestaurantID" />
         <div>Please enter a username</div>
         <input type="text" placeholder="Username" id="merchantUserName" />
-        <button type="button" onClick={createMerchantUserAccount}>Continue</button>
+        <br />
+        <button type="button" onClick={createMerchantUserAccount} className="continueButton">Continue</button>
       </>
     );
   }
@@ -107,10 +106,10 @@ const OnboardingPage = () => {
 
   function renderRegularOrMerchantButtons() {
     return (
-      <>
-        <button type="button" onClick={() => onUserChoice('Regular')}>Regular</button>
-        <button type="button" onClick={() => onUserChoice('Merchant')}>Merchant</button>
-      </>
+      <div className="userTypeButtons">
+        <button type="button" onClick={() => onUserChoice('Regular')} className={selectedButton === 'Regular' ? 'selectedButton' : 'regularButton'}>Regular</button>
+        <button type="button" onClick={() => onUserChoice('Merchant')} className={selectedButton === 'Merchant' ? 'selectedButton' : 'regularButton'}>Merchant</button>
+      </div>
     );
   }
 
@@ -125,13 +124,29 @@ const OnboardingPage = () => {
     }
   }
 
+  const popUpAction = () => {
+    setShowMessage(false);
+  };
+
+  function renderMessage() {
+    if (showMessage) {
+      return (
+        <SingleOptionPopUp
+          message={alertMessage}
+          buttonAction={popUpAction}
+          buttonActionText="OK"
+        />
+      );
+    }
+    return (<></>);
+  }
+
   return (
-    <>
-      <div>this is an onboarding page</div>
+    <div className="onboardingPage">
+      {renderMessage()}
       {renderRegularOrMerchantButtons()}
       {renderBody()}
-
-    </>
+    </div>
   );
 };
 
