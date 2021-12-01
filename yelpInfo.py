@@ -91,6 +91,9 @@ def search_withLimit(api_key, term, location, limit):
     return request(API_HOST, SEARCH_PATH, api_key, url_params=url_params)
 
 
+def get_buisness(buisness_id):
+    return get_buisness(API_KEY, buisness_id)
+
 def get_business(api_key, business_id):
     """Query the Business API by a business ID.
     Args:

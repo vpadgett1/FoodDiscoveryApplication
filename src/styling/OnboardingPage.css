@@ -1,0 +1,75 @@
+/* Imports */
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;700&display=swap');
+
+.onboardingPage {
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  font-family: 'Open Sans', sans-serif;
+}
+
+.onboardingPage .userTypeButtons .regularButton {
+  background-color: #fff;
+  border: 5px solid #ff9921;
+  color: #ff9921;
+  margin: 24px;
+  font-size: 26px;
+  padding: 12px 36px;
+  font-weight: 700;
+  width: 300px;
+  border-radius: 24px;
+  font-family: 'Open Sans', sans-serif;
+}
+
+.onboardingPage .userTypeButtons .selectedButton {
+  background-color: #ff9921;
+  border: 5px solid #ff9921;
+  color: white;
+  margin: 24px;
+  font-size: 26px;
+  padding: 12px 36px;
+  font-weight: 700;
+  width: 300px;
+  border-radius: 24px;
+  font-family: 'Open Sans', sans-serif;
+}
+
+.onboardingPage div {
+  font-size: 24px;
+  font-weight: 700;
+  font-family: 'Open Sans', sans-serif;
+}
+
+.onboardingPage input {
+  width: 50%;
+  padding: 12px 24px;
+  font-size: 24px;
+  border: none;
+  border-radius: 50px;
+  margin-bottom: 24px;
+  font-family: 'Open Sans', sans-serif;
+}
+
+.onboardingPage input::placeholder {
+  color: #cbb9a3;
+}
+
+.onboardingPage .continueButton {
+  width: calc(50% + 48px);
+  padding: 12px 24px;
+  font-size: 24px;
+  border: none;
+  border-radius: 50px;
+  margin-bottom: 24px;
+  background-color: #ff9921;
+  color: white;
+  font-weight: 700;
+  font-family: 'Open Sans', sans-serif;
+}
+
+.onboardingPage .continueButton:hover,
+.onboardingPage .userTypeButtons .selectedButton:hover,
+.onboardingPage .userTypeButtons .regularButton:hover {
+  background-color: #ffe7ca;
+  cursor: pointer;
+}
