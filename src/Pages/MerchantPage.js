@@ -184,6 +184,7 @@ const MerchantPage = () => {
             currentUserProfilePic={profilePic}
             currentUserName={name}
             AuthorName={x.AuthorName}
+            ImageData={x.post_picture}
           />
         ))}
       </div>
@@ -205,8 +206,15 @@ const MerchantPage = () => {
     if (canPost) {
       const title = document.getElementById('inputTitleMerchant').value;
       const body = document.getElementById('inputBodyMerchant').value;
+      const file = document.getElementById('newPostImageInput').files[0];
 
-      fetch(`/createPost?AuthorID=${userID}&RestaurantName=${restaurantName}&postText=${body}&postTitle=${title}`)
+      const data = new FormData();
+      data.append('image', file);
+
+      fetch(`/createPost?AuthorID=${userID}&RestaurantName=${restaurantName}&postText=${body}&postTitle=${title}`, {
+        method: 'POST',
+        body: data,
+      })
         .then((response) => response.json())
         .then((result) => {
           console.log(result);
@@ -270,6 +278,9 @@ const MerchantPage = () => {
             </div>
             <div className="createPostMerchantButton">
               <button type="submit" className={canPost ? 'canPost' : 'cannotPost'}>Publish</button>
+            </div>
+            <div className="inputImage">
+              <input type="file" name="inputFile" id="newPostImageInput" accept="image/png, image/jpeg" />
             </div>
           </div>
         </form>
