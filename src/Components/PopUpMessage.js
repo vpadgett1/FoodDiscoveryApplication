@@ -21,7 +21,6 @@ const PopUpMessage = (props) => {
           <button onClick={doNotContinueFunc} type="button" className="leftButton">{doNotcontinueText}</button>
           <button onClick={continueFunc} type="button" className="rightButton">{continueText}</button>
         </div>
-
       </div>
     </div>
   );
@@ -33,6 +32,7 @@ PopUpMessage.propTypes = {
   continueFunc: PropTypes.func.isRequired,
   doNotContinueFunc: PropTypes.func.isRequired,
   message: PropTypes.string.isRequired,
+  isSingleButton: PropTypes.bool.isRequired,
 };
 
 export default PopUpMessage;
