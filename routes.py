@@ -382,6 +382,32 @@ def deleteAccount():
     userID = current_user.id
     print("Printing UserID")
     print(userID)
+
+    # get all items in favorite restaurants table with the userID
+    delRestaurants = favorite_restraunts.query.filter_by(user_id=userID).all()
+    for restaurant in delRestaurants:
+        db.session.delete(restaurant)
+        db.session.commit()
+
+    # get all items in friends table with the userID
+    delFriends = friends.query.filter_by(user_id=userID).all()
+    for friend in delFriends:
+        db.session.delete(friend)
+        db.session.commit()
+
+    # get all items in posts table with the userID
+    delPosts = user_post.query.filter_by(user_id=userID).all()
+    for post in delPosts:
+        # get the comments for this post and delete all of them
+        delComments = post_comments.query.filter_by(post_id=post.id).all()
+        for comment in delComments:
+            db.session.delete(comment)
+            db.session.commit()
+
+        db.session.delete(post)
+        db.session.commit()
+
+    # delete the user
     delUser = user.query.filter_by(id=userID).first()
     db.session.delete(delUser)
     db.session.commit()
@@ -943,5 +969,5 @@ def main():
 
 if __name__ == "__main__":
     app.run(
-        host=os.getenv("IP", "127.0.0.1"), port=int(os.getenv("PORT", 5000)), debug=True
+        host=os.getenv("IP", "0.0.0.0"), port=int(os.getenv("PORT", 5000)), debug=True
     )
