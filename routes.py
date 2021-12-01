@@ -496,7 +496,7 @@ def likeAPost():
     specificPostLikes = postInfo.post_likes
     specificPostLikes += 1
     updateLikes = (
-        user_post.update()
+        update(user_post)
         .where(user_post.c.author_id == authorId and user_post.c.post_id == postId)
         .values(post_likes=specificPostLikes)
     )
@@ -517,7 +517,7 @@ def unlikeAPost():
     specificPostLikes = postInfo.post_likes
     specificPostLikes -= 1
     updateLikes = (
-        user_post.update()
+        update(user_post)
         .where(user_post.c.author_id == authorId and user_post.c.post_id == postId)
         .values(post_likes=specificPostLikes)
     )
