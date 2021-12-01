@@ -137,3 +137,7 @@ body {
   background-color: #ffe7ca;
   cursor: pointer;
 }
+
+.inputImage {
+  padding-bottom: 18px;
+}
