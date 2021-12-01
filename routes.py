@@ -46,6 +46,7 @@ login_manager = LoginManager()
 login_manager.login_view = "login"
 login_manager.init_app(app)
 
+YELP_API_KEY = os.environ["YELP_API_KEY"]
 
 @login_manager.user_loader
 def load_user(user_name):
@@ -109,52 +110,6 @@ def profile():
         "UserFavRestaurantsList": UserFavRestaurantsList,
         "UserPostsList": UserPostsList,
     }
-
-
-@bp.route("/zipcode", methods=["GET", "POST"])
-def zipcode():
-    if flask.request.method == "POST":
-        yelp_api_key = os.getenv("YELP_APIKEY")
-        business_search_url = "https://api.yelp.com/v3/businesses/search"
-        newheaders = {"Authorization": "bearer %s" % yelp_api_key}
-        zip_code = current_user.zipcode
-        search_params = {"term": "restaurants", "location": zip_code, "limit": 25}
-        restaurant_search_response = requests.get(
-            business_search_url, headers=newheaders, params=search_params
-        )
-        restaurant_search_response_data = restaurant_search_response.json()
-        businesses = restaurant_search_response_data["businesses"]
-
-        name = []
-        img_url = []
-        rating = []
-        is_closed = []
-        url = []
-        coord = []
-        id = []
-
-        for business in businesses:
-            name.append(business["name"])
-            img_url.append(business["image_url"])
-            rating.append(business["rating"])
-            is_closed.append(business["is_closed"])
-            url.append(business["url"])
-            coord.append(business["coordinates"])
-            id.append(business["id"])
-
-        DATA = {
-            "names": name,
-            "img_urls": img_url,
-            "ratings": rating,
-            "is_closeds": is_closed,
-            "urls": url,
-            "coords": coord,
-            "ids": id,
-        }
-
-        return flask.jsonify({"data": DATA})
-    else:
-        return flask.render_template("index.html")
 
 
 app.register_blueprint(bp)
@@ -251,6 +206,89 @@ def discover():
 def merchant():
     return flask.render_template("index.html")
 
+@app.route("/restaurantprofile", methods=["GET", "POST"])
+def restaurantprofile():
+
+    if flask.request.method == "POST":
+        
+        restaurant_id = flask.request.json.get("restID")
+        business_results = get_business(YELP_API_KEY, restaurant_id)
+        # print(business_results)
+
+        name = []
+        img_url = []
+        rating = []
+        rating_count = []
+        is_closed = []
+        url = []
+        address = []
+        opening = []
+        closing = []
+        phone_number = []
+        categories = []
+        photos = []
+
+        for x in range(len(business_results["name"])):
+            rest_info = {
+                "name": business_results["name"],
+                "location": business_results["location"]["display_address"],
+                "rating_count": business_results["review_count"],
+                "phone_number": business_results["display_phone"],
+                "rating": business_results["rating"],
+                "categories": business_results["categories"][0]["title"],
+                "image": business_results["image_url"],
+                "photos": business_results["photos"],
+                "url":business_results["url"],
+            }
+        for y in range(len(business_results["hours"][0]["open"])):
+            open_hours_info = {
+                "Sunday":timeConvert(business_results["hours"][0]["open"][y]["start"]),
+                "Monday":timeConvert(business_results["hours"][0]["open"][y]["start"]),
+                "Tuesday":timeConvert(business_results["hours"][0]["open"][y]["start"]),
+                "Wednesday":timeConvert(business_results["hours"][0]["open"][y]["start"]),
+                "Thursday":timeConvert(business_results["hours"][0]["open"][y]["start"]),
+                "Friday":timeConvert(business_results["hours"][0]["open"][y]["start"]),
+                "Saturday":timeConvert(business_results["hours"][0]["open"][y]["start"]),
+                }
+        for z in range(len(business_results["hours"][0]["open"])):
+            close_hours_info = {
+                "Sunday":timeConvert(business_results["hours"][0]["open"][z]["end"]),
+                "Monday":timeConvert(business_results["hours"][0]["open"][z]["end"]),
+                "Tuesday":timeConvert(business_results["hours"][0]["open"][z]["end"]),
+                "Wednesday":timeConvert(business_results["hours"][0]["open"][z]["end"]),
+                "Thursday":timeConvert(business_results["hours"][0]["open"][z]["end"]),
+                "Friday":timeConvert(business_results["hours"][0]["open"][z]["end"]),
+                "Saturday":timeConvert(business_results["hours"][0]["open"][z]["end"]),
+                }
+        opening.append(open_hours_info)
+        closing.append(close_hours_info)
+        name.append(rest_info["name"])
+        img_url.append(rest_info["image"])
+        rating.append(rest_info["rating"])
+        rating_count.append(rest_info["rating_count"])
+        address.append(rest_info["location"])
+        categories.append(rest_info["categories"])
+        photos.append(rest_info["photos"])
+        phone_number.append(rest_info["phone_number"])
+        url.append(rest_info["url"])
+        DATA = {
+            "name": name,
+            "img_urls": img_url,
+            "ratings": rating,
+            "rating_count": rating_count,
+            "address": address,
+            "opening": opening,
+            "closing": closing,
+            "url": url,
+            "phone":phone_number,
+            "categories":categories,
+            "photos":photos,
+        }
+
+        return flask.jsonify({"data":DATA})
+    else:
+        return flask.render_template("index.html")
+
 
 @app.route("/restaurantprofile")
 @login_required
@@ -280,7 +318,10 @@ def map():
         is_closed = []
         url = []
         coord = []
-        id = []
+        address = []
+        opening = []
+        closing = []
+        ids = []
         for x in range(len(restaurant_results["names"])):
             rest_info = {
                 "name": restaurant_results["names"][x],
@@ -294,21 +335,30 @@ def map():
                     "title"
                 ],
                 "image": restaurant_results["pictures"][x],
+                "ids": restaurant_results["ids"][x],
             }
             name.append(rest_info["name"])
             img_url.append(rest_info["image"])
             rating.append(rest_info["rating"])
             coord.append(rest_info["coordinates"])
-
+            address.append(rest_info["location"])
+            opening.append(rest_info["opening"])
+            closing.append(rest_info["closing"])
+            ids.append(rest_info["ids"])
         DATA = {
             "names": name,
             "img_urls": img_url,
             "ratings": rating,
             "coords": coord,
+            "address": address,
+            "opening": opening,
+            "closing": closing,
+            "ids": ids,
         }
+        # print(restaurant_results)
 
         return flask.jsonify({"data": DATA})
-
+        
     else:
         return flask.render_template("index.html")
 
@@ -655,14 +705,15 @@ def deleteFollower():
 @login_required
 def addFavoriteRestaurant():
     # recieved follower_id
-    yelp_restaurant_id = flask.request.json.get("yelp_restaurant_id")
+    yelp_restaurant_id = flask.request.json.get("restID")
+    print(yelp_restaurant_id)
     # query to verify they are not already following
     following_check = favorite_restraunts.query.filter_by(
-        user_id=current_user.username, restaurant_name=yelp_restaurant_id
+        user_id=current_user.id, yelp_restraunt_id=yelp_restaurant_id
     ).all()
     if not following_check:
         follow_request = favorite_restraunts(
-            user_id=current_user.username, restaurant_name=yelp_restaurant_id
+            user_id=current_user.id, yelp_restraunt_id=yelp_restaurant_id
         )
         db.session.add(follow_request)
         try:
@@ -694,13 +745,13 @@ def addFavoriteRestaurant():
 @app.route("/deleteFavoriteRestaurant", methods=["POST"])
 @login_required
 def deleteFavoriteRestaurant():
-    yelp_restaurant_id = flask.request.json.get("yelp_restaurant_id")
-    currentDB = favorite_restraunts.query.filter_by(user_id=current_user.username).all()
+    yelp_restaurant_id = flask.request.json.get("restID")
+    currentDB = favorite_restraunts.query.filter_by(user_id=current_user.id).all()
     extraVal = list((set(currentDB) - set(yelp_restaurant_id)))[0]
     if extraVal:
-        removeFollower = friends.query.filter(
-            (favorite_restraunts.user_id == current_user.username)
-            & (favorite_restraunts.yelp_restaurant_id == extraVal.yelp_restaurant_id)
+        removeFollower = favorite_restraunts.query.filter(
+            (favorite_restraunts.user_id == current_user.id)
+            & (favorite_restraunts.yelp_restraunt_id == extraVal.yelp_restraunt_id)
         ).first()
         db.session.delete(removeFollower)
         try:
