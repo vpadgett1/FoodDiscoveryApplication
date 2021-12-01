@@ -1,8 +1,23 @@
 # READ ME: Information on FoodMe, your newest food recommendations application
 
+## Made By
+
+
 ## [Link to FoodMe Application](https://still-badlands-73263.herokuapp.com/)
 
 This web application has been created and designed to become your new home for recieving food recommendations from your friends. Here you can follow your friends and watch as they post the latest places they have ate and whether they would recommend this resturant to places or no.
+
+
+## Motivation
+
+The question is: how is FoodMe different from any other food application to search for restaurants. We bring in the social aspect! You can add your friends and see what they’ve been eating and the dishes they recommend. Looking for recommendations from your favorite people, then this is why you need to use FoodMe! 
+
+As food accounts on instagram, facebook, twitter, etc are increasing we thought, why not create an app as a circle for foodies. This application is gathering all the foodies and those interested to become one!
+
+
+## Demonstration
+
+
 
 ## Requirements
 
@@ -42,3 +57,5 @@ This web application has been created and designed to become your new home for r
 ## Google Maps API
 
 1. run `npm install react-google-maps` to be able to use Google Maps api on the front end
+
+##
