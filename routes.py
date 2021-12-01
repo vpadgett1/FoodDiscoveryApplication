@@ -25,7 +25,7 @@ from flask_oauthlib.client import OAuth, OAuthException
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import update
 from dotenv import load_dotenv, find_dotenv
-from yelpInfo import query_resturants, query_one_resturant, query_api
+from yelpInfo import get_buisness, query_resturants, query_one_resturant, query_api
 
 # from sqlalchemy_imageattach.entity import entity
 # from sqlalchemy_imageattach.context import store_context
@@ -357,8 +357,10 @@ def createAccount():
     db.session.commit()
     yelpID = flask.request.args.get("yelpID")
     if yelpID:
-        current_user.yelp_restaurant_id = yelpID
-        db.session.commit()
+        realRestuarant = get_buisness(yelpID)
+        if realRestuarant:
+            current_user.yelp_restaurant_id = yelpID
+            db.session.commit()
 
     status = "failed"
     if user.query.filter_by(
