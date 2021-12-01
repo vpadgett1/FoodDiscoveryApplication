@@ -6,7 +6,6 @@
 from app import db
 from flask_login import UserMixin
 from sqlalchemy.sql import func
-
 # from sqlalchemy.ext.declarative import declarative_base
 # from sqlalchemy_imageattach.entity import Image, image_attachment
 
@@ -63,7 +62,6 @@ class user_post(UserMixin, db.Model):
     date_created = db.Column(db.DateTime(timezone=True), server_default=func.now())
     user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"))
     post_comments = db.relationship("post_comments", backref="user", lazy=True)
-
 
 class post_comments(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)

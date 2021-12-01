@@ -92,10 +92,10 @@ def search_withLimit(api_key, term, location, limit):
 
 
 def get_buisness(buisness_id):
-    return get_business_from_yelp(API_KEY, buisness_id)
+    return get_buisness_from_yelp(API_KEY, buisness_id)
 
 
-def get_business_from_yelp(api_key, business_id):
+def get_buisness_from_yelp(api_key, business_id):
     """Query the Business API by a business ID.
     Args:
         business_id (str): The ID of the business to query.
@@ -125,7 +125,7 @@ def query_api(term, location):
 
     business_id = businesses[0]["id"]
 
-    response = get_business_from_yelp(API_KEY, business_id)
+    response = get_buisness_from_yelp(API_KEY, business_id)
     return response["name"]
 
 
@@ -153,7 +153,7 @@ def query_one_resturant(term, location):
         print(u"No businesses for {0} in {1} found.".format(term, location))
         return
     business_id = businesses[0]["id"]
-    response = get_business_from_yelp(API_KEY, business_id)
+    response = get_buisness_from_yelp(API_KEY, business_id)
     names.append(response["name"])
     locations.append(response["location"])
     openhours = response["hours"]
@@ -186,7 +186,7 @@ def query_one_resturant(yelp_id):
     """
     if not yelp_id:
         return None
-    response = get_business_from_yelp(API_KEY, yelp_id)
+    response = get_buisness_from_yelp(API_KEY, yelp_id)
     names = response["name"]
     location = response["location"]
     openhours = response["hours"]
@@ -231,6 +231,7 @@ def query_resturants(term, location, limit):
     resturant_type_categories = []
     pictures = []
     coordinates = []
+    ids = []
     if not businesses:
         print(u"No businesses for {0} in {1} found.".format(term, location))
         return
@@ -241,10 +242,12 @@ def query_resturants(term, location, limit):
         #     u"{0} businesses found, querying business info "
         # '   for the top result "{1}" ...'.format(len(businesses), business_id)
         # )
-        response = get_business_from_yelp(API_KEY, business_id)
 
-        # print(response)
+        response = get_buisness_from_yelp(API_KEY, business_id)
 
+        # print("yelp resp")
+        # print(response["id"])
+        ids.append(business_id)
         names.append(response["name"])
         locations.append(response["location"])
         openhours = response["hours"]
@@ -268,7 +271,9 @@ def query_resturants(term, location, limit):
         "resturant_type_categories": resturant_type_categories,
         "pictures": pictures,
         "coordinates": coordinates,
+        "ids": ids,
     }
+
     # data = json.dumps(DATA)
     # print(DATA)
     return DATA
