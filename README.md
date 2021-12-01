@@ -17,6 +17,13 @@ As food accounts on instagram, facebook, twitter, etc are increasing we thought,
 
 ## Demonstration
 
+When you first load the page you are sent to the onboarding page where you select what type of user you are: regular user or merchant user. According to your choice, you are sent to the login page (not remembering quite if this is right) and will login using your google account. You then arrive to the discover page. This is where most of the socializing comes in. You will be able to see all of your friends post right after you log in. You have the functionality to post as well as comment on and like the post!
+
+As we move down the navigation bar at the top there is the Search Page where you can search for restaurants, posts, and users accordingly. 
+
+Next, we have the Maps page. You will be shown automatically restaurants nearby according to zipcode you entered when you first entered your information on the website. You want to check for restaurants in another location? No problem, enter it in the new zipcode and find restaurants near you!
+
+Finally, we have the profile page where you can add and delete users to be your friend, see your profile information like username, email, user ID number, and even your own personal posts. Not only that, we added an easy functionality to log out and delete your account for convenience!
 
 
 ## Requirements
