@@ -342,8 +342,21 @@ def post():
 def createAccount():
     wantedUsername = flask.request.args.get("username")
     zipcode = flask.request.args.get("zipcode")
-    # print("Printing zip code")
-    # print(zipcode)
+    # check if restaurant ID is valid first
+    yelpID = flask.request.args.get("yelpID")
+    print(yelpID)
+    if yelpID != "" and yelpID:
+        realRestuarant = get_buisness(yelpID)
+        if "error" in realRestuarant:
+            return {
+                "status": 200,
+                "newAccountCreated": False,
+                "message": "yelp restaurant id is invalid",
+            }
+        else:
+            current_user.yelp_restaurant_id = yelpID
+            db.session.commit()
+
     userExists = user.query.filter_by(username=wantedUsername).all()
     if userExists:
         print("existing username try again")
@@ -355,12 +368,6 @@ def createAccount():
     current_user.username = wantedUsername
     current_user.zip_code = zipcode
     db.session.commit()
-    yelpID = flask.request.args.get("yelpID")
-    if yelpID:
-        realRestuarant = get_buisness(yelpID)
-        if realRestuarant:
-            current_user.yelp_restaurant_id = yelpID
-            db.session.commit()
 
     status = 400
     newAccountCreated = False

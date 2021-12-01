@@ -126,11 +126,13 @@ const MerchantPage = () => {
   };
 
   function renderLeftSide() {
+    // add this in once we have the functionalty:
+    // <button type="button" id="CostumerPostsBtn"
+    // onClick={() => selectSubcategory('CostumerPosts')}>Costumer Posts</button>
     return (
       <div className="merchantLeftSide">
         <button type="button" id="GeneralBtn" onClick={() => selectSubcategory('General')}>General</button>
         <button type="button" id="YourPostsBtn" onClick={() => selectSubcategory('YourPosts')}>Your Posts</button>
-        <button type="button" id="CostumerPostsBtn" onClick={() => selectSubcategory('CostumerPosts')}>Costumer Posts</button>
         <button type="button" id="LogoutBtn" onClick={logout}>Logout</button>
       </div>
     );
@@ -165,6 +167,17 @@ const MerchantPage = () => {
   };
 
   function renderYourPosts() {
+    if (restaurantPosts.length === 0) {
+      return (
+        <div className="merchantRightSide">
+          <div className="merchantYourPosts">
+            <div>Your Posts</div>
+            <button type="button" onClick={onClickCreateNewPost}>New Post</button>
+          </div>
+          <div className="noPostsMessage">No posts</div>
+        </div>
+      );
+    }
     return (
       <div className="merchantRightSide">
         <div className="merchantYourPosts">
