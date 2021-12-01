@@ -594,14 +594,14 @@ def unlikeAPost():
     return flask.jsonify(
         {"likes": likeCount, "message": " unlike success", "status": 200}
     )
+  
 
-
-@app.route("/searchRestaurant", methods=["POST"])
-@login_required
-def search_restaurant():
-    rest_name = flask.request.get("resturant_name")
+def search_post():
+    rest_name = flask.request.json.get("searchInput")
     result_limit = 3
+    print(current_user.zip_code)
     yelp_results = query_resturants(rest_name, current_user.zip_code, result_limit)
+    print(yelp_results)
     resturant_data = []
     for x in range(len(yelp_results["names"])):
         rest_info = {
@@ -610,9 +610,10 @@ def search_restaurant():
             "opening": timeConvert(yelp_results["hours"][x][0]),
             "closing": timeConvert(yelp_results["hours"][x][1]),
             "phone_number": yelp_results["phone_numbers"][x],
-            "rating": yelp_results["ratingsgit "][x],
+            "rating": yelp_results["ratings"][x],
             "categories": yelp_results["resturant_type_categories"][x][0]["title"],
             "image": yelp_results["pictures"][x],
+            "ids": yelp_results["ids"][x],
         }
         resturant_data.append(rest_info)
     # return flask.render_template("", resturant_data = resturant_data)
@@ -1014,5 +1015,5 @@ def main():
 
 if __name__ == "__main__":
     app.run(
-        host=os.getenv("IP", "0.0.0.0"), port=int(os.getenv("PORT", 5000)), debug=True
-    )
+         host=os.getenv("IP", "0.0.0.0"), port=int(os.getenv("PORT", 5000)), debug=True
+     )
