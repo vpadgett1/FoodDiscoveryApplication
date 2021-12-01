@@ -3,7 +3,7 @@
 ## Made By
 
 
-## [Link to FoodMe Application](https://still-badlands-73263.herokuapp.com/)
+## [Link to FoodMe Application](http://pure-sea-44259.herokuapp.com/discover)
 
 This web application has been created and designed to become your new home for recieving food recommendations from your friends. Here you can follow your friends and watch as they post the latest places they have ate and whether they would recommend this resturant to places or no.
 
