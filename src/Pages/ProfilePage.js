@@ -1,4 +1,5 @@
 import '../App.css';
+import '../styling/ProfilePage.css';
 import React, {
   useState,
   useEffect,
@@ -6,6 +7,7 @@ import React, {
 import { Link, useNavigate } from 'react-router-dom';
 import Navigation from '../Components/Navigation';
 import Post from '../Components/Post';
+import Plus from '../assets/Plus.png';
 
 // this line will become const ProfilePage = (props) => { once there are props
 const ProfilePage = () => {
@@ -18,6 +20,7 @@ const ProfilePage = () => {
   const [name, setName] = useState('');
   const [profilePic, setProfilePic] = useState('');
   const [zipcode, setZipcode] = useState('');
+  const [id, setID] = useState('');
 
   const navigate = useNavigate();
 
@@ -41,6 +44,10 @@ const ProfilePage = () => {
             setZipcode(data.UserDATA.zipcode);
           }
 
+          if (data.UserDATA.id) {
+            setID(data.UserDATA.id);
+          }
+
           // get friends list
           if (data.UserFriendsList) {
             setFriendsList([...data.UserFriendsList]);
@@ -62,8 +69,6 @@ const ProfilePage = () => {
 
   useEffect(() => {
     getUserProfileInformation();
-    // setFriendsList(dummyFriendsListData);
-    // setUserFavoriteRestaurants([...FavoriteRestaurantDummyData]);
   }, []);
 
   function changeDisplay(buttonPressed) {
@@ -116,26 +121,32 @@ const ProfilePage = () => {
     await fetch(`/getUserInfoByEmail?email=${searchFriendField}`)
       .then((response) => response.json())
       .then((data) => {
-        console.log(data);
-        // create friend
-        const addFriend = {
-          user_id: data.id,
-        };
-
         // add friend in database
-        fetch(`/addFollower?follower_id=${addFriend.user_id}`)
+        fetch(`/addFollower?follower_id=${data.id}`)
           .then((response) => response.json())
           .then((result) => {
             // update state
             if (result.status === 200) {
-              setFriendsList([...friendsList, addFriend]);
+              setFriendsList([...friendsList, result.friendData]);
             }
           }).catch((error) => console.log(error));
       }).catch((error) => console.log(error));
   }
 
+  // log out the user and send them back to the landing page
   const logout = async () => {
     await fetch('/logout')
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+        navigate('/', { replace: true });
+      }).catch((error) => console.log(error));
+  };
+
+  const deleteAccount = async () => {
+    await fetch('/deleteAccount', {
+      method: 'POST',
+    })
       .then((response) => response.json())
       .then((data) => {
         console.log(data);
@@ -146,11 +157,12 @@ const ProfilePage = () => {
   function renderLeftSide() {
     return (
       <div id="profilePageLeftSide">
-        <button type="button" onClick={() => changeDisplay('General')} id="GeneralButton">General</button>
-        <button type="button" onClick={() => changeDisplay('FriendsList')} id="FriendsListButton">Friends List</button>
-        <button type="button" onClick={() => changeDisplay('FavoriteRestaurants')} id="FavRestaurantButton">Favorite Restaurants</button>
-        <button type="button" onClick={() => changeDisplay('YourPosts')} id="YourPostsButton">Your Posts</button>
+        <button type="button" onClick={() => changeDisplay('General')} id="GeneralButton" className={currentDisplay === 'General' ? 'selectedSubcategory' : ''}>General</button>
+        <button type="button" onClick={() => changeDisplay('FriendsList')} id="FriendsListButton" className={currentDisplay === 'FriendsList' ? 'selectedSubcategory' : ''}>Friends List</button>
+        <button type="button" onClick={() => changeDisplay('FavoriteRestaurants')} id="FavRestaurantButton" className={currentDisplay === 'FavoriteRestaurants' ? 'selectedSubcategory' : ''}>Favorite Restaurants</button>
+        <button type="button" onClick={() => changeDisplay('YourPosts')} id="YourPostsButton" className={currentDisplay === 'YourPosts' ? 'selectedSubcategory' : ''}>Your Posts</button>
         <button type="button" onClick={logout} id="LogoutButton">Logout</button>
+        <button type="button" onClick={deleteAccount} id="DeleteButton">Delete Account</button>
       </div>
     );
   }
@@ -158,22 +170,22 @@ const ProfilePage = () => {
   function renderGeneral() {
     return (
       <div id="GeneralSubcategory">
-        <div>General Rendered</div>
         <img src={profilePic} alt="profile pic" />
-        <div>
-          Name of User:
-          {' '}
-          {name}
+        <div className="generalRow">
+          <div className="left">Username</div>
+          <div className="right">{name}</div>
         </div>
-        <div>
-          Email of User:
-          {' '}
-          {email}
+        <div className="generalRow">
+          <div className="left">Email</div>
+          <div className="right">{email}</div>
         </div>
-        <div>
-          Zip Code:
-          {' '}
-          {zipcode}
+        <div className="generalRow">
+          <div className="left">Zip Code</div>
+          <div className="right">{zipcode}</div>
+        </div>
+        <div className="generalRow">
+          <div className="left">User ID:</div>
+          <div className="right">{id}</div>
         </div>
       </div>
     );
@@ -183,19 +195,31 @@ const ProfilePage = () => {
   function renderFriendsList() {
     return (
       <div id="FriendsListSubcategory">
-        <div>Friends List Rendered</div>
-        <input type="text" id="inputFriendID" placeholder="enter friend ID" />
-        <button type="button" onClick={() => addToFriendsList()} id="addFriendButton">Add Friend</button>
+        <div className="friendsListTitle">Friends List</div>
+        <div className="addFriendSearch">
+          <div>Add Friend</div>
+          <div>
+            <input type="text" id="inputFriendID" placeholder="enter friend ID" />
+            <button type="button" onClick={() => addToFriendsList()} id="addFriendButton">
+              <img src={Plus} alt="plus" />
+            </button>
+          </div>
+        </div>
         {friendsList.map((x) => (
-          <>
-            <Link
-              to="/userprofile"
-              state={{ userId: x.user_id }}
-            >
-              {x.user_id}
-            </Link>
-            <button type="button" onClick={() => deleteFromFriendsList(x.user_id)}>Delete</button>
-          </>
+          <div className="friendsListFriend">
+            <div className="friendName">
+              <img src={x.profile_pic} alt="friend profile" />
+              <Link
+                to="/userprofile"
+                state={{ userId: x.user_id }}
+              >
+                {x.name}
+              </Link>
+            </div>
+            <div className="friendButton">
+              <button type="button" onClick={() => deleteFromFriendsList(x.user_id)}>Delete</button>
+            </div>
+          </div>
         ))}
       </div>
     );
@@ -222,13 +246,20 @@ const ProfilePage = () => {
   function renderYourPosts() {
     return (
       <div id="YourPostsSubcategory">
-        <div>Your Posts Rendered</div>
         {userPosts && userPosts.map((x) => (
           <Post
+            postID={x.id}
             AuthorID={x.AuthorID}
             postText={x.postText}
             postTitle={x.postTitle}
             postLikes={x.postLikes}
+            profilePic={x.profilePic}
+            postComments={x.post_comments}
+            currentUserID={id}
+            currentUserProfilePic={profilePic}
+            currentUserName={name}
+            AuthorName={x.AuthorName}
+            ImageData={x.post_picture}
           />
         ))}
       </div>
@@ -250,11 +281,9 @@ const ProfilePage = () => {
     }
   }
 
-  // TODO: Render component
   return (
     <>
       <Navigation />
-      <div>Profile Page</div>
       <div className="mainPageBody">
         {renderLeftSide()}
         {renderBody()}

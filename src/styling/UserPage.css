@@ -1,0 +1,67 @@
+/* imports */
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;700&display=swap');
+
+/* User Page */
+#userPage {
+  width: 100%;
+  height: 100%;
+  font-family: 'Open Sans', sans-serif;
+}
+
+.userPage {
+  display: inline-flex;
+  width: 100%;
+  height: calc(100% - 45px);
+}
+
+.leftSideUserProfile {
+  width: 30%;
+  text-align: center;
+}
+
+.basicInfo {
+  margin: 50px auto;
+  width: min-content;
+  background-color: white;
+  padding: 50px 40px;
+  border-radius: 30px;
+}
+
+.basicInfo img {
+  height: 175px;
+  border-radius: 90px;
+}
+
+.basicInfo .userName {
+  font-size: 26px;
+  font-weight: 700;
+  padding-top: 12px;
+}
+
+.leftSideUserProfile button {
+  font-family: 'Open Sans', sans-serif;
+  background-color: #ff9921;
+  color: white;
+  font-size: 20px;
+  border: none;
+  padding: 6px 30px;
+  border-radius: 30px;
+  font-weight: 700;
+}
+
+.leftSideUserProfile button:hover {
+  cursor: pointer;
+  background-color: #ffe7ca;
+  color: #ff9921;
+}
+
+.rightSideUserProfile {
+  width: 70%;
+  overflow: scroll;
+}
+
+.rightSideTitle {
+  font-size: 26px;
+  font-weight: 700;
+  padding: 16px;
+}
