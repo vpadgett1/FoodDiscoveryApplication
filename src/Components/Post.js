@@ -150,7 +150,7 @@ const Post = (props) => {
         method: 'POST',
       })
         .then((response) => response.json())
-        .then(() => setNumLiked(numLiked - 1))
+        .then(() => setNumLiked(numLiked + 1))
         .catch((error) => console.log(error));
     }
     setLiked(!liked);

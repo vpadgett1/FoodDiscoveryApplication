@@ -25,7 +25,7 @@ from flask_oauthlib.client import OAuth, OAuthException
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import update
 from dotenv import load_dotenv, find_dotenv
-from yelpInfo import query_resturants, query_one_resturant, query_api
+from yelpInfo import get_buisness, query_resturants, query_one_resturant, query_api
 
 # from sqlalchemy_imageattach.entity import entity
 # from sqlalchemy_imageattach.context import store_context
@@ -357,8 +357,10 @@ def createAccount():
     db.session.commit()
     yelpID = flask.request.args.get("yelpID")
     if yelpID:
-        current_user.yelp_restaurant_id = yelpID
-        db.session.commit()
+        realRestuarant = get_buisness(yelpID)
+        if realRestuarant:
+            current_user.yelp_restaurant_id = yelpID
+            db.session.commit()
 
     status = 400
     newAccountCreated = False
@@ -431,7 +433,7 @@ def deleteAccount():
     return {"status": status}
 
 
-@app.route("/createPost", methods=["POST"])
+@app.route("/createPost", methods=["POST", "GET"])
 @login_required
 def createPost():
     AuthorID = flask.request.args.get("AuthorID")
@@ -500,7 +502,7 @@ def searchPost():
     return flask.jsonify(postsData)
 
 
-@app.route("/createComment")
+@app.route("/createComment", methods=["POST", "GET"])
 @login_required
 def createComment():
     AuthorID = flask.request.args.get("AuthorID")
@@ -523,18 +525,9 @@ def createComment():
 def likeAPost():
     postId = flask.request.args.get("PostID")
     authorId = flask.request.args.get("AuthorID")
-    print("printing outputs")
-    print(postId)
-    print(authorId)
     postInfo = user_post.query.filter_by(id=postId, author_id=authorId).first()
-    specificPostLikes = postInfo.post_likes
-    specificPostLikes += 1
-    updateLikes = (
-        user_post.update()
-        .where(user_post.c.author_id == authorId and user_post.c.post_id == postId)
-        .values(post_likes=specificPostLikes)
-    )
-    db.execute(updateLikes)
+    postInfo.post_likes += 1
+    db.session.commit()
     likeCount = postInfo.post_likes
     return flask.jsonify({"likes": likeCount, "message": "like success", "status": 200})
 
@@ -544,18 +537,9 @@ def likeAPost():
 def unlikeAPost():
     postId = flask.request.args.get("PostID")
     authorId = flask.request.args.get("AuthorID")
-    print("printing outputs")
-    print(postId)
-    print(authorId)
     postInfo = user_post.query.filter_by(id=postId, author_id=authorId).first()
-    specificPostLikes = postInfo.post_likes
-    specificPostLikes -= 1
-    updateLikes = (
-        user_post.update()
-        .where(user_post.c.author_id == authorId and user_post.c.post_id == postId)
-        .values(post_likes=specificPostLikes)
-    )
-    db.execute(updateLikes)
+    postInfo.post_likes -= 1
+    db.session.commit()
     likeCount = postInfo.post_likes
     return flask.jsonify(
         {"likes": likeCount, "message": " unlike success", "status": 200}
