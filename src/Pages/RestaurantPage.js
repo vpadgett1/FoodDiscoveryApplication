@@ -1,21 +1,13 @@
 /* eslint-disable react/no-unused-prop-types */
 import '../App.css';
+import '../styling/RestaurantPage.css';
 import React, {
-  // useState,
   useEffect, useState,
-  // useState,
 } from 'react';
-// import $ from 'jquery';s
-// import { useLocation } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import Navigation from '../Components/Navigation';
-// import TempRestaurantBackground from '../assets/TempRestaurantBackgroundImg.png';
 import FiveStars from '../assets/yelp_stars/regular_5.png';
-import TempMap from '../assets/TempMap.png';
-// import Sandwiches from '../assets/Sandwiches.png';
-// import Post from '../Components/Post';
 
-// this line will become const RestaurantPage = (props) => { once there are props
 const RestaurantPage = () => {
   // set state
   const [restaurantName, setRestaurantName] = useState(null);
@@ -59,6 +51,7 @@ const RestaurantPage = () => {
       setAddress(data.data.address);
       setImages(data.data.photos[0]);
       setMainImage(data.data.img_urls);
+      setFollowingRestaurant(data.data.isFollowing);
     });
   }
   function addFollow() {
@@ -71,11 +64,6 @@ const RestaurantPage = () => {
     }).then((response) => response.json()).then((data) => {
       console.log(data);
       console.log(data.status);
-      // if (data.status === 200) {
-      //   setFollowingRestaurant(true);
-      // } else {
-      //   setFollowingRestaurant(false);
-      // }
     });
   }
   function removeFollow() {
@@ -197,7 +185,9 @@ const RestaurantPage = () => {
         </div>
         <div className="categories">{categories}</div>
         <div className="phoneNumber">{phoneNumber}</div>
-        <button type="button" className="followRestaurantButton" id="followRestaurantButton" onClick={onClickFollowButton}>Follow Restaurant</button>
+        <button type="button" className="followRestaurantButton" id="followRestaurantButton" onClick={onClickFollowButton}>
+          {followingRestaurant ? 'Unfollow' : 'Follow'}
+        </button>
       </div>
       <div className="restaurantInfo2">
         <div className="hours">
@@ -215,7 +205,6 @@ const RestaurantPage = () => {
             Address:
             {address}
           </p>
-          <img src={TempMap} alt="map" />
         </div>
       </div>
       <div className="subTitle">Images</div>

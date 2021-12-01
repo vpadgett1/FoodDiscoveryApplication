@@ -104,10 +104,7 @@ def profile():
             }
         )
 
-    UserFavoriteRestaurants = current_user.favs
-    UserFavRestaurantsList = []
-    for x in range(len(UserFavoriteRestaurants)):
-        UserFavRestaurantsList.append(UserFavoriteRestaurants[x].Restaurant)
+    UserFavRestaurantsList = getFavoriteRestaurants(current_user.id)
 
     UserPostsList = getPosts(current_user.id)
 
@@ -289,6 +286,15 @@ def restaurantprofile():
         photos.append(rest_info["photos"])
         phone_number.append(rest_info["phone_number"])
         url.append(rest_info["url"])
+
+        # check if user is following the restaurant
+        isFollowingCheck = favorite_restraunts.query.filter_by(
+            user_id=current_user.id, yelp_restraunt_id=restaurant_id
+        ).all()
+        isFollowing = False
+        if isFollowingCheck:
+            isFollowing = True
+
         DATA = {
             "name": name,
             "img_urls": img_url,
@@ -301,6 +307,7 @@ def restaurantprofile():
             "phone": phone_number,
             "categories": categories,
             "photos": photos,
+            "isFollowing": isFollowing,
         }
 
         return flask.jsonify({"data": DATA})
@@ -987,7 +994,6 @@ def getPosts(userID):
     posts = []
     author = user.query.filter_by(id=userID).first()
     query_posts = user_post.query.filter_by(user_id=userID).all()
-    print(query_posts)
     for x in range(len(query_posts)):
         postComments = post_comments.query.filter_by(post_id=query_posts[x].id).all()
         postCommentsList = []
@@ -1018,6 +1024,21 @@ def getPosts(userID):
             }
         )
     return posts
+
+
+def getFavoriteRestaurants(userID):
+    getRestaurants = favorite_restraunts.query.filter_by(user_id=userID).all()
+
+    UserFavRestaurantsList = []
+    for x in range(len(getRestaurants)):
+        UserFavRestaurantsList.append(
+            {
+                "restaurant_name": getRestaurants[x].restaurant_name,
+                "restaurant_id": getRestaurants[x].yelp_restraunt_id,
+            }
+        )
+
+    return UserFavRestaurantsList
 
 
 @app.route("/")
