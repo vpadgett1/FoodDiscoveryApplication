@@ -64,7 +64,7 @@ def profile():
         "name": current_user.username,
         "email": current_user.email,
         "profilePic": current_user.profile_pic,
-        "zipcode": current_user.zipCode,
+        "zipcode": current_user.zip_code,
         "yelpRestaurantID": current_user.yelp_restaurant_id,
     }
     UserFriends = current_user.friends
@@ -167,8 +167,8 @@ def authorized():
     # if user already exists, send straight to their home page
     if previousUser:
         # check if user finished onboarding
-        print(current_user.zipCode)
-        if current_user.zipCode == None:
+        print(current_user.zip_code)
+        if current_user.zip_code == None:
             return flask.redirect(flask.url_for("onboarding"))
         # if merchant user, send to merchant homepage
         # otherwise, regular
@@ -376,7 +376,7 @@ def createAccount():
     zipcode = flask.request.args.get("zipcode")
     print("Printing zip code")
     print(zipcode)
-    current_user.zipCode = zipcode
+    current_user.zip_code = zipcode
     db.session.commit()
     yelpID = flask.request.args.get("yelpID")
     if yelpID:
@@ -392,7 +392,7 @@ def createAccount():
                 username=current_user.username, email=current_user.email
             )
             .first()
-            .zipCode
+            .zip_code
             == zipcode
         ):
             status = "success"
@@ -444,9 +444,11 @@ def createComment():
 @app.route("/search", methods=["POST"])
 @login_required
 def search_post():
-    rest_name = flask.request.get("resturant_name")
+    rest_name = flask.request.json.get("searchInput")
     result_limit = 3
-    yelp_results = query_resturants(rest_name, current_user.zipCode, result_limit)
+    print(current_user.zip_code)
+    yelp_results = query_resturants(rest_name, current_user.zip_code, result_limit)
+    print(yelp_results)
     resturant_data = []
     for x in range(len(yelp_results["names"])):
         rest_info = {
@@ -455,9 +457,10 @@ def search_post():
             "opening": timeConvert(yelp_results["hours"][x][0]),
             "closing": timeConvert(yelp_results["hours"][x][1]),
             "phone_number": yelp_results["phone_numbers"][x],
-            "rating": yelp_results["ratingsgit "][x],
+            "rating": yelp_results["ratings"][x],
             "categories": yelp_results["resturant_type_categories"][x][0]["title"],
             "image": yelp_results["pictures"][x],
+            "ids": yelp_results["ids"][x],
         }
         resturant_data.append(rest_info)
     # return flask.render_template("", resturant_data = resturant_data)
@@ -649,7 +652,7 @@ def getUserInfoByEmail():
         "name": otherUser.username,
         "email": otherUser.email,
         "profilePic": otherUser.profile_pic,
-        "zipcode": otherUser.zipCode,
+        "zipcode": otherUser.zip_code,
     }
 
     return UserDATA
@@ -666,7 +669,7 @@ def getDetailedUserInfo():
         "name": otherUser.username,
         "email": otherUser.email,
         "profilePic": otherUser.profile_pic,
-        "zipcode": otherUser.zipCode,
+        "zipcode": otherUser.zip_code,
     }
 
     UserFriends = otherUser.friends
@@ -744,5 +747,5 @@ def main():
 
 if __name__ == "__main__":
     app.run(
-        host=os.getenv("IP", "127.0.0.1"), port=int(os.getenv("PORT", 5000)), debug=True
-    )
+         host=os.getenv("IP", "0.0.0.0"), port=int(os.getenv("PORT", 5000)), debug=True
+     )
