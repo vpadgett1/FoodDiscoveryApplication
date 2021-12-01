@@ -217,7 +217,26 @@ const MerchantPage = () => {
       })
         .then((response) => response.json())
         .then((result) => {
-          console.log(result);
+          // show the new post
+          const { postID, renderFile } = result;
+          // we want to add this newly created post to the top of the page
+          // so the user knows their post is rendered
+          const p = {
+            AuthorID: userID,
+            postText: body,
+            postTitle: title,
+            postLikes: 0,
+            id: postID,
+            profilePic,
+            post_comments: [],
+            currentUserID: userID,
+            currentUserProfilePic: profilePic,
+            currentUserName: name,
+            AuthorName: name,
+            post_picture: renderFile,
+          };
+          setRestaurantPosts([p, ...restaurantPosts]);
+
           setCurrentSub('YourPosts');
           // set all character lengths back to 0
           setTitleCharLength(0);
