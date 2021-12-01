@@ -423,7 +423,7 @@ def deleteAccount():
     return {"status": status}
 
 
-@app.route("/createPost", methods=["POST"])
+@app.route("/createPost", methods=["POST", "GET"])
 @login_required
 def createPost():
     AuthorID = flask.request.args.get("AuthorID")
@@ -515,18 +515,9 @@ def createComment():
 def likeAPost():
     postId = flask.request.args.get("PostID")
     authorId = flask.request.args.get("AuthorID")
-    print("printing outputs")
-    print(postId)
-    print(authorId)
     postInfo = user_post.query.filter_by(id=postId, author_id=authorId).first()
-    specificPostLikes = postInfo.post_likes
-    specificPostLikes += 1
-    updateLikes = (
-        update(user_post)
-        .where(user_post.c.author_id == authorId and user_post.c.post_id == postId)
-        .values(post_likes=specificPostLikes)
-    )
-    db.execute(updateLikes)
+    postInfo.post_likes += 1
+    db.session.commit()
     likeCount = postInfo.post_likes
     return flask.jsonify({"likes": likeCount, "message": "like success", "status": 200})
 
@@ -536,18 +527,9 @@ def likeAPost():
 def unlikeAPost():
     postId = flask.request.args.get("PostID")
     authorId = flask.request.args.get("AuthorID")
-    print("printing outputs")
-    print(postId)
-    print(authorId)
     postInfo = user_post.query.filter_by(id=postId, author_id=authorId).first()
-    specificPostLikes = postInfo.post_likes
-    specificPostLikes -= 1
-    updateLikes = (
-        update(user_post)
-        .where(user_post.c.author_id == authorId and user_post.c.post_id == postId)
-        .values(post_likes=specificPostLikes)
-    )
-    db.execute(updateLikes)
+    postInfo.post_likes -= 1
+    db.session.commit()
     likeCount = postInfo.post_likes
     return flask.jsonify(
         {"likes": likeCount, "message": " unlike success", "status": 200}
@@ -969,5 +951,5 @@ def main():
 
 if __name__ == "__main__":
     app.run(
-        host=os.getenv("IP", "0.0.0.0"), port=int(os.getenv("PORT", 5000)), debug=True
+        host=os.getenv("IP", "127.0.0.1"), port=int(os.getenv("PORT", 5000)), debug=True
     )
