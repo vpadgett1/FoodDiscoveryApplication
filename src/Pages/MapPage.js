@@ -1,20 +1,14 @@
 import '../App.css';
+import '../styling/MapPage.css';
 import React, {
-  useState,
-  useEffect, useRef,
+  useState, useRef,
 } from 'react';
 import {
   GoogleMap, withScriptjs, withGoogleMap, Marker, InfoWindow,
 } from 'react-google-maps';
-// import { Link } from 'react-router-dom';
-// import ReactDOMServer from 'react-dom/server';
 import PropTypes from 'prop-types';
 
 import Navigation from '../Components/Navigation';
-
-// import PropTypes from 'prop-types';
-
-// this line will become const MapPage = (props) => { once there are props
 
 const MapPage = () => {
   // set state
@@ -53,37 +47,37 @@ const MapPage = () => {
     });
   }
 
-  // deconstruct props
-  // const [props] = props;
-
-  // TODO: fetch data from backend
-  useEffect(() => {
-
-  }, []);
-
-  // TODO: Render component
-
   return (
     <>
       <Navigation />
-      <div style={{ position: 'absolute', width: '100vw', height: '100vh' }}>
-        <h1>Map</h1>
-        <div className="form">
+      <div className="MapPage">
+        <div className="SearchRestaurantsForm">
           <form>
-            Zipcode:
-            <input type="text" ref={textInput} name="zipcode" />
-            <input type="submit" value="Search" onClick={onSubmit} />
+            <div className="searchZipCode">
+              <input type="text" ref={textInput} name="zipcode" placeholder="zipcode" />
+              <input type="submit" onClick={onSubmit} value="" />
+            </div>
           </form>
         </div>
         <div style={{
-          width: '100vw', height: '100vh', position: 'absolute',
+          width: '100vw', height: 'calc(100% - 50px)', position: 'absolute',
         }}
         >
           <WrappedMap
             googleMapURL={`https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=geometry,drawing,places&key=${process.env.REACT_APP_GOOGLE_KEY}`}
-            loadingElement={<div style={{ height: '100%', width: '100%', left: '20%' }} />}
-            containerElement={<div style={{ height: '100%', width: '100%', left: '20%' }} />}
-            mapElement={<div style={{ height: '70%', width: '70%', left: '20%' }} />}
+            loadingElement={<div style={{ height: 'calc(100% - 50px)', width: '100%', left: '30%' }} />}
+            containerElement={(
+              <div style={{
+                height: '100%', width: '100%', left: '30%', top: '-50px',
+              }}
+              />
+)}
+            mapElement={(
+              <div style={{
+                height: 'calc(100% + 50px)', width: '70%', left: '30%', top: '-50px',
+              }}
+              />
+)}
             restaurantNames={restaurantNames}
             restaurantImages={restaurantImages}
             restaurantRatings={restaurantRatings}
@@ -113,10 +107,6 @@ function Map(props) {
     restaurantOpening, restaurantClosing, restaurantId,
   } = props;
 
-  // function renderMarkerContent(id, restname) {
-  //   return ReactDOMServer.renderToString(
-  // <Link to="/restaurantprofile" state={{ restaurantID: id }}>{restname}</Link>);
-  // }
   function setID(id) {
     sessionStorage.setItem('restaurantID', id);
   }
@@ -124,13 +114,19 @@ function Map(props) {
     sessionStorage.clear();
   }
   if (!restaurantCoords) {
-    return (<><h1>Enter zip</h1></>);
+    return (
+      <div className="searchResults">
+        <ul>
+          <li>Enter your zip code to begin</li>
+        </ul>
+      </div>
+    );
   }
   return (
-    <>
+    <div className="MapPageResults">
       <div className="searchResults">
         <ul style={{
-          listStyle: 'none', position: 'absolute', top: '20%', marginRight: '200px',
+          listStyle: 'none',
         }}
         >
           {restaurantNames.map((names, index) => (
@@ -173,12 +169,8 @@ function Map(props) {
               clearID();
             }}
           >
-            {/* {console.log(selectedRestaurantId)} */}
             <div>
-              {/* {renderMarkerContent(selectedRestaurantId, selectedRestaurantName)} */}
               <a href="/restaurantprofile" onClick={setID(selectedRestaurantId)}><h2>{selectedRestaurantName}</h2></a>
-              {/* <Link to="/restaurantprofile" state={{ restaurantID: selectedRestaurantId }}>
-              <h2>{selectedRestaurantName}</h2></Link> */}
               <img style={{ width: '80%', height: '60%' }} alt="restaurantimage" src={selectedRestaurantImage} />
               <p>
                 Rating:
@@ -199,33 +191,32 @@ function Map(props) {
           )}
         </ul>
       </div>
-      <GoogleMap
-        defaultZoom={10}
-        defaultCenter={{ lat: 33.748997, lng: -84.387985 }}
-      >
-        {/* {console.log(restaurantAddress)} */}
-        { restaurantCoords.map((coordinates, index) => (
-          <Marker
-            key={index}
-            position={{
-              lat: coordinates.latitude,
-              lng: coordinates.longitude,
-            }}
-            onClick={() => {
-              setSelectedRestaurant(coordinates);
-              setSelectedRestaurantName(restaurantNames[index]);
-              setSelectedRestaurantImage(restaurantImages[index]);
-              setSelectedRestaurantRating(restaurantRatings[index]);
-              setSelectedRestaurantAddress(restaurantAddress[index].display_address);
-              setSelectedRestaurantOpening(restaurantOpening[index]);
-              setSelectedRestaurantClosing(restaurantClosing[index]);
-              setSelectedRestaurantId(restaurantId[index]);
-              // console.log(restaurantAddress);
-            }}
-          />
-        ))}
+      <div className="GoogleMap">
+        <GoogleMap
+          defaultZoom={10}
+          defaultCenter={{ lat: 33.748997, lng: -84.387985 }}
+        >
+          { restaurantCoords.map((coordinates, index) => (
+            <Marker
+              key={index}
+              position={{
+                lat: coordinates.latitude,
+                lng: coordinates.longitude,
+              }}
+              onClick={() => {
+                setSelectedRestaurant(coordinates);
+                setSelectedRestaurantName(restaurantNames[index]);
+                setSelectedRestaurantImage(restaurantImages[index]);
+                setSelectedRestaurantRating(restaurantRatings[index]);
+                setSelectedRestaurantAddress(restaurantAddress[index].display_address);
+                setSelectedRestaurantOpening(restaurantOpening[index]);
+                setSelectedRestaurantClosing(restaurantClosing[index]);
+                setSelectedRestaurantId(restaurantId[index]);
+              }}
+            />
+          ))}
 
-        {selectedRestaurant && (
+          {selectedRestaurant && (
           <InfoWindow
             position={{
               lat: selectedRestaurant.latitude,
@@ -243,12 +234,8 @@ function Map(props) {
               clearID();
             }}
           >
-            {/* {console.log(selectedRestaurantId)}   */}
             <div>
-              {/* {renderMarkerContent(selectedRestaurantId, selectedRestaurantName)} */}
               <a href="/restaurantprofile" id="sendrestID" restaurantID={selectedRestaurantId}><h2>{selectedRestaurantName}</h2></a>
-              {/* <Link to="/restaurantprofile" state={{ restaurantID: selectedRestaurantId }}>
-              <h2>{selectedRestaurantName}</h2></Link> */}
               <img style={{ width: '80%', height: '60%' }} alt="restaurantimage" src={selectedRestaurantImage} />
               <p>
                 Rating:
@@ -266,9 +253,10 @@ function Map(props) {
               </p>
             </div>
           </InfoWindow>
-        )}
-      </GoogleMap>
-    </>
+          )}
+        </GoogleMap>
+      </div>
+    </div>
   );
 }
 const WrappedMap = withScriptjs(withGoogleMap(Map));

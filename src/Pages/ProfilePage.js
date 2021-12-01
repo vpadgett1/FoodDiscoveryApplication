@@ -199,7 +199,7 @@ const ProfilePage = () => {
         <div className="addFriendSearch">
           <div>Add Friend</div>
           <div>
-            <input type="text" id="inputFriendID" placeholder="enter friend ID" />
+            <input type="text" id="inputFriendID" placeholder="enter friend email" />
             <button type="button" onClick={() => addToFriendsList()} id="addFriendButton">
               <img src={Plus} alt="plus" />
             </button>

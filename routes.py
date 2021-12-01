@@ -25,7 +25,13 @@ from flask_oauthlib.client import OAuth, OAuthException
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import update
 from dotenv import load_dotenv, find_dotenv
-from yelpInfo import get_buisness, query_resturants, query_one_resturant, query_api
+from yelpInfo import (
+    get_buisness,
+    get_buisness_from_yelp,
+    query_resturants,
+    query_one_resturant,
+    query_api,
+)
 
 # from sqlalchemy_imageattach.entity import entity
 # from sqlalchemy_imageattach.context import store_context
@@ -47,6 +53,7 @@ login_manager.login_view = "login"
 login_manager.init_app(app)
 
 YELP_API_KEY = os.environ["YELP_API_KEY"]
+
 
 @login_manager.user_loader
 def load_user(user_name):
@@ -206,13 +213,14 @@ def discover():
 def merchant():
     return flask.render_template("index.html")
 
+
 @app.route("/restaurantprofile", methods=["GET", "POST"])
 def restaurantprofile():
 
     if flask.request.method == "POST":
-        
+
         restaurant_id = flask.request.json.get("restID")
-        business_results = get_business(YELP_API_KEY, restaurant_id)
+        business_results = get_buisness_from_yelp(YELP_API_KEY, restaurant_id)
         # print(business_results)
 
         name = []
@@ -238,28 +246,38 @@ def restaurantprofile():
                 "categories": business_results["categories"][0]["title"],
                 "image": business_results["image_url"],
                 "photos": business_results["photos"],
-                "url":business_results["url"],
+                "url": business_results["url"],
             }
         for y in range(len(business_results["hours"][0]["open"])):
             open_hours_info = {
-                "Sunday":timeConvert(business_results["hours"][0]["open"][y]["start"]),
-                "Monday":timeConvert(business_results["hours"][0]["open"][y]["start"]),
-                "Tuesday":timeConvert(business_results["hours"][0]["open"][y]["start"]),
-                "Wednesday":timeConvert(business_results["hours"][0]["open"][y]["start"]),
-                "Thursday":timeConvert(business_results["hours"][0]["open"][y]["start"]),
-                "Friday":timeConvert(business_results["hours"][0]["open"][y]["start"]),
-                "Saturday":timeConvert(business_results["hours"][0]["open"][y]["start"]),
-                }
+                "Sunday": timeConvert(business_results["hours"][0]["open"][y]["start"]),
+                "Monday": timeConvert(business_results["hours"][0]["open"][y]["start"]),
+                "Tuesday": timeConvert(
+                    business_results["hours"][0]["open"][y]["start"]
+                ),
+                "Wednesday": timeConvert(
+                    business_results["hours"][0]["open"][y]["start"]
+                ),
+                "Thursday": timeConvert(
+                    business_results["hours"][0]["open"][y]["start"]
+                ),
+                "Friday": timeConvert(business_results["hours"][0]["open"][y]["start"]),
+                "Saturday": timeConvert(
+                    business_results["hours"][0]["open"][y]["start"]
+                ),
+            }
         for z in range(len(business_results["hours"][0]["open"])):
             close_hours_info = {
-                "Sunday":timeConvert(business_results["hours"][0]["open"][z]["end"]),
-                "Monday":timeConvert(business_results["hours"][0]["open"][z]["end"]),
-                "Tuesday":timeConvert(business_results["hours"][0]["open"][z]["end"]),
-                "Wednesday":timeConvert(business_results["hours"][0]["open"][z]["end"]),
-                "Thursday":timeConvert(business_results["hours"][0]["open"][z]["end"]),
-                "Friday":timeConvert(business_results["hours"][0]["open"][z]["end"]),
-                "Saturday":timeConvert(business_results["hours"][0]["open"][z]["end"]),
-                }
+                "Sunday": timeConvert(business_results["hours"][0]["open"][z]["end"]),
+                "Monday": timeConvert(business_results["hours"][0]["open"][z]["end"]),
+                "Tuesday": timeConvert(business_results["hours"][0]["open"][z]["end"]),
+                "Wednesday": timeConvert(
+                    business_results["hours"][0]["open"][z]["end"]
+                ),
+                "Thursday": timeConvert(business_results["hours"][0]["open"][z]["end"]),
+                "Friday": timeConvert(business_results["hours"][0]["open"][z]["end"]),
+                "Saturday": timeConvert(business_results["hours"][0]["open"][z]["end"]),
+            }
         opening.append(open_hours_info)
         closing.append(close_hours_info)
         name.append(rest_info["name"])
@@ -280,20 +298,14 @@ def restaurantprofile():
             "opening": opening,
             "closing": closing,
             "url": url,
-            "phone":phone_number,
-            "categories":categories,
-            "photos":photos,
+            "phone": phone_number,
+            "categories": categories,
+            "photos": photos,
         }
 
-        return flask.jsonify({"data":DATA})
+        return flask.jsonify({"data": DATA})
     else:
         return flask.render_template("index.html")
-
-
-@app.route("/restaurantprofile")
-@login_required
-def restaurantprofile():
-    return flask.render_template("index.html")
 
 
 @app.route("/map", methods=["GET", "POST"])
@@ -358,7 +370,7 @@ def map():
         # print(restaurant_results)
 
         return flask.jsonify({"data": DATA})
-        
+
     else:
         return flask.render_template("index.html")
 
@@ -392,8 +404,21 @@ def post():
 def createAccount():
     wantedUsername = flask.request.args.get("username")
     zipcode = flask.request.args.get("zipcode")
-    # print("Printing zip code")
-    # print(zipcode)
+    # check if restaurant ID is valid first
+    yelpID = flask.request.args.get("yelpID")
+    print(yelpID)
+    if yelpID != "" and yelpID:
+        realRestuarant = get_buisness(yelpID)
+        if "error" in realRestuarant:
+            return {
+                "status": 200,
+                "newAccountCreated": False,
+                "message": "yelp restaurant id is invalid",
+            }
+        else:
+            current_user.yelp_restaurant_id = yelpID
+            db.session.commit()
+
     userExists = user.query.filter_by(username=wantedUsername).all()
     if userExists:
         print("existing username try again")
@@ -405,12 +430,6 @@ def createAccount():
     current_user.username = wantedUsername
     current_user.zip_code = zipcode
     db.session.commit()
-    yelpID = flask.request.args.get("yelpID")
-    if yelpID:
-        realRestuarant = get_buisness(yelpID)
-        if realRestuarant:
-            current_user.yelp_restaurant_id = yelpID
-            db.session.commit()
 
     status = 400
     newAccountCreated = False
@@ -594,8 +613,9 @@ def unlikeAPost():
     return flask.jsonify(
         {"likes": likeCount, "message": " unlike success", "status": 200}
     )
-  
 
+
+@app.route("/search", methods=["POST"])
 def search_post():
     rest_name = flask.request.json.get("searchInput")
     result_limit = 3
@@ -1015,5 +1035,5 @@ def main():
 
 if __name__ == "__main__":
     app.run(
-         host=os.getenv("IP", "0.0.0.0"), port=int(os.getenv("PORT", 5000)), debug=True
-     )
+        host=os.getenv("IP", "0.0.0.0"), port=int(os.getenv("PORT", 5000)), debug=True
+    )
