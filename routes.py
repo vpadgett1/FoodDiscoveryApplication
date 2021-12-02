@@ -329,11 +329,12 @@ def getPostsByRestaurant():
     restUser = user.query.filter_by(yelp_restaurant_id=restaurant_id).all()
     if restUser:
         # get all the posts for that user
-        posts = getPosts(restUser.id)
-        if len(posts) == 0:
-            message = "This restaurant hasn't made any posts yet"
-        else:
-            message = "Posts!!!"
+        for x in range(len(restUser)):
+            posts = getPosts(restUser[x].id)
+            if len(posts) == 0:
+                message = "This restaurant hasn't made any posts yet"
+            else:
+                message = "Posts!!!"
 
     return {"message": message, "posts": posts}
 
@@ -985,8 +986,18 @@ def getDiscoverPage():
         DiscoverPagePosts.extend(current_user_posts)
 
     # Get all the restaurants of this user
+    favRestaurants = getFavoriteRestaurants(current_user.id)
 
     # Get all the posts from restaurants this user follows
+    for x in range(len(favRestaurants)):
+        # first need to see if the restaurant has a user account. If so, get the posts
+        restaurantUser = user.query.filter_by(
+            yelp_restaurant_id=favRestaurants[x]["restaurant_id"]
+        ).first()
+        if restaurantUser:
+            # get all posts by the user
+            restaurantPosts = getPosts(restaurantUser.id)
+            DiscoverPagePosts.extend(restaurantPosts)
 
     # if there are no posts, send a message
     if len(DiscoverPagePosts) == 0:
