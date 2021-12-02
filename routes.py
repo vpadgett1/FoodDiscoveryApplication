@@ -210,6 +210,12 @@ def merchant():
     return flask.render_template("index.html")
 
 
+@app.route("/userprofile")
+@login_required
+def userProfile():
+    return flask.render_template("index.html")
+
+
 @app.route("/restaurantprofile", methods=["GET", "POST"])
 def restaurantprofile():
 
@@ -898,10 +904,7 @@ def getDetailedUserInfo():
     for x in range(len(UserFriends)):
         UserFriendsList.append(UserFriends[x].friend_id)
 
-    UserFavoriteRestaurants = otherUser.favs
-    UserFavRestaurantsList = []
-    for x in range(len(UserFavoriteRestaurants)):
-        UserFavRestaurantsList.append(UserFavoriteRestaurants[x].Restaurant)
+    UserFavRestaurantsList = getFavoriteRestaurants(userID)
 
     UserPostsList = getPosts(userID)
 
@@ -921,7 +924,7 @@ def isFriends():
     # two. If exists, return true.
     follower_id = flask.request.args.get("follower_id")
     following_check = friends.query.filter_by(
-        user_id=current_user.id, FriendID=follower_id
+        user_id=current_user.id, friend_id=follower_id
     ).all()
 
     if following_check == None:
