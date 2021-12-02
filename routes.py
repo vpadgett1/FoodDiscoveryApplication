@@ -177,7 +177,6 @@ def authorized():
     # if user already exists, send straight to their home page
     if previousUser:
         # check if user finished onboarding
-        print(current_user.zip_code)
         if current_user.zip_code == None:
             return flask.redirect(flask.url_for("onboarding"))
         # if merchant user, send to merchant homepage
@@ -215,16 +214,13 @@ def merchant():
 def restaurantprofile():
 
     if flask.request.method == "POST":
-
         restaurant_id = flask.request.json.get("restID")
         business_results = get_buisness_from_yelp(YELP_API_KEY, restaurant_id)
-        # print(business_results)
 
         name = []
         img_url = []
         rating = []
         rating_count = []
-        is_closed = []
         url = []
         address = []
         opening = []
@@ -313,6 +309,27 @@ def restaurantprofile():
         return flask.jsonify({"data": DATA})
     else:
         return flask.render_template("index.html")
+
+
+@app.route("/getPostsByRestaurant")
+@login_required
+def getPostsByRestaurant():
+    restaurant_id = flask.request.args.get("restID")
+
+    message = "This restaurant does not have an owner on our site yet"
+    posts = []
+
+    # check if the restaurant has an account
+    restUser = user.query.filter_by(yelp_restaurant_id=restaurant_id).all()
+    if restUser:
+        # get all the posts for that user
+        posts = getPosts(restUser.id)
+        if len(posts) == 0:
+            message = "This restaurant hasn't made any posts yet"
+        else:
+            message = "Posts!!!"
+
+    return {"message": message, "posts": posts}
 
 
 @app.route("/map", methods=["GET", "POST"])
@@ -733,7 +750,8 @@ def deleteFollower():
 @login_required
 def addFavoriteRestaurant():
     # recieved follower_id
-    yelp_restaurant_id = flask.request.json.get("restID")
+    yelp_restaurant_id = flask.request.args.get("restID")
+    restaurant_name = flask.request.args.get("restaurantName")
     print(yelp_restaurant_id)
     # query to verify they are not already following
     following_check = favorite_restraunts.query.filter_by(
@@ -741,7 +759,9 @@ def addFavoriteRestaurant():
     ).all()
     if not following_check:
         follow_request = favorite_restraunts(
-            user_id=current_user.id, yelp_restraunt_id=yelp_restaurant_id
+            user_id=current_user.id,
+            yelp_restraunt_id=yelp_restaurant_id,
+            restaurant_name=restaurant_name,
         )
         db.session.add(follow_request)
         try:
