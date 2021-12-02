@@ -126,11 +126,13 @@ const MerchantPage = () => {
   };
 
   function renderLeftSide() {
+    // add this in once we have the functionalty:
+    // <button type="button" id="CostumerPostsBtn"
+    // onClick={() => selectSubcategory('CostumerPosts')}>Costumer Posts</button>
     return (
       <div className="merchantLeftSide">
         <button type="button" id="GeneralBtn" onClick={() => selectSubcategory('General')}>General</button>
         <button type="button" id="YourPostsBtn" onClick={() => selectSubcategory('YourPosts')}>Your Posts</button>
-        <button type="button" id="CostumerPostsBtn" onClick={() => selectSubcategory('CostumerPosts')}>Costumer Posts</button>
         <button type="button" id="LogoutBtn" onClick={logout}>Logout</button>
       </div>
     );
@@ -165,6 +167,17 @@ const MerchantPage = () => {
   };
 
   function renderYourPosts() {
+    if (restaurantPosts.length === 0) {
+      return (
+        <div className="merchantRightSide">
+          <div className="merchantYourPosts">
+            <div>Your Posts</div>
+            <button type="button" onClick={onClickCreateNewPost}>New Post</button>
+          </div>
+          <div className="noPostsMessage">No posts</div>
+        </div>
+      );
+    }
     return (
       <div className="merchantRightSide">
         <div className="merchantYourPosts">
@@ -184,6 +197,7 @@ const MerchantPage = () => {
             currentUserProfilePic={profilePic}
             currentUserName={name}
             AuthorName={x.AuthorName}
+            ImageData={x.post_picture}
           />
         ))}
       </div>
@@ -205,11 +219,37 @@ const MerchantPage = () => {
     if (canPost) {
       const title = document.getElementById('inputTitleMerchant').value;
       const body = document.getElementById('inputBodyMerchant').value;
+      const file = document.getElementById('newPostImageInput').files[0];
 
-      fetch(`/createPost?AuthorID=${userID}&RestaurantName=${restaurantName}&postText=${body}&postTitle=${title}`)
+      const data = new FormData();
+      data.append('image', file);
+
+      fetch(`/createPost?AuthorID=${userID}&RestaurantName=${restaurantName}&postText=${body}&postTitle=${title}`, {
+        method: 'POST',
+        body: data,
+      })
         .then((response) => response.json())
         .then((result) => {
-          console.log(result);
+          // show the new post
+          const { postID, renderFile } = result;
+          // we want to add this newly created post to the top of the page
+          // so the user knows their post is rendered
+          const p = {
+            AuthorID: userID,
+            postText: body,
+            postTitle: title,
+            postLikes: 0,
+            id: postID,
+            profilePic,
+            post_comments: [],
+            currentUserID: userID,
+            currentUserProfilePic: profilePic,
+            currentUserName: name,
+            AuthorName: name,
+            post_picture: renderFile,
+          };
+          setRestaurantPosts([p, ...restaurantPosts]);
+
           setCurrentSub('YourPosts');
           // set all character lengths back to 0
           setTitleCharLength(0);
@@ -270,6 +310,9 @@ const MerchantPage = () => {
             </div>
             <div className="createPostMerchantButton">
               <button type="submit" className={canPost ? 'canPost' : 'cannotPost'}>Publish</button>
+            </div>
+            <div className="inputImage">
+              <input type="file" name="inputFile" id="newPostImageInput" accept="image/png, image/jpeg" />
             </div>
           </div>
         </form>

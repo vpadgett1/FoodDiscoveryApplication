@@ -12,9 +12,8 @@ const Post = (props) => {
   // set state
   // const [state, setState] = useState(value);
   const [showCreateComment, setShowCreateComment] = useState(false);
-  const [liked,
-    // setLiked
-  ] = useState(false);
+  const [liked, setLiked] = useState(false);
+  const [numLiked, setNumLiked] = useState(0);
 
   const [additionalComments, setAdditionalComments] = useState([]);
 
@@ -138,9 +137,27 @@ const Post = (props) => {
     setShowCreateComment(!showCreateComment);
   };
 
+  const onClickLikePost = () => {
+    if (liked) { // unlike a post
+      fetch(`/unlikeAPost?PostID=${postID}&AuthorID=${AuthorID}`, {
+        method: 'POST',
+      })
+        .then((response) => response.json())
+        .then(() => setNumLiked(numLiked - 1))
+        .catch((error) => console.log(error));
+    } else { // like a post
+      fetch(`/likeAPost?PostID=${postID}&AuthorID=${AuthorID}`, {
+        method: 'POST',
+      })
+        .then((response) => response.json())
+        .then(() => setNumLiked(numLiked + 1))
+        .catch((error) => console.log(error));
+    }
+    setLiked(!liked);
+  };
+
   const renderImage = () => {
     if (ImageData !== '') {
-      console.log(`printing image data: ${ImageData}`);
       return (<img className="postImage" src={`data:image/png;base64, ${ImageData}`} alt="post" />);
     }
     return (<></>);
@@ -165,12 +182,16 @@ const Post = (props) => {
       <div className="postText">
         {postText}
       </div>
-      <div className="postLikes">
-        <img src={Heart} alt="heart" className={liked ? 'clicked' : 'unclicked'} />
-        <div>{postLikes}</div>
-        <button type="button" onClick={onClickComment}><img src={Comment} alt="add comment" className={showCreateComment ? 'clicked' : 'unclicked'} /></button>
-      </div>
       {renderImage()}
+      <div className="postLikes">
+        <button type="button" onClick={onClickLikePost}>
+          <img src={Heart} alt="heart" className={liked ? 'clicked' : 'unclicked'} />
+        </button>
+        <div>{postLikes + numLiked}</div>
+        <button type="button" onClick={onClickComment}>
+          <img src={Comment} alt="add comment" className={showCreateComment ? 'clicked' : 'unclicked'} />
+        </button>
+      </div>
       <div className="postDivider" />
       {renderCreateComment()}
       {renderComments()}

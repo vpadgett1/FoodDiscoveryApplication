@@ -25,7 +25,13 @@ from flask_oauthlib.client import OAuth, OAuthException
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import update
 from dotenv import load_dotenv, find_dotenv
-from yelpInfo import query_resturants, query_one_resturant, query_api
+from yelpInfo import (
+    get_buisness,
+    get_buisness_from_yelp,
+    query_resturants,
+    query_one_resturant,
+    query_api,
+)
 
 # from sqlalchemy_imageattach.entity import entity
 # from sqlalchemy_imageattach.context import store_context
@@ -45,6 +51,8 @@ os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 login_manager = LoginManager()
 login_manager.login_view = "login"
 login_manager.init_app(app)
+
+YELP_API_KEY = os.environ["YELP_API_KEY"]
 
 
 @login_manager.user_loader
@@ -109,52 +117,6 @@ def profile():
         "UserFavRestaurantsList": UserFavRestaurantsList,
         "UserPostsList": UserPostsList,
     }
-
-
-@bp.route("/zipcode", methods=["GET", "POST"])
-def zipcode():
-    if flask.request.method == "POST":
-        yelp_api_key = os.getenv("YELP_APIKEY")
-        business_search_url = "https://api.yelp.com/v3/businesses/search"
-        newheaders = {"Authorization": "bearer %s" % yelp_api_key}
-        zip_code = current_user.zipcode
-        search_params = {"term": "restaurants", "location": zip_code, "limit": 25}
-        restaurant_search_response = requests.get(
-            business_search_url, headers=newheaders, params=search_params
-        )
-        restaurant_search_response_data = restaurant_search_response.json()
-        businesses = restaurant_search_response_data["businesses"]
-
-        name = []
-        img_url = []
-        rating = []
-        is_closed = []
-        url = []
-        coord = []
-        id = []
-
-        for business in businesses:
-            name.append(business["name"])
-            img_url.append(business["image_url"])
-            rating.append(business["rating"])
-            is_closed.append(business["is_closed"])
-            url.append(business["url"])
-            coord.append(business["coordinates"])
-            id.append(business["id"])
-
-        DATA = {
-            "names": name,
-            "img_urls": img_url,
-            "ratings": rating,
-            "is_closeds": is_closed,
-            "urls": url,
-            "coords": coord,
-            "ids": id,
-        }
-
-        return flask.jsonify({"data": DATA})
-    else:
-        return flask.render_template("index.html")
 
 
 app.register_blueprint(bp)
@@ -238,23 +200,117 @@ def onboarding():
 
 
 @app.route("/discover")
+@login_required
 def discover():
-    return flask.render_template("index.html")
+    if current_user.is_authenticated:
+        return flask.render_template("index.html")
+    else:
+        return flask.render_template(flask.url_for("/"))
 
 
 @app.route("/merchant")
+@login_required
 def merchant():
     return flask.render_template("index.html")
 
 
-@app.route("/restaurantprofile")
+@app.route("/restaurantprofile", methods=["GET", "POST"])
 def restaurantprofile():
-    return flask.render_template("index.html")
+
+    if flask.request.method == "POST":
+
+        restaurant_id = flask.request.json.get("restID")
+        business_results = get_buisness_from_yelp(YELP_API_KEY, restaurant_id)
+        # print(business_results)
+
+        name = []
+        img_url = []
+        rating = []
+        rating_count = []
+        is_closed = []
+        url = []
+        address = []
+        opening = []
+        closing = []
+        phone_number = []
+        categories = []
+        photos = []
+
+        for x in range(len(business_results["name"])):
+            rest_info = {
+                "name": business_results["name"],
+                "location": business_results["location"]["display_address"],
+                "rating_count": business_results["review_count"],
+                "phone_number": business_results["display_phone"],
+                "rating": business_results["rating"],
+                "categories": business_results["categories"][0]["title"],
+                "image": business_results["image_url"],
+                "photos": business_results["photos"],
+                "url": business_results["url"],
+            }
+        for y in range(len(business_results["hours"][0]["open"])):
+            open_hours_info = {
+                "Sunday": timeConvert(business_results["hours"][0]["open"][y]["start"]),
+                "Monday": timeConvert(business_results["hours"][0]["open"][y]["start"]),
+                "Tuesday": timeConvert(
+                    business_results["hours"][0]["open"][y]["start"]
+                ),
+                "Wednesday": timeConvert(
+                    business_results["hours"][0]["open"][y]["start"]
+                ),
+                "Thursday": timeConvert(
+                    business_results["hours"][0]["open"][y]["start"]
+                ),
+                "Friday": timeConvert(business_results["hours"][0]["open"][y]["start"]),
+                "Saturday": timeConvert(
+                    business_results["hours"][0]["open"][y]["start"]
+                ),
+            }
+        for z in range(len(business_results["hours"][0]["open"])):
+            close_hours_info = {
+                "Sunday": timeConvert(business_results["hours"][0]["open"][z]["end"]),
+                "Monday": timeConvert(business_results["hours"][0]["open"][z]["end"]),
+                "Tuesday": timeConvert(business_results["hours"][0]["open"][z]["end"]),
+                "Wednesday": timeConvert(
+                    business_results["hours"][0]["open"][z]["end"]
+                ),
+                "Thursday": timeConvert(business_results["hours"][0]["open"][z]["end"]),
+                "Friday": timeConvert(business_results["hours"][0]["open"][z]["end"]),
+                "Saturday": timeConvert(business_results["hours"][0]["open"][z]["end"]),
+            }
+        opening.append(open_hours_info)
+        closing.append(close_hours_info)
+        name.append(rest_info["name"])
+        img_url.append(rest_info["image"])
+        rating.append(rest_info["rating"])
+        rating_count.append(rest_info["rating_count"])
+        address.append(rest_info["location"])
+        categories.append(rest_info["categories"])
+        photos.append(rest_info["photos"])
+        phone_number.append(rest_info["phone_number"])
+        url.append(rest_info["url"])
+        DATA = {
+            "name": name,
+            "img_urls": img_url,
+            "ratings": rating,
+            "rating_count": rating_count,
+            "address": address,
+            "opening": opening,
+            "closing": closing,
+            "url": url,
+            "phone": phone_number,
+            "categories": categories,
+            "photos": photos,
+        }
+
+        return flask.jsonify({"data": DATA})
+    else:
+        return flask.render_template("index.html")
 
 
 @app.route("/map", methods=["GET", "POST"])
+@login_required
 def map():
-
     if flask.request.method == "POST":
 
         zip_code = flask.request.json.get("zipcode")
@@ -274,7 +330,10 @@ def map():
         is_closed = []
         url = []
         coord = []
-        id = []
+        address = []
+        opening = []
+        closing = []
+        ids = []
         for x in range(len(restaurant_results["names"])):
             rest_info = {
                 "name": restaurant_results["names"][x],
@@ -288,18 +347,27 @@ def map():
                     "title"
                 ],
                 "image": restaurant_results["pictures"][x],
+                "ids": restaurant_results["ids"][x],
             }
             name.append(rest_info["name"])
             img_url.append(rest_info["image"])
             rating.append(rest_info["rating"])
             coord.append(rest_info["coordinates"])
-
+            address.append(rest_info["location"])
+            opening.append(rest_info["opening"])
+            closing.append(rest_info["closing"])
+            ids.append(rest_info["ids"])
         DATA = {
             "names": name,
             "img_urls": img_url,
             "ratings": rating,
             "coords": coord,
+            "address": address,
+            "opening": opening,
+            "closing": closing,
+            "ids": ids,
         }
+        # print(restaurant_results)
 
         return flask.jsonify({"data": DATA})
 
@@ -336,21 +404,36 @@ def post():
 def createAccount():
     wantedUsername = flask.request.args.get("username")
     zipcode = flask.request.args.get("zipcode")
-    # print("Printing zip code")
-    # print(zipcode)
+    # check if restaurant ID is valid first
+    yelpID = flask.request.args.get("yelpID")
+    print(yelpID)
+    if yelpID != "" and yelpID:
+        realRestuarant = get_buisness(yelpID)
+        if "error" in realRestuarant:
+            return {
+                "status": 200,
+                "newAccountCreated": False,
+                "message": "yelp restaurant id is invalid",
+            }
+        else:
+            current_user.yelp_restaurant_id = yelpID
+            db.session.commit()
+
     userExists = user.query.filter_by(username=wantedUsername).all()
-    # if userExists:
-    #     print("existing username try again")
-    #     return flask.jsonify({"message" : "Username is alreadt taken. Please try again with another username"})
+    if userExists:
+        print("existing username try again")
+        return {
+            "status": 200,
+            "newAccountCreated": False,
+            "message": "Username is already taken. Please try again with another username",
+        }
     current_user.username = wantedUsername
     current_user.zip_code = zipcode
     db.session.commit()
-    yelpID = flask.request.args.get("yelpID")
-    if yelpID:
-        current_user.yelp_restaurant_id = yelpID
-        db.session.commit()
 
-    status = "failed"
+    status = 400
+    newAccountCreated = False
+    message = "Failed account creation. Please refresh the page and try again."
     if user.query.filter_by(
         username=current_user.username, email=current_user.email
     ).first():
@@ -362,31 +445,66 @@ def createAccount():
             .zip_code
             == zipcode
         ):
-            status = "success"
-    return {"status": status}
+            status = 200
+            newAccountCreated = True
+            message = "success!"
+    return {
+        "status": status,
+        "newAccountCreated": newAccountCreated,
+        "message": message,
+    }
 
 
 @app.route("/deleteAccount", methods=["POST"])
 @login_required
 def deleteAccount():
-    userID = flask.request.args.get("userID")
+    userID = current_user.id
     print("Printing UserID")
     print(userID)
-    delUser = user.query.filter_by(user.id == userID).first()
+
+    # get all items in favorite restaurants table with the userID
+    delRestaurants = favorite_restraunts.query.filter_by(user_id=userID).all()
+    for restaurant in delRestaurants:
+        db.session.delete(restaurant)
+        db.session.commit()
+
+    # get all items in friends table with the userID
+    delFriends = friends.query.filter_by(user_id=userID).all()
+    for friend in delFriends:
+        db.session.delete(friend)
+        db.session.commit()
+
+    # get all items in posts table with the userID
+    delPosts = user_post.query.filter_by(user_id=userID).all()
+    for post in delPosts:
+        # get the comments for this post and delete all of them
+        delComments = post_comments.query.filter_by(post_id=post.id).all()
+        for comment in delComments:
+            db.session.delete(comment)
+            db.session.commit()
+
+        db.session.delete(post)
+        db.session.commit()
+
+    # delete the user
+    delUser = user.query.filter_by(id=userID).first()
     db.session.delete(delUser)
     db.session.commit()
 
-    status = "success"
-    if user.query.filter_by(user.id == userID).first():
-        status = "failed"
+    status = 200
+    if user.query.filter_by(id=userID).first():
+        status = 400
+
+    # log user out after deleting account
+    logout_user()
+    flask.session.pop("google_token", None)
+
     return {"status": status}
 
 
 @app.route("/createPost", methods=["POST", "GET"])
 @login_required
 def createPost():
-    # if flask.request.method == "GET":
-    #     return {"status": 200}
     AuthorID = flask.request.args.get("AuthorID")
     postText = flask.request.args.get("postText")
     postTitle = flask.request.args.get("postTitle")
@@ -453,7 +571,7 @@ def searchPost():
     return flask.jsonify(postsData)
 
 
-@app.route("/createComment", methods=["POST"])
+@app.route("/createComment", methods=["POST", "GET"])
 @login_required
 def createComment():
     AuthorID = flask.request.args.get("AuthorID")
@@ -476,15 +594,9 @@ def createComment():
 def likeAPost():
     postId = flask.request.args.get("PostID")
     authorId = flask.request.args.get("AuthorID")
-    postInfo = user_post.query.filter_by(post_id=postId, author_id=authorId).first()
-    specificPostLikes = postInfo.post_likes
-    specificPostLikes += 1
-    updateLikes = (
-        user_post.update()
-        .where(user_post.c.author_id == authorId and user_post.c.post_id == postId)
-        .values(post_likes=specificPostLikes)
-    )
-    db.execute(updateLikes)
+    postInfo = user_post.query.filter_by(id=postId, author_id=authorId).first()
+    postInfo.post_likes += 1
+    db.session.commit()
     likeCount = postInfo.post_likes
     return flask.jsonify({"likes": likeCount, "message": "like success", "status": 200})
 
@@ -494,27 +606,22 @@ def likeAPost():
 def unlikeAPost():
     postId = flask.request.args.get("PostID")
     authorId = flask.request.args.get("AuthorID")
-    postInfo = user_post.query.filter_by(post_id=postId, author_id=authorId).first()
-    specificPostLikes = postInfo.post_likes
-    specificPostLikes -= 1
-    updateLikes = (
-        user_post.update()
-        .where(user_post.c.author_id == authorId and user_post.c.post_id == postId)
-        .values(post_likes=specificPostLikes)
-    )
-    db.execute(updateLikes)
+    postInfo = user_post.query.filter_by(id=postId, author_id=authorId).first()
+    postInfo.post_likes -= 1
+    db.session.commit()
     likeCount = postInfo.post_likes
     return flask.jsonify(
         {"likes": likeCount, "message": " unlike success", "status": 200}
     )
 
 
-@app.route("/searchRestaurant", methods=["POST"])
-@login_required
-def search_restaurant():
-    rest_name = flask.request.get("resturant_name")
+@app.route("/search", methods=["POST"])
+def search_post():
+    rest_name = flask.request.json.get("searchInput")
     result_limit = 3
+    print(current_user.zip_code)
     yelp_results = query_resturants(rest_name, current_user.zip_code, result_limit)
+    print(yelp_results)
     resturant_data = []
     for x in range(len(yelp_results["names"])):
         rest_info = {
@@ -523,9 +630,10 @@ def search_restaurant():
             "opening": timeConvert(yelp_results["hours"][x][0]),
             "closing": timeConvert(yelp_results["hours"][x][1]),
             "phone_number": yelp_results["phone_numbers"][x],
-            "rating": yelp_results["ratingsgit "][x],
+            "rating": yelp_results["ratings"][x],
             "categories": yelp_results["resturant_type_categories"][x][0]["title"],
             "image": yelp_results["pictures"][x],
+            "ids": yelp_results["ids"][x],
         }
         resturant_data.append(rest_info)
     # return flask.render_template("", resturant_data = resturant_data)
@@ -552,16 +660,24 @@ def addFollower():
     follower_id = flask.request.args.get("follower_id")
     # query to verify they are not already following
     following_check = friends.query.filter_by(
-        user_id=current_user.id, FriendID=follower_id
+        user_id=current_user.id, friend_id=follower_id
     ).all()
     if not following_check:
-        friend_request = friends(user_id=current_user.id, FriendID=follower_id)
+        friend_request = friends(user_id=current_user.id, friend_id=follower_id)
         db.session.add(friend_request)
         try:
             db.session.commit()
+            # get the name of the user and their profile pic
+            friendData = user.query.filter_by(id=follower_id).first()
+            getFriendData = {
+                "user_id": friendData.id,
+                "name": friendData.username,
+                "profile_pic": friendData.profile_pic,
+            }
             return {
                 "status": 200,
                 "message": "You have successfully followed this person.",
+                "friendData": getFriendData,
             }
         except Exception as e:
             db.session.rollback()
@@ -610,14 +726,15 @@ def deleteFollower():
 @login_required
 def addFavoriteRestaurant():
     # recieved follower_id
-    yelp_restaurant_id = flask.request.json.get("yelp_restaurant_id")
+    yelp_restaurant_id = flask.request.json.get("restID")
+    print(yelp_restaurant_id)
     # query to verify they are not already following
     following_check = favorite_restraunts.query.filter_by(
-        user_id=current_user.username, restaurant_name=yelp_restaurant_id
+        user_id=current_user.id, yelp_restraunt_id=yelp_restaurant_id
     ).all()
     if not following_check:
         follow_request = favorite_restraunts(
-            user_id=current_user.username, restaurant_name=yelp_restaurant_id
+            user_id=current_user.id, yelp_restraunt_id=yelp_restaurant_id
         )
         db.session.add(follow_request)
         try:
@@ -649,13 +766,13 @@ def addFavoriteRestaurant():
 @app.route("/deleteFavoriteRestaurant", methods=["POST"])
 @login_required
 def deleteFavoriteRestaurant():
-    yelp_restaurant_id = flask.request.json.get("yelp_restaurant_id")
-    currentDB = favorite_restraunts.query.filter_by(user_id=current_user.username).all()
+    yelp_restaurant_id = flask.request.json.get("restID")
+    currentDB = favorite_restraunts.query.filter_by(user_id=current_user.id).all()
     extraVal = list((set(currentDB) - set(yelp_restaurant_id)))[0]
     if extraVal:
-        removeFollower = friends.query.filter(
-            (favorite_restraunts.user_id == current_user.username)
-            & (favorite_restraunts.yelp_restaurant_id == extraVal.yelp_restaurant_id)
+        removeFollower = favorite_restraunts.query.filter(
+            (favorite_restraunts.user_id == current_user.id)
+            & (favorite_restraunts.yelp_restraunt_id == extraVal.yelp_restraunt_id)
         ).first()
         db.session.delete(removeFollower)
         try:
@@ -908,8 +1025,10 @@ def main():
     if current_user.is_authenticated:
         if current_user.yelp_restaurant_id:
             return flask.redirect(flask.url_for("merchant"))
-        else:
+        elif current_user.zip_code:
             return flask.redirect(flask.url_for("discover"))
+        else:
+            return flask.redirect(flask.url_for("onboarding"))
     else:
         return flask.render_template("index.html")
 

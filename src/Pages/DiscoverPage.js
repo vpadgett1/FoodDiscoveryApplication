@@ -129,6 +129,11 @@ const DiscoverPage = () => {
             setPosts([p, ...posts]);
             setShowCreateNewPost(false);
 
+            setTitleCharLength(0);
+            setBodyCharLength(0);
+            setRestaurantCharLength(0);
+            setCanPost(false);
+
             // if originally displaying noContent, change that
             if (noContentError) {
               setNoContentError(false);

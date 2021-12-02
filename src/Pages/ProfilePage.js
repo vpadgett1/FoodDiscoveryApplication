@@ -121,19 +121,13 @@ const ProfilePage = () => {
     await fetch(`/getUserInfoByEmail?email=${searchFriendField}`)
       .then((response) => response.json())
       .then((data) => {
-        console.log(data);
-        // create friend
-        const addFriend = {
-          user_id: data.id,
-        };
-
         // add friend in database
-        fetch(`/addFollower?follower_id=${addFriend.user_id}`)
+        fetch(`/addFollower?follower_id=${data.id}`)
           .then((response) => response.json())
           .then((result) => {
             // update state
             if (result.status === 200) {
-              setFriendsList([...friendsList, addFriend]);
+              setFriendsList([...friendsList, result.friendData]);
             }
           }).catch((error) => console.log(error));
       }).catch((error) => console.log(error));
@@ -149,6 +143,17 @@ const ProfilePage = () => {
       }).catch((error) => console.log(error));
   };
 
+  const deleteAccount = async () => {
+    await fetch('/deleteAccount', {
+      method: 'POST',
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+        navigate('/', { replace: true });
+      }).catch((error) => console.log(error));
+  };
+
   function renderLeftSide() {
     return (
       <div id="profilePageLeftSide">
@@ -157,6 +162,7 @@ const ProfilePage = () => {
         <button type="button" onClick={() => changeDisplay('FavoriteRestaurants')} id="FavRestaurantButton" className={currentDisplay === 'FavoriteRestaurants' ? 'selectedSubcategory' : ''}>Favorite Restaurants</button>
         <button type="button" onClick={() => changeDisplay('YourPosts')} id="YourPostsButton" className={currentDisplay === 'YourPosts' ? 'selectedSubcategory' : ''}>Your Posts</button>
         <button type="button" onClick={logout} id="LogoutButton">Logout</button>
+        <button type="button" onClick={deleteAccount} id="DeleteButton">Delete Account</button>
       </div>
     );
   }
@@ -193,7 +199,7 @@ const ProfilePage = () => {
         <div className="addFriendSearch">
           <div>Add Friend</div>
           <div>
-            <input type="text" id="inputFriendID" placeholder="enter friend ID" />
+            <input type="text" id="inputFriendID" placeholder="enter friend email" />
             <button type="button" onClick={() => addToFriendsList()} id="addFriendButton">
               <img src={Plus} alt="plus" />
             </button>
@@ -253,6 +259,7 @@ const ProfilePage = () => {
             currentUserProfilePic={profilePic}
             currentUserName={name}
             AuthorName={x.AuthorName}
+            ImageData={x.post_picture}
           />
         ))}
       </div>

@@ -1,16 +1,20 @@
 import '../App.css';
+import '../styling/OnboardingPage.css';
 import React, {
   useState,
   useEffect,
 } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
+import SingleOptionPopUp from '../Components/SingleOptionPopUp';
 
 // YELP ID TO USE FOR TESTING: WavvLdfdP6g8aZTtbBQHTw
 // this line will become const OnboardingPage = (props) => { once there are props
 const OnboardingPage = () => {
   // set state
   const [selectedButton, setSelectedButton] = useState('none');
+  const [showMessage, setShowMessage] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
 
   const navigate = useNavigate();
   // deconstruct props
@@ -20,33 +24,25 @@ const OnboardingPage = () => {
     // TODO: Render component
   }, []);
 
-  // TODO: This method should post the user data for a new user
-  // after the user answers onboarding questions
-  // const createAccount => () {
-
-  // }
-
-  // TODO: This method should display an error if the user is
-  // unable to create an account
-  // const showErrors => () {
-
-  // }
-
   const createRegularUserAccount = async () => {
     // get input
     const zipcode = document.getElementById('zipCodeInput').value;
+    const username = document.getElementById('regularUserName').value;
 
     // send to database, wait until db responds before continueing
-    await fetch(`/createAccount?zipcode=${zipcode}`, {
+    await fetch(`/createAccount?zipcode=${zipcode}&username=${username}`, {
       method: 'POST',
     })
       .then((response) => response.json())
       .then((result) => {
-        console.log(result);
-
         // go to next page
-        if (result.status === 'success') {
-          navigate('/discover');
+        if (result.status && result.status === 200) {
+          if (result.newAccountCreated) {
+            navigate('/discover');
+          } else { // show alert
+            setAlertMessage(result.message);
+            setShowMessage(true);
+          }
         }
       })
       .catch((response) => console.log(response));
@@ -56,8 +52,11 @@ const OnboardingPage = () => {
     return (
       <>
         <div>Please enter your zip code</div>
-        <input type="text" placeholder="Zip Code" id="zipCodeInput" />
-        <button type="button" onClick={createRegularUserAccount}>Continue</button>
+        <input type="text" placeholder="Zip Code" id="zipCodeInput" maxLength={20} />
+        <div>Please enter a username</div>
+        <input type="text" placeholder="Username" id="regularUserName" maxLength={100} />
+        <br />
+        <button type="button" onClick={createRegularUserAccount} className="continueButton">Continue</button>
       </>
     );
   }
@@ -66,18 +65,21 @@ const OnboardingPage = () => {
     // get input
     const yelpID = document.getElementById('yelpRestaurantID').value;
     const zipcode = document.getElementById('zipCodeInput').value;
+    const username = document.getElementById('merchantUserName').value;
 
     // send to database, wait until db responds before continueing
-    await fetch(`/createAccount?zipcode=${zipcode}&yelpID=${yelpID}`, {
+    await fetch(`/createAccount?zipcode=${zipcode}&yelpID=${yelpID}&username=${username}`, {
       method: 'POST',
     })
       .then((response) => response.json())
       .then((result) => {
-        console.log(result);
-
-        // go to next page
-        if (result.status === 'success') {
-          navigate('/merchant');
+        if (result.status && result.status === 200) {
+          if (result.newAccountCreated) {
+            navigate('/merchant');
+          } else { // show alert
+            setAlertMessage(result.message);
+            setShowMessage(true);
+          }
         }
       })
       .catch((response) => console.log(response));
@@ -87,10 +89,13 @@ const OnboardingPage = () => {
     return (
       <>
         <div>Please enter your zip code</div>
-        <input type="text" placeholder="Zip Code" id="zipCodeInput" />
+        <input type="text" placeholder="Zip Code" id="zipCodeInput" maxLength={20} />
         <div>Please enter your yelp restaurant id</div>
-        <input type="text" placeholder="Zip Code" id="yelpRestaurantID" />
-        <button type="button" onClick={createMerchantUserAccount}>Continue</button>
+        <input type="text" placeholder="Yelp Restaurant ID" id="yelpRestaurantID" maxLength={100} />
+        <div>Please enter a username</div>
+        <input type="text" placeholder="Username" id="merchantUserName" maxLength={100} />
+        <br />
+        <button type="button" onClick={createMerchantUserAccount} className="continueButton">Continue</button>
       </>
     );
   }
@@ -101,10 +106,10 @@ const OnboardingPage = () => {
 
   function renderRegularOrMerchantButtons() {
     return (
-      <>
-        <button type="button" onClick={() => onUserChoice('Regular')}>Regular</button>
-        <button type="button" onClick={() => onUserChoice('Merchant')}>Merchant</button>
-      </>
+      <div className="userTypeButtons">
+        <button type="button" onClick={() => onUserChoice('Regular')} className={selectedButton === 'Regular' ? 'selectedButton' : 'regularButton'}>Regular</button>
+        <button type="button" onClick={() => onUserChoice('Merchant')} className={selectedButton === 'Merchant' ? 'selectedButton' : 'regularButton'}>Merchant</button>
+      </div>
     );
   }
 
@@ -119,13 +124,29 @@ const OnboardingPage = () => {
     }
   }
 
+  const popUpAction = () => {
+    setShowMessage(false);
+  };
+
+  function renderMessage() {
+    if (showMessage) {
+      return (
+        <SingleOptionPopUp
+          message={alertMessage}
+          buttonAction={popUpAction}
+          buttonActionText="OK"
+        />
+      );
+    }
+    return (<></>);
+  }
+
   return (
-    <>
-      <div>this is an onboarding page</div>
+    <div className="onboardingPage">
+      {renderMessage()}
       {renderRegularOrMerchantButtons()}
       {renderBody()}
-
-    </>
+    </div>
   );
 };
 
