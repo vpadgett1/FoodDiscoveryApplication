@@ -653,20 +653,21 @@ def search_post():
     yelp_results = query_resturants(rest_name, current_user.zip_code, result_limit)
     print(yelp_results)
     resturant_data = []
-    for x in range(len(yelp_results["names"])):
-        rest_info = {
-            "name": yelp_results["names"][x],
-            "location": yelp_results["locations"][x],
-            "opening": timeConvert(yelp_results["hours"][x][0]),
-            "closing": timeConvert(yelp_results["hours"][x][1]),
-            "phone_number": yelp_results["phone_numbers"][x],
-            "rating": yelp_results["ratings"][x],
-            "categories": yelp_results["resturant_type_categories"][x][0]["title"],
-            "image": yelp_results["pictures"][x],
-            "ids": yelp_results["ids"][x],
-        }
-        resturant_data.append(rest_info)
-    # return flask.render_template("", resturant_data = resturant_data)
+    if yelp_results:
+        for x in range(len(yelp_results["names"])):
+            rest_info = {
+                "name": yelp_results["names"][x],
+                "location": yelp_results["locations"][x],
+                "opening": timeConvert(yelp_results["hours"][x][0]),
+                "closing": timeConvert(yelp_results["hours"][x][1]),
+                "phone_number": yelp_results["phone_numbers"][x],
+                "rating": yelp_results["ratings"][x],
+                "categories": yelp_results["resturant_type_categories"][x][0]["title"],
+                "image": yelp_results["pictures"][x],
+                "ids": yelp_results["ids"][x],
+            }
+            resturant_data.append(rest_info)
+
     return flask.jsonify(resturant_data)
 
 

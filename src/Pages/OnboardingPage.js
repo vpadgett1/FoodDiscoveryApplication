@@ -9,7 +9,6 @@ import PropTypes from 'prop-types';
 import SingleOptionPopUp from '../Components/SingleOptionPopUp';
 
 // YELP ID TO USE FOR TESTING: WavvLdfdP6g8aZTtbBQHTw
-// this line will become const OnboardingPage = (props) => { once there are props
 const OnboardingPage = () => {
   // set state
   const [selectedButton, setSelectedButton] = useState('none');

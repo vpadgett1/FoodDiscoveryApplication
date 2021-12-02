@@ -110,6 +110,12 @@
   color: #cbb9a3;
 }
 
+.addFriendSearch div input:focus {
+  outline: none;
+  border: none;
+  box-shadow: none;
+}
+
 .addFriendSearch div button {
   background: #f5f4f4;
   border: none;

@@ -73,3 +73,9 @@
   background-color: #ffe7ca;
   cursor: pointer;
 }
+
+.onboardingPage input:focus {
+  outline: none;
+  border: none;
+  box-shadow: none;
+}
