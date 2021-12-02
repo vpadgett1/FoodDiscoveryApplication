@@ -2,22 +2,17 @@ import '../App.css';
 import '../styling/SearchPage.css';
 import React, {
   useState,
-<<<<<<< HEAD
   useEffect,
-=======
-  useEffect, useRef,
->>>>>>> b901d37a20a7c4e18606e840ec9874ccec3741c6
+  useRef,
 } from 'react';
 // import PropTypes from 'prop-types';
-<<<<<<< HEAD
 import SearchBar from '../Components/SearchBar';
 import RestaurantList from '../Components/RestaurantList';
-=======
 import Navigation from '../Components/Navigation';
->>>>>>> b901d37a20a7c4e18606e840ec9874ccec3741c6
 
 const SearchPage = () => {
   const textInput = useRef(null);
+  // eslint-disable-next-line no-unused-vars
   const [restaurants, setRestaurants] = useState(null);
   // set state
   const [input, setInput] = useState('');
@@ -47,6 +42,7 @@ const SearchPage = () => {
   // const [props] = props;
 
   // TODO: fetch data from backend
+  // eslint-disable-next-line no-unused-vars
   function onSearch(event) {
     event.preventDefault();
     const searchInput = textInput.current.value;
@@ -63,6 +59,7 @@ const SearchPage = () => {
     });
   }
 
+  // eslint-disable-next-line no-unused-vars
   function setID(id) {
     sessionStorage.setItem('restaurantID', id);
   }
@@ -75,7 +72,6 @@ const SearchPage = () => {
   return (
     <>
       <Navigation />
-<<<<<<< HEAD
       <div>This is the search page</div>
       <div>
         <SearchBar
@@ -83,47 +79,8 @@ const SearchPage = () => {
           onChange={updateInput}
         />
         <RestaurantList restaurantList={RestaurantListState} />
-=======
-      <div className="form">
-        <form>
-          Search:
-          <input type="text" ref={textInput} name="search" />
-          <input type="submit" value="Search" onClick={onSearch} />
-        </form>
-        {restaurants ? restaurants.map((values, index) => (
-          <ul style={{ listStyle: 'none' }}>
-            <li key={index}>
-              <a
-                href="/restaurantprofile"
-                onClick={() => {
-                  setID(values.ids);
-                }}
-              >
-                <h2>{values.name}</h2>
-              </a>
-              {/* <button
-                type="button"
-                onClick={() => {
-                  setRestaurantID(values.ids);
-                  console.log(restaurantID);
-                }}
-              >
-                {values.name}
-              </button> */}
-            </li>
-          </ul>
-        )) : <p>Search for type of food or a specific restaurant</p>}
->>>>>>> b901d37a20a7c4e18606e840ec9874ccec3741c6
       </div>
     </>
   );
 };
-<<<<<<< HEAD
-=======
-
-// TODO: PropTypes
-SearchPage.propTypes = {
-};
-
->>>>>>> b901d37a20a7c4e18606e840ec9874ccec3741c6
 export default SearchPage;
