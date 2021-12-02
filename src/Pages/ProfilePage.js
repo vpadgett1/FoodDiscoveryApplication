@@ -232,9 +232,9 @@ const ProfilePage = () => {
     return (
       <div id="FavRestaurantSubcategory">
         {favoriteRestaurantList.map((x) => (
-          <>
+          <div className="favRestaurantItem">
             <a href="/restaurantprofile" onClick={setLinkID(x.restaurant_id)}>{x.restaurant_name}</a>
-          </>
+          </div>
         ))}
       </div>
     );

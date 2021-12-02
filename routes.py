@@ -1076,6 +1076,12 @@ def getFavoriteRestaurants(userID):
     return UserFavRestaurantsList
 
 
+# send manifest.json file
+@app.route("/manifest.json")
+def manifest():
+    return flask.send_from_directory("./build", "manifest.json")
+
+
 @app.route("/")
 def main():
     if current_user.is_authenticated:
