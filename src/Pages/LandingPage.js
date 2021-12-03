@@ -139,7 +139,7 @@ const LandingPage = () => (
             <div className="emoji">🥪</div>
             <div className="name">Bilqis Seddiqi</div>
             <div><a className="creatorLink" href="https://github.com/bseddiqi">Github Link</a></div>
-            <div><a className="creatorLink" href="https://www.linkedin.com/in/bilqisseddiqi/">LinkedIn Link</a></div>
+            <div><a className="creatorLink" href="https://www.linkedin.com/in/bilqis-seddiqi/">LinkedIn Link</a></div>
           </div>
           <div className="creator">
             <div className="emoji">☕️</div>
