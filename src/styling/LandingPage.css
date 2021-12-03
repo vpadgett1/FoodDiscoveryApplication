@@ -9,14 +9,14 @@
 }
 
 .landingPageBar {
-  width: 100%;
+  width: calc(100% - 24px);
   display: inline-flex;
   padding: 6px 12px;
-  background: rgb(255, 153, 33);
-  background: linear-gradient(90deg, rgba(255, 153, 33, 1) 0%, rgba(255, 111, 33, 1) 100%);
-  color: white;
+  color: #fff;
   font-weight: 700;
   font-size: 28px;
+  position: absolute;
+  box-shadow: inset 0px 50px 40px -50px black;
 }
 
 .landingPageBar .FoodMe {
@@ -26,7 +26,7 @@
 
 .LoginButton {
   position: absolute;
-  right: 12px;
+  right: 32px;
   top: 1px;
 }
 
@@ -36,7 +36,7 @@
   height: 35px;
   background-color: white;
   border: none;
-  padding: 0px 16px;
+  padding: 0px 64px;
   color: #ff9921;
   border-radius: 24px;
   font-family: 'Open Sans', sans-serif;
@@ -76,4 +76,124 @@
 .rightSide img {
   width: 95%;
   margin: auto;
+}
+
+.whyItMatters {
+  text-align: center;
+  background-color: #f4f4f4;
+  top: -50px;
+  position: relative;
+  padding: 30px 50px;
+  border-radius: 50px;
+}
+
+.whyItMattersImg {
+  width: 100%;
+}
+
+.whyItMatters .whyItMattersTitle {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.whyItMatters .whyItMattersBody {
+  padding-bottom: 100px;
+}
+
+.motivationSection {
+  background-color: white;
+  position: relative;
+  top: -150px;
+  padding: 50px;
+  border-radius: 50px;
+}
+
+.motivationSectionInner {
+  display: flex;
+  width: 100%;
+  padding-bottom: 100px;
+}
+
+.motivationSectionInner img {
+  width: 50%;
+}
+
+.motivationBody {
+  width: 50%;
+  padding: 82px;
+  text-align: center;
+  margin: auto;
+}
+
+.motivationBody div {
+  font-size: 28px;
+  font-weight: 700;
+  padding-bottom: 12px;
+}
+
+.functionalitySection {
+  background-color: #f4f4f4;
+  position: relative;
+  top: -250px;
+  padding: 50px;
+  border-radius: 50px;
+}
+
+.functionalityTitle {
+  font-size: 28px;
+  font-weight: 700;
+  padding-bottom: 28px;
+  text-align: center;
+}
+
+.functionalityCard {
+  width: 90%;
+  background-color: white;
+  margin: auto;
+  padding: 50px;
+  border-radius: 50px;
+  margin-bottom: 50px;
+  box-shadow: 0 8px 10px grey;
+}
+
+.functionalityCard img {
+  width: calc(100% - 48px);
+  border-radius: 25px;
+  padding: 24px;
+}
+
+.whoWeAre {
+  background: rgb(255, 153, 33);
+  background: linear-gradient(180deg, rgba(255, 153, 33, 1) 0%, rgba(255, 111, 33, 1) 100%);
+  padding: 50px;
+  border-top-left-radius: 50px;
+  border-top-right-radius: 50px;
+  text-align: center;
+}
+
+.whoWeAreTitle {
+  font-size: 28px;
+  font-weight: 700;
+  padding-bottom: 24px;
+}
+
+.whoWeAreBody {
+  padding-bottom: 24px;
+}
+
+.creatorLinks {
+  display: flex;
+}
+
+.creator {
+  width: 20%;
+}
+
+.creator .emoji {
+  font-size: 100px;
+}
+
+.creator .name {
+  font-size: 24px;
 }

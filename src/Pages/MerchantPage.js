@@ -119,10 +119,12 @@ const MerchantPage = () => {
   }
 
   const logout = async () => {
-    // post to backend to log out user
-
-    // go bck to main page
-    navigate('/');
+    await fetch('/logout')
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+        navigate('/', { replace: true });
+      }).catch((error) => console.log(error));
   };
 
   function renderLeftSide() {
