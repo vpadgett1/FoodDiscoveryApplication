@@ -1,9 +1,31 @@
-# [FoodMe Web Applicatio] (http://pure-sea-44259.herokuapp.com)
+# FoodMe Web Application 
+## [Click Here to Check it Out!](http://pure-sea-44259.herokuapp.com)
 
->This web application has been created and designed to become your new home for recieving food recommendations from your friends. Here you can follow your friends and watch as they post the latest places they have ate and recommend their favorite dishes they'd love you for you to try!
+---
+## Table of Contents
 
 
-## [FoodMe Application](http://pure-sea-44259.herokuapp.com)
+
+- [Description](#Description)
+
+- [Motivation](#Motivation)
+
+- [Demonstration](#Demonstration)
+
+- [Walkthrough](#Walkthrough)
+
+- [ Class Information](#Class-Information)
+
+
+
+---
+
+## Description
+
+This web application has been created and designed to become your new home for recieving food recommendations from your friends. Here you can follow your friends and watch as they post the latest places they have ate and recommend their favorite dishes they'd love you for you to try!
+
+---
+
 
 
 
@@ -14,6 +36,7 @@ The question is: how is FoodMe different from any other food application to sear
 
 As food accounts on instagram, facebook, twitter, etc are increasing we thought, why not create an app as a circle for foodies. This application is gathering all the foodies and those interested to become one!
 
+---
 
 ## Demonstration
 
@@ -25,6 +48,10 @@ Next, we have the Maps page. You will be shown automatically restaurants nearby 
 
 Finally, we have the profile page where you can add and delete users to be your friend, see your profile information like username, email, user ID number, and even your own personal posts. Not only that, we added an easy functionality to log out and delete your account for convenience!
 
+---
+## WalkThrough
+
+---
 
 ## Requirements
 
@@ -52,10 +79,6 @@ Finally, we have the profile page where you can add and delete users to be your 
 
 1. `npm install eslint-config-airbnb`
 
-### Disabled rules:
-
-1. no-console : This is disabled for sprint 1 where the code is not yet polished but we need to test whether or not front end is connected with back end. This should be removed by sprint 2.
-2. react/no-unused-prop-types : This is disabled on some files using propTypes due to false positives (https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/no-unused-prop-types.md)
 
 ## Props
 
@@ -65,4 +88,18 @@ Finally, we have the profile page where you can add and delete users to be your 
 
 1. run `npm install react-google-maps` to be able to use Google Maps api on the front end
 
-##
+---
+
+## Class Information
+
+CSC 4320 - Software Engineering 
+
+Professor John Martin
+
+Group 2 - FoodMe Application
+
+Due December 3rd, 2021
+
+Fall 2021
+
+---
