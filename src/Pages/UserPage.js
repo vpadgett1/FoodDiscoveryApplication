@@ -135,6 +135,7 @@ const UserPage = () => {
             currentUserName={userName}
             AuthorName={x.AuthorName}
             ImageData={x.post_picture}
+            YelpRestaurantID={x.Yelp_ID}
           />
         ))}
       </>

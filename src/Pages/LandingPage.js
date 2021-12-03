@@ -124,34 +124,34 @@ const LandingPage = () => (
         </div>
         <div className="creatorLinks">
           <div className="creator">
-            <div className="emoji">🥯</div>
-            <div className="name">Name of Person</div>
-            <div className="creatorLink">Github Link</div>
-            <div className="creatorLink">LinkedIn Link</div>
+            <div className="emoji">🍗</div>
+            <div className="name">John Arthur</div>
+            <div><a className="creatorLink" href="https://github.com/bladezr">Github Link</a></div>
+            <div><a className="creatorLink" href="https://www.linkedin.com/in/john-arthur-400926192/">LinkedIn Link</a></div>
           </div>
           <div className="creator">
-            <div className="emoji">🥯</div>
-            <div className="name">Name of Person</div>
-            <div className="creatorLink">Github Link</div>
-            <div className="creatorLink">LinkedIn Link</div>
+            <div className="emoji">🍕</div>
+            <div className="name">Adhil Habib</div>
+            <div><a className="creatorLink" href="https://github.com/AdhilHabib">Github Link</a></div>
+            <div><a className="creatorLink" href="https://www.linkedin.com/in/adhilhabib">LinkedIn Link</a></div>
           </div>
           <div className="creator">
-            <div className="emoji">🥯</div>
-            <div className="name">Name of Person</div>
-            <div className="creatorLink">Github Link</div>
-            <div className="creatorLink">LinkedIn Link</div>
+            <div className="emoji">🥪</div>
+            <div className="name">Bilqis Seddiqi</div>
+            <div><a className="creatorLink" href="https://github.com/bseddiqi">Github Link</a></div>
+            <div><a className="creatorLink" href="https://www.linkedin.com/in/bilqisseddiqi/">LinkedIn Link</a></div>
           </div>
           <div className="creator">
-            <div className="emoji">🥯</div>
-            <div className="name">Name of Person</div>
-            <div className="creatorLink">Github Link</div>
-            <div className="creatorLink">LinkedIn Link</div>
+            <div className="emoji">☕️</div>
+            <div className="name">Tori Padgett</div>
+            <div><a className="creatorLink" href="https://github.com/vpadgett1">Github Link</a></div>
+            <div><a className="creatorLink" href="https://www.linkedin.com/in/victoria-padgett-2021/">LinkedIn Link</a></div>
           </div>
           <div className="creator">
-            <div className="emoji">🥯</div>
-            <div className="name">Name of Person</div>
-            <div className="creatorLink">Github Link</div>
-            <div className="creatorLink">LinkedIn Link</div>
+            <div className="emoji">🍯</div>
+            <div className="name">Raneem Soufi</div>
+            <div><a className="creatorLink" href="https://github.com/rsoufi1">Github Link</a></div>
+            <div><a className="creatorLink" href="https://www.linkedin.com/in/raneemsoufi/">LinkedIn Link</a></div>
           </div>
         </div>
       </div>

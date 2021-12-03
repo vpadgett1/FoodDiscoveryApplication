@@ -197,3 +197,12 @@
 .creator .name {
   font-size: 24px;
 }
+
+.creatorLink {
+  color: black;
+  text-decoration: none;
+}
+
+.creatorLink:hover {
+  color: white;
+}

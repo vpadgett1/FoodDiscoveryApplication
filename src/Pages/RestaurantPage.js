@@ -139,6 +139,7 @@ const RestaurantPage = () => {
               currentUserName={userName}
               AuthorName={x.AuthorName}
               ImageData={x.post_picture}
+              YelpRestaurantID={x.Yelp_ID}
             />
           ))}
         </div>
@@ -149,15 +150,6 @@ const RestaurantPage = () => {
         {message}
       </div>
     );
-  }
-
-  function renderPostsAboutRestaurnat() {
-    /* <div className="restaurantPosts">
-    <Post />
-    <Post />
-    <Post />
-  </div> */
-    return (<div className="restaurantPosts" />);
   }
 
   const onClickFollowButton = () => {
@@ -261,8 +253,6 @@ const RestaurantPage = () => {
       </div>
       <div className="subTitle">Posts by the Restaurant</div>
       {renderPostsByRestaurant()}
-      <div className="subTitle">Posts about the Restaurant</div>
-      {renderPostsAboutRestaurnat()}
     </>
   );
 };

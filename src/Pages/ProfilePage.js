@@ -257,6 +257,7 @@ const ProfilePage = () => {
             currentUserName={name}
             AuthorName={x.AuthorName}
             ImageData={x.post_picture}
+            YelpRestaurantID={x.Yelp_ID}
           />
         ))}
       </div>
