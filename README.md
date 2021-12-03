@@ -1,6 +1,9 @@
 # FoodMe Web Application 
 ## [Click Here to Check it Out!](http://pure-sea-44259.herokuapp.com)
 
+![Screen Shot 2021-12-03 at 4 32 05 PM](https://user-images.githubusercontent.com/56129645/144675471-559a3be3-f35a-43d9-8d79-73e512dd402d.png)
+
+
 ---
 ## Table of Contents
 
@@ -15,7 +18,6 @@
 - [Walkthrough](#Walkthrough)
 
 - [Class Information](#Class-Information)
-
 
 
 ---
@@ -40,16 +42,20 @@ As food accounts on instagram, facebook, twitter, etc are increasing we thought,
 
 ## Demonstration
 
-When you first load the page you are sent to the onboarding page where you select what type of user you are: regular user or merchant user. According to your choice, you are sent to the login page (not remembering quite if this is right) and will login using your google account. You then arrive to the discover page. This is where most of the socializing comes in. You will be able to see all of your friends post right after you log in. You have the functionality to post as well as comment on and like the post!
+When you first load the page you are sent to the landing page with all our websites information. Then you can press the log in button and login with a google account. Then you select what type of user you are: regular user or merchant user. You then arrive to the discover page. This is where most of the socializing comes in. You will be able to see all of your friends and restaurants post that you have added and followed right after you log in if you have added some before. If not, it will be empty but you can get started ASAP! Then you will have the functionality to post as well as comment on and like the post!
 
-As we move down the navigation bar at the top there is the Search Page where you can search for restaurants, posts, and users accordingly. 
+You can go to your profile page and add friends on the friends bar through email. You can also tap on their names and see their posts as well. Additionally, on the profile page you can see your posts (if you made any) and your favorite restaurants information (their address, image, hours, and posts).
 
-Next, we have the Maps page. You will be shown automatically restaurants nearby according to zipcode you entered when you first entered your information on the website. You want to check for restaurants in another location? No problem, enter it in the new zipcode and find restaurants near you!
+As we move down the navigation bar at the top there is the Search Page where you can search for restaurants by name. Once you pick a restaurant you can see all their information and follow them as well!
 
-Finally, we have the profile page where you can add and delete users to be your friend, see your profile information like username, email, user ID number, and even your own personal posts. Not only that, we added an easy functionality to log out and delete your account for convenience!
+Next, we have the Maps page. You can enter a zipcode and restaurants nearby will be shown. You want to check for restaurants in another location? No problem, enter the zipcode and find restaurants near there!
+
+Finally, there is an easy functionality to log out and delete your account for convenience if needed!
 
 ---
 ## WalkThrough
+
+https://youtu.be/TR0JpuKY5Ek
 
 ---
 
@@ -122,3 +128,4 @@ Due December 3rd, 2021
 Fall 2021
 
 ---
+
