@@ -1,11 +1,11 @@
-# READ ME: Information on FoodMe, your newest food recommendations application
+# [FoodMe Web Applicatio] (http://pure-sea-44259.herokuapp.com)
 
-## Made By
+>This web application has been created and designed to become your new home for recieving food recommendations from your friends. Here you can follow your friends and watch as they post the latest places they have ate and recommend their favorite dishes they'd love you for you to try!
 
 
-## [Link to FoodMe Application](http://pure-sea-44259.herokuapp.com)
+## [FoodMe Application](http://pure-sea-44259.herokuapp.com)
 
-This web application has been created and designed to become your new home for recieving food recommendations from your friends. Here you can follow your friends and watch as they post the latest places they have ate and whether they would recommend this resturant to places or no.
+
 
 
 ## Motivation
