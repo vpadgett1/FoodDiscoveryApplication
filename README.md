@@ -14,7 +14,7 @@
 
 - [Walkthrough](#Walkthrough)
 
-- [ Class Information](#Class-Information)
+- [Class Information](#Class-Information)
 
 
 
@@ -78,6 +78,25 @@ Finally, we have the profile page where you can add and delete users to be your 
 ## Linting
 
 1. `npm install eslint-config-airbnb`
+
+### Disabled rules: 
+
+>no-console : This is disabled for sprint 1 where the code is not yet polished but we need to test whether or not front end is connected with back end. This should be removed by sprint 2.
+
+>react/no-unused-prop-types : This is disabled on some files using propTypes due to false positives (https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/no-unused-prop-types.md)
+
+### Linting Rules Disabled for Flask to Run
+> pylint: disable=E1101 (no-member)
+
+> pylint: disable=C0413(wrong-import-position)
+
+> pylint: disable=W1508 (invalid-envvar-default)
+
+> pylint: disable=R0903
+
+> pylint: disable=W0603 (global-statement)
+
+>
 
 
 ## Props
