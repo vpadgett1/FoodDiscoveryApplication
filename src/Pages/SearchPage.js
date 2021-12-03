@@ -11,7 +11,28 @@ const SearchPage = () => {
   const textInput = useRef(null);
   const [restaurants, setRestaurants] = useState(null);
   // set state
-  // const [state, setState] = useState(value);
+  const [input, setInput] = useState('');
+  const [RestaurantListDefault, setRestaurantListDefault] = useState();
+  const [RestaurantListState, setRestaurantList] = useState();
+
+  const fetchData = async () => {
+    await fetch('')
+      .then((response) => response.json())
+      .then((data) => {
+        setRestaurantList(data);
+        setRestaurantListDefault(data);
+      });
+  };
+
+  const updateInput = async (x) => {
+    const filtered = RestaurantListDefault
+      .filter((restaurant) => restaurant.name.toLowerCase().includes(x.toLowerCase()));
+    setInput(x);
+    setRestaurantList(filtered);
+    // want to filter through for restaurant name
+    // const filtered =
+    // return
+  };
 
   // deconstruct props
   // const [props] = props;
@@ -37,7 +58,7 @@ const SearchPage = () => {
     sessionStorage.setItem('restaurantID', id);
   }
   useEffect(() => {
-
+    fetchData();
   }, []);
 
   // TODO: Render component
