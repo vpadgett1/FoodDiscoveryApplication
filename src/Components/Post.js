@@ -83,6 +83,10 @@ const Post = (props) => {
 
   // Render the comments on a post
   function renderComments() {
+    // determine if it is the same page or not
+    console.log(`Pathname: ${window.location.pathname}`);
+    const isSamePage = window.location.pathname === '/userprofile';
+
     if (postComments && postComments.length === 0 && additionalComments.length === 0) {
       return (
         <div className="comment">
@@ -101,6 +105,7 @@ const Post = (props) => {
                 <Link
                   to="/userprofile"
                   state={{ userId: x.AuthorID }}
+                  onClick={isSamePage ? () => window.location.reload() : () => console.log('nah')}
                 >
                   {x.CommentorName}
                 </Link>
@@ -119,6 +124,7 @@ const Post = (props) => {
                 <Link
                   to="/userprofile"
                   state={{ userId: x.AuthorID }}
+                  onClick={isSamePage ? () => window.location.reload() : () => console.log('nah')}
                 >
                   {x.CommentorName}
                 </Link>

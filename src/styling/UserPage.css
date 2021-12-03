@@ -65,3 +65,29 @@
   font-weight: 700;
   padding: 16px;
 }
+
+.favoriteRestaurants {
+  background-color: #fff;
+  border-radius: 16px;
+  width: 80%;
+  margin: auto;
+}
+
+.favRestaurantElement {
+  padding: 16px;
+  border-bottom: 1px solid #ff9921;
+}
+
+.favRestaurantElement:last-of-type {
+  border-bottom: none;
+}
+
+.favRestaurantElement a {
+  text-decoration: none;
+  color: black;
+}
+
+.favRestaurantElement a:hover {
+  text-decoration: none;
+  color: #ff9921;
+}

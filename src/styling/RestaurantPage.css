@@ -1,0 +1,91 @@
+.mainImg {
+  width: 100%;
+  height: 500px;
+  overflow: hidden;
+  object-fit: cover;
+  object-position: center;
+}
+
+.infoCard1 {
+  width: 80%;
+  background-color: white;
+  padding: 24px;
+  margin: auto;
+  margin-top: 24px;
+  border-radius: 18px;
+}
+
+.infoCard2 {
+  width: 80%;
+  background-color: white;
+  padding: 24px;
+  margin: auto;
+  margin-top: 24px;
+  border-radius: 18px;
+}
+
+.TitleDiv {
+  display: inline-flex;
+  width: 100%;
+}
+
+.restaurantTitle {
+  font-size: 26px;
+  font-weight: bold;
+  width: 80%;
+}
+
+.TitleDiv button {
+  width: 20%;
+}
+
+.TitleDiv .FollowButton {
+  width: 20%;
+  color: white;
+  background-color: orange;
+  border: none;
+  border-radius: 40px;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.TitleDiv .UnfollowButton {
+  width: 20%;
+  color: #ff9921;
+  background-color: white;
+  border: 3px solid #ff9921;
+  border-radius: 40px;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.TitleDiv .FollowButton:hover,
+.TitleDiv .UnfollowButton:hover {
+  cursor: pointer;
+  background-color: #ffe7ca;
+  color: #ff9921;
+}
+
+.subTitle {
+  font-size: 30px;
+  font-weight: 700;
+  margin: 15px 15px 15px 10%;
+}
+
+.restaurantImages {
+  display: block;
+  width: 40%;
+  margin: auto;
+}
+
+.restaurantImg {
+  width: 100%;
+  margin: 16px auto;
+  border-radius: 24px;
+}
+
+.RestaurantMessage {
+  text-align: center;
+  font-size: 22px;
+  color: #adadad;
+}

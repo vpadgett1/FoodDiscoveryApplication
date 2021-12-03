@@ -110,6 +110,12 @@
   color: #cbb9a3;
 }
 
+.addFriendSearch div input:focus {
+  outline: none;
+  border: none;
+  box-shadow: none;
+}
+
 .addFriendSearch div button {
   background: #f5f4f4;
   border: none;
@@ -184,4 +190,26 @@
   color: #ffe7ca;
   cursor: pointer;
   background-color: #ff9921;
+}
+
+.favRestaurantItem {
+  width: 100%;
+  text-decoration: none;
+  color: black;
+  border-bottom: 1px solid #ff9921;
+  font-size: 18px;
+  padding: 12px;
+}
+
+.favRestaurantItem a {
+  width: 100%;
+  text-decoration: none;
+  color: black;
+  padding: 12px;
+}
+
+.favRestaurantItem a:hover {
+  width: 100%;
+  text-decoration: none;
+  color: #ff9921;
 }

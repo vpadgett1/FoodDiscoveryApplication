@@ -191,7 +191,6 @@ const ProfilePage = () => {
     );
   }
 
-  // NOTE: In sprint 2, ideally also display the name of the user and not just the id ({x.name})
   function renderFriendsList() {
     return (
       <div id="FriendsListSubcategory">
@@ -225,19 +224,17 @@ const ProfilePage = () => {
     );
   }
 
+  function setLinkID(linkID) {
+    sessionStorage.setItem('restaurantID', linkID);
+  }
+
   function renderFavoriteRestaurants() {
     return (
       <div id="FavRestaurantSubcategory">
-        <div>Favorite List Rendered</div>
         {favoriteRestaurantList.map((x) => (
-          <>
-            <Link
-              to="/restaurantprofile"
-              state={{ restaurantID: x.RestaurantID }}
-            >
-              x.RestaurantName
-            </Link>
-          </>
+          <div className="favRestaurantItem">
+            <a href="/restaurantprofile" onClick={setLinkID(x.restaurant_id)}>{x.restaurant_name}</a>
+          </div>
         ))}
       </div>
     );
