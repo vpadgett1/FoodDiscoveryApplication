@@ -104,10 +104,7 @@ def profile():
             }
         )
 
-    UserFavoriteRestaurants = current_user.favs
-    UserFavRestaurantsList = []
-    for x in range(len(UserFavoriteRestaurants)):
-        UserFavRestaurantsList.append(UserFavoriteRestaurants[x].Restaurant)
+    UserFavRestaurantsList = getFavoriteRestaurants(current_user.id)
 
     UserPostsList = getPosts(current_user.id)
 
@@ -180,7 +177,6 @@ def authorized():
     # if user already exists, send straight to their home page
     if previousUser:
         # check if user finished onboarding
-        print(current_user.zip_code)
         if current_user.zip_code == None:
             return flask.redirect(flask.url_for("onboarding"))
         # if merchant user, send to merchant homepage
@@ -214,20 +210,23 @@ def merchant():
     return flask.render_template("index.html")
 
 
+@app.route("/userprofile")
+@login_required
+def userProfile():
+    return flask.render_template("index.html")
+
+
 @app.route("/restaurantprofile", methods=["GET", "POST"])
 def restaurantprofile():
 
     if flask.request.method == "POST":
-
         restaurant_id = flask.request.json.get("restID")
         business_results = get_buisness_from_yelp(YELP_API_KEY, restaurant_id)
-        # print(business_results)
 
         name = []
         img_url = []
         rating = []
         rating_count = []
-        is_closed = []
         url = []
         address = []
         opening = []
@@ -289,6 +288,15 @@ def restaurantprofile():
         photos.append(rest_info["photos"])
         phone_number.append(rest_info["phone_number"])
         url.append(rest_info["url"])
+
+        # check if user is following the restaurant
+        isFollowingCheck = favorite_restraunts.query.filter_by(
+            user_id=current_user.id, yelp_restraunt_id=restaurant_id
+        ).all()
+        isFollowing = False
+        if isFollowingCheck:
+            isFollowing = True
+
         DATA = {
             "name": name,
             "img_urls": img_url,
@@ -301,11 +309,34 @@ def restaurantprofile():
             "phone": phone_number,
             "categories": categories,
             "photos": photos,
+            "isFollowing": isFollowing,
         }
 
         return flask.jsonify({"data": DATA})
     else:
         return flask.render_template("index.html")
+
+
+@app.route("/getPostsByRestaurant")
+@login_required
+def getPostsByRestaurant():
+    restaurant_id = flask.request.args.get("restID")
+
+    message = "This restaurant does not have an owner on our site yet"
+    posts = []
+
+    # check if the restaurant has an account
+    restUser = user.query.filter_by(yelp_restaurant_id=restaurant_id).all()
+    if restUser:
+        # get all the posts for that user
+        for x in range(len(restUser)):
+            posts = getPosts(restUser[x].id)
+            if len(posts) == 0:
+                message = "This restaurant hasn't made any posts yet"
+            else:
+                message = "Posts!!!"
+
+    return {"message": message, "posts": posts}
 
 
 @app.route("/map", methods=["GET", "POST"])
@@ -623,20 +654,21 @@ def search_post():
     yelp_results = query_resturants(rest_name, current_user.zip_code, result_limit)
     print(yelp_results)
     resturant_data = []
-    for x in range(len(yelp_results["names"])):
-        rest_info = {
-            "name": yelp_results["names"][x],
-            "location": yelp_results["locations"][x],
-            "opening": timeConvert(yelp_results["hours"][x][0]),
-            "closing": timeConvert(yelp_results["hours"][x][1]),
-            "phone_number": yelp_results["phone_numbers"][x],
-            "rating": yelp_results["ratings"][x],
-            "categories": yelp_results["resturant_type_categories"][x][0]["title"],
-            "image": yelp_results["pictures"][x],
-            "ids": yelp_results["ids"][x],
-        }
-        resturant_data.append(rest_info)
-    # return flask.render_template("", resturant_data = resturant_data)
+    if yelp_results:
+        for x in range(len(yelp_results["names"])):
+            rest_info = {
+                "name": yelp_results["names"][x],
+                "location": yelp_results["locations"][x],
+                "opening": timeConvert(yelp_results["hours"][x][0]),
+                "closing": timeConvert(yelp_results["hours"][x][1]),
+                "phone_number": yelp_results["phone_numbers"][x],
+                "rating": yelp_results["ratings"][x],
+                "categories": yelp_results["resturant_type_categories"][x][0]["title"],
+                "image": yelp_results["pictures"][x],
+                "ids": yelp_results["ids"][x],
+            }
+            resturant_data.append(rest_info)
+
     return flask.jsonify(resturant_data)
 
 
@@ -726,7 +758,8 @@ def deleteFollower():
 @login_required
 def addFavoriteRestaurant():
     # recieved follower_id
-    yelp_restaurant_id = flask.request.json.get("restID")
+    yelp_restaurant_id = flask.request.args.get("restID")
+    restaurant_name = flask.request.args.get("restaurantName")
     print(yelp_restaurant_id)
     # query to verify they are not already following
     following_check = favorite_restraunts.query.filter_by(
@@ -734,7 +767,9 @@ def addFavoriteRestaurant():
     ).all()
     if not following_check:
         follow_request = favorite_restraunts(
-            user_id=current_user.id, yelp_restraunt_id=yelp_restaurant_id
+            user_id=current_user.id,
+            yelp_restraunt_id=yelp_restaurant_id,
+            restaurant_name=restaurant_name,
         )
         db.session.add(follow_request)
         try:
@@ -871,10 +906,7 @@ def getDetailedUserInfo():
     for x in range(len(UserFriends)):
         UserFriendsList.append(UserFriends[x].friend_id)
 
-    UserFavoriteRestaurants = otherUser.favs
-    UserFavRestaurantsList = []
-    for x in range(len(UserFavoriteRestaurants)):
-        UserFavRestaurantsList.append(UserFavoriteRestaurants[x].Restaurant)
+    UserFavRestaurantsList = getFavoriteRestaurants(userID)
 
     UserPostsList = getPosts(userID)
 
@@ -894,7 +926,7 @@ def isFriends():
     # two. If exists, return true.
     follower_id = flask.request.args.get("follower_id")
     following_check = friends.query.filter_by(
-        user_id=current_user.id, FriendID=follower_id
+        user_id=current_user.id, friend_id=follower_id
     ).all()
 
     if following_check == None:
@@ -954,8 +986,18 @@ def getDiscoverPage():
         DiscoverPagePosts.extend(current_user_posts)
 
     # Get all the restaurants of this user
+    favRestaurants = getFavoriteRestaurants(current_user.id)
 
     # Get all the posts from restaurants this user follows
+    for x in range(len(favRestaurants)):
+        # first need to see if the restaurant has a user account. If so, get the posts
+        restaurantUser = user.query.filter_by(
+            yelp_restaurant_id=favRestaurants[x]["restaurant_id"]
+        ).first()
+        if restaurantUser:
+            # get all posts by the user
+            restaurantPosts = getPosts(restaurantUser.id)
+            DiscoverPagePosts.extend(restaurantPosts)
 
     # if there are no posts, send a message
     if len(DiscoverPagePosts) == 0:
@@ -987,7 +1029,6 @@ def getPosts(userID):
     posts = []
     author = user.query.filter_by(id=userID).first()
     query_posts = user_post.query.filter_by(user_id=userID).all()
-    print(query_posts)
     for x in range(len(query_posts)):
         postComments = post_comments.query.filter_by(post_id=query_posts[x].id).all()
         postCommentsList = []
@@ -1018,6 +1059,27 @@ def getPosts(userID):
             }
         )
     return posts
+
+
+def getFavoriteRestaurants(userID):
+    getRestaurants = favorite_restraunts.query.filter_by(user_id=userID).all()
+
+    UserFavRestaurantsList = []
+    for x in range(len(getRestaurants)):
+        UserFavRestaurantsList.append(
+            {
+                "restaurant_name": getRestaurants[x].restaurant_name,
+                "restaurant_id": getRestaurants[x].yelp_restraunt_id,
+            }
+        )
+
+    return UserFavRestaurantsList
+
+
+# send manifest.json file
+@app.route("/manifest.json")
+def manifest():
+    return flask.send_from_directory("./build", "manifest.json")
 
 
 @app.route("/")

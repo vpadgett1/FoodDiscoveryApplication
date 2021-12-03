@@ -222,6 +222,12 @@
   cursor: pointer;
 }
 
+.merchantRightSide form input:focus {
+  outline: none;
+  border: none;
+  box-shadow: none;
+}
+
 .createNewPostMerchantTop button img:hover {
   filter: invert(92%) sepia(20%) saturate(586%) hue-rotate(318deg) brightness(101%) contrast(101%);
   cursor: pointer;

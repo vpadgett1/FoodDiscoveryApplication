@@ -30,6 +30,12 @@
   color: #adadad;
 }
 
+.searchZipCode input[type='text']:focus {
+  outline: none;
+  border: none;
+  box-shadow: none;
+}
+
 .searchZipCode input[type='submit'] {
   background: url(../assets/SearchImgColored.png);
   background-size: contain;

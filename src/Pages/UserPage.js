@@ -4,7 +4,7 @@ import React, {
   useState,
   useEffect,
 } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 // import PropTypes from 'prop-types';
 import Navigation from '../Components/Navigation';
 import CatPfp from '../assets/CatProfilePic.png';
@@ -115,8 +115,6 @@ const UserPage = () => {
   useEffect(() => {
     getDetailedUserInfo();
     getCurrentUserInfo();
-    // check if the current user is friends with the user
-    // setUserFavoriteRestaurants([...FavoriteRestaurantDummyData]);
   }, [otherUserID]);
 
   function renderUserPosts() {
@@ -136,26 +134,36 @@ const UserPage = () => {
             currentUserProfilePic={userProfilePic}
             currentUserName={userName}
             AuthorName={x.AuthorName}
+            ImageData={x.post_picture}
           />
         ))}
       </>
     );
   }
 
+  function setLinkID(linkID) {
+    sessionStorage.setItem('restaurantID', linkID);
+  }
+
   function renderUserFavoriteRestaurants() {
+    if (UserFavoriteRestaurants.length === 0) {
+      return (
+        <>
+          <div className="rightSideTitle">User Favorite Restaurants</div>
+          <div className="userPageMessage">This user has no favorite restaurants</div>
+        </>
+      );
+    }
     return (
       <>
         <div className="rightSideTitle">User Favorite Restaurants</div>
-        {UserFavoriteRestaurants.map((x) => (
-          <div key={x.RestaurantID}>
-            <Link
-              to="/restaurantprofile"
-              state={{ restaurantID: x.RestaurantID }}
-            >
-              x.RestaurantName
-            </Link>
-          </div>
-        ))}
+        <div className="favoriteRestaurants">
+          {UserFavoriteRestaurants.map((x) => (
+            <div className="favRestaurantElement">
+              <a href="/restaurantprofile" onClick={setLinkID(x.restaurant_id)}>{x.restaurant_name}</a>
+            </div>
+          ))}
+        </div>
       </>
     );
   }

@@ -142,3 +142,10 @@ body {
 .inputImage {
   padding-bottom: 18px;
 }
+
+.createNewPostForm input:focus,
+.createNewPostForm textarea:focus {
+  outline: none;
+  border: none;
+  box-shadow: none;
+}
