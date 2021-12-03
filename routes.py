@@ -1041,6 +1041,7 @@ def getPosts(userID):
                 "postText": postComments[y].post_text,
                 "CommentorProfilePic": commentor.profile_pic,
                 "CommentorName": commentor.username,
+                "Yelp_ID": commentor.yelp_restaurant_id,
             }
             postCommentsList.append(commentData)
         posts.append(
@@ -1056,6 +1057,7 @@ def getPosts(userID):
                 "post_comments": postCommentsList,
                 "profilePic": author.profile_pic,
                 "AuthorName": author.username,
+                "Yelp_ID": author.yelp_restaurant_id,
             }
         )
     return posts

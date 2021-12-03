@@ -32,7 +32,12 @@ const Post = (props) => {
     currentUserName,
     AuthorName,
     ImageData,
+    YelpRestaurantID,
   } = props;
+
+  function setLinkID(linkID) {
+    sessionStorage.setItem('restaurantID', linkID);
+  }
 
   const postComment = (event) => {
     event.preventDefault();
@@ -120,15 +125,21 @@ const Post = (props) => {
           <div className="comment">
             <div className="commentProfileInfo">
               <img src={x.CommentorProfilePic} alt="profile" />
-              <div>
-                <Link
-                  to="/userprofile"
-                  state={{ userId: x.AuthorID }}
-                  onClick={isSamePage ? () => window.location.reload() : () => console.log('nah')}
-                >
-                  {x.CommentorName}
-                </Link>
-              </div>
+              {x.Yelp_ID ? (
+                <div>
+                  <a href="/restaurantprofile" onClick={setLinkID(x.Yelp_ID)}>{x.CommentorName}</a>
+                </div>
+              ) : (
+                <div>
+                  <Link
+                    to="/userprofile"
+                    state={{ userId: x.AuthorID }}
+                    onClick={isSamePage ? () => window.location.reload() : () => console.log('nah')}
+                  >
+                    {x.CommentorName}
+                  </Link>
+                </div>
+              )}
             </div>
             <div>
               {x.postText}
@@ -169,8 +180,16 @@ const Post = (props) => {
     return (<></>);
   };
 
-  return (
-    <div className="post">
+  function renderPostUserInfo() {
+    if (YelpRestaurantID) {
+      return (
+        <div className="post-user-info">
+          <img src={profilePic} alt="profile" />
+          <a href="/restaurantprofile" onClick={setLinkID(YelpRestaurantID)}>{AuthorName}</a>
+        </div>
+      );
+    }
+    return (
       <div className="post-user-info">
         <img src={profilePic} alt="profile" />
         <div>
@@ -182,6 +201,12 @@ const Post = (props) => {
           </Link>
         </div>
       </div>
+    );
+  }
+
+  return (
+    <div className="post">
+      {renderPostUserInfo()}
       <div className="postTitle">
         {postTitle}
       </div>
@@ -223,6 +248,7 @@ Post.propTypes = {
     postID: PropTypes.number.isRequired,
   })).isRequired,
   ImageData: PropTypes.string.isRequired,
+  YelpRestaurantID: PropTypes.string.isRequired,
 };
 
 export default Post;
