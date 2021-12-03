@@ -1,8 +1,30 @@
-# READ ME: Information on FoodMe, your newest food recommendations application
+# [FoodMe Web Applicatio] (http://pure-sea-44259.herokuapp.com)
 
-## [Link to FoodMe Application](https://still-badlands-73263.herokuapp.com/)
+>This web application has been created and designed to become your new home for recieving food recommendations from your friends. Here you can follow your friends and watch as they post the latest places they have ate and recommend their favorite dishes they'd love you for you to try!
 
-This web application has been created and designed to become your new home for recieving food recommendations from your friends. Here you can follow your friends and watch as they post the latest places they have ate and whether they would recommend this resturant to places or no.
+
+## [FoodMe Application](http://pure-sea-44259.herokuapp.com)
+
+
+
+
+## Motivation
+
+The question is: how is FoodMe different from any other food application to search for restaurants. We bring in the social aspect! You can add your friends and see what they’ve been eating and the dishes they recommend. Looking for recommendations from your favorite people, then this is why you need to use FoodMe! 
+
+As food accounts on instagram, facebook, twitter, etc are increasing we thought, why not create an app as a circle for foodies. This application is gathering all the foodies and those interested to become one!
+
+
+## Demonstration
+
+When you first load the page you are sent to the onboarding page where you select what type of user you are: regular user or merchant user. According to your choice, you are sent to the login page (not remembering quite if this is right) and will login using your google account. You then arrive to the discover page. This is where most of the socializing comes in. You will be able to see all of your friends post right after you log in. You have the functionality to post as well as comment on and like the post!
+
+As we move down the navigation bar at the top there is the Search Page where you can search for restaurants, posts, and users accordingly. 
+
+Next, we have the Maps page. You will be shown automatically restaurants nearby according to zipcode you entered when you first entered your information on the website. You want to check for restaurants in another location? No problem, enter it in the new zipcode and find restaurants near you!
+
+Finally, we have the profile page where you can add and delete users to be your friend, see your profile information like username, email, user ID number, and even your own personal posts. Not only that, we added an easy functionality to log out and delete your account for convenience!
+
 
 ## Requirements
 
@@ -42,3 +64,5 @@ This web application has been created and designed to become your new home for r
 ## Google Maps API
 
 1. run `npm install react-google-maps` to be able to use Google Maps api on the front end
+
+##

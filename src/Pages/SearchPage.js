@@ -1,21 +1,48 @@
 import '../App.css';
+import '../styling/SearchPage.css';
 import React, {
   useState,
-  useEffect, useRef,
+  useEffect,
+  useRef,
 } from 'react';
 // import PropTypes from 'prop-types';
+import SearchBar from '../Components/SearchBar';
+import RestaurantList from '../Components/RestaurantList';
 import Navigation from '../Components/Navigation';
 
 const SearchPage = () => {
   const textInput = useRef(null);
+  // eslint-disable-next-line no-unused-vars
   const [restaurants, setRestaurants] = useState(null);
   // set state
-  // const [state, setState] = useState(value);
+  const [input, setInput] = useState('');
+  const [RestaurantListDefault, setRestaurantListDefault] = useState();
+  const [RestaurantListState, setRestaurantList] = useState();
+
+  const fetchData = async () => {
+    await fetch('')
+      .then((response) => response.json())
+      .then((data) => {
+        setRestaurantList(data);
+        setRestaurantListDefault(data);
+      });
+  };
+
+  const updateInput = async (x) => {
+    const filtered = RestaurantListDefault
+      .filter((restaurant) => restaurant.name.toLowerCase().includes(x.toLowerCase()));
+    setInput(x);
+    setRestaurantList(filtered);
+    // want to filter through for restaurant name
+    // const filtered =
+    // return
+  };
 
   // deconstruct props
   // const [props] = props;
 
   // TODO: fetch data from backend
+  // eslint-disable-next-line no-unused-vars
   function onSearch(event) {
     event.preventDefault();
     const searchInput = textInput.current.value;
@@ -32,11 +59,12 @@ const SearchPage = () => {
     });
   }
 
+  // eslint-disable-next-line no-unused-vars
   function setID(id) {
     sessionStorage.setItem('restaurantID', id);
   }
   useEffect(() => {
-
+    fetchData();
   }, []);
 
   // TODO: Render component
@@ -44,42 +72,15 @@ const SearchPage = () => {
   return (
     <>
       <Navigation />
-      <div className="form">
-        <form>
-          Search:
-          <input type="text" ref={textInput} name="search" />
-          <input type="submit" value="Search" onClick={onSearch} />
-        </form>
-        {restaurants ? restaurants.map((values, index) => (
-          <ul style={{ listStyle: 'none' }}>
-            <li key={index}>
-              <a
-                href="/restaurantprofile"
-                onClick={() => {
-                  setID(values.ids);
-                }}
-              >
-                <h2>{values.name}</h2>
-              </a>
-              {/* <button
-                type="button"
-                onClick={() => {
-                  setRestaurantID(values.ids);
-                  console.log(restaurantID);
-                }}
-              >
-                {values.name}
-              </button> */}
-            </li>
-          </ul>
-        )) : <p>Search for type of food or a specific restaurant</p>}
+      <div>This is the search page</div>
+      <div>
+        <SearchBar
+          input={input}
+          onChange={updateInput}
+        />
+        <RestaurantList restaurantList={RestaurantListState} />
       </div>
     </>
   );
 };
-
-// TODO: PropTypes
-SearchPage.propTypes = {
-};
-
 export default SearchPage;
